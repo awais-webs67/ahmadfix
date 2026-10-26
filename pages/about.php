@@ -12,7 +12,7 @@ $services = getServices();
         <nav class="breadcrumb" aria-label="Breadcrumb" style="margin-bottom: var(--space-6);">
             <a href="<?php echo url(); ?>" style="color: var(--gray-500);"><?php echo __('nav_home'); ?></a>
             <span class="breadcrumb-separator" style="color: var(--gray-400);">/</span>
-            <span style="color: var(--primary);"><?php echo __('nav_about'); ?></span>
+            <span style="color: var(--primary);" aria-current="page"><?php echo __('nav_about'); ?></span>
         </nav>
         <h1><?php echo __('about_title'); ?></h1>
         <p><?php echo __('about_subtitle'); ?></p>
@@ -31,10 +31,13 @@ $services = getServices();
                 <p><?php echo __('about_mission_text'); ?></p>
             </div>
             <div class="reveal-right">
-                <img src="<?php echo ASSETS_URL; ?>/images/about/about-team.jpg" 
-                     alt="<?php echo $lang === 'ar' ? 'فريق أحمد فيكس - فنيون معتمدون' : 'Ahmad Fix Team - Certified Technicians'; ?>" 
-                     style="border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); width: 100%; height: 400px; object-fit: cover;"
-                     loading="lazy">
+                <?php echo picture('about/about-team.jpg', [
+                    'alt' => $lang === 'ar' ? 'فريق أحمد فيكس - فنيون معتمدون في الدمام والخبر والظهران' : 'Ahmad Fix team - certified appliance repair technicians in Dammam, Khobar and Dhahran',
+                    'style' => 'border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); width: 100%; height: 400px; object-fit: cover;',
+                    'width' => 1024, 'height' => 1024,
+                    'loading' => 'lazy', 'decoding' => 'async',
+                    'sizes' => '(max-width: 768px) 100vw, 560px',
+                ]); ?>
             </div>
         </div>
     </div>
@@ -113,7 +116,7 @@ $services = getServices();
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     <?php echo __('cta_call'); ?>
                 </a>
-                <a href="https://wa.me/<?php echo formatPhone(WHATSAPP); ?>" class="btn btn-whatsapp btn-lg" target="_blank" rel="noopener">
+                <a href="https://wa.me/<?php echo waNumber(); ?>" class="btn btn-whatsapp btn-lg" target="_blank" rel="noopener">
                     <?php echo __('cta_whatsapp'); ?>
                 </a>
             </div>

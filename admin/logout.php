@@ -9,9 +9,8 @@ if (!defined('FIXORA_APP')) {
 
 require_once dirname(__DIR__) . '/config/config.php';
 
-unset($_SESSION['admin_logged_in']);
-unset($_SESSION['admin_id']);
-unset($_SESSION['admin_name']);
+unset($_SESSION['admin_logged_in'], $_SESSION['admin_id'], $_SESSION['admin_name'], $_SESSION['must_change_password']);
+session_regenerate_id(true);
 
 header('Location: ' . SITE_URL . '/admin/login');
 exit;

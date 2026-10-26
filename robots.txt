@@ -1,15 +1,16 @@
-# Ahmad Fix — Robots.txt
-# https://www.robotstxt.org
+# Ahmad Fix — robots.txt
+# https://developers.google.com/search/docs/crawling-indexing/robots/intro
 
 User-agent: *
 Allow: /
 
-# Block admin panel
-Disallow: /admin/
+# Private / technical areas
+Disallow: /admin
+Disallow: /api/
 Disallow: /config/
 Disallow: /database/
 Disallow: /includes/
 Disallow: /lang/
 
-# Sitemap
-Sitemap: http://localhost/AhmadFix/sitemap.xml
+# Sitemap (always up to date — generated from the database)
+Sitemap: https://ahmadfix.com/sitemap.xml

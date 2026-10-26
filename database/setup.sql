@@ -3,6 +3,10 @@
 -- Database: fixora
 -- ============================================
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
+CREATE DATABASE IF NOT EXISTS fixora CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE fixora;
 
 -- ============================================
@@ -104,6 +108,7 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
     service_requested VARCHAR(100),
     message TEXT,
     is_read TINYINT(1) DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'new',
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -153,10 +158,21 @@ CREATE TABLE IF NOT EXISTS gallery (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
+-- 10. Admin login attempts (blocks password guessing)
+-- ============================================
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ip_address VARCHAR(45) NOT NULL,
+    attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ip_time (ip_address, attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
 -- SEED DATA
 -- ============================================
 
--- Admin user (password: ahmadfix2024)
+-- Admin user — default password: ahmadfix2024
+-- You MUST choose a new password on first login (the default stops working after that).
 INSERT INTO admins (username, password, full_name, email) VALUES
 ('admin', '$2y$10$8K1p/a0dN1xR0k5v8gqXZuPjY3VkVx0L5M4r7XwKjN2yF9FZ3dHCi', 'Ahmad Fix Admin', 'abubakerjamal573@gmail.com');
 
@@ -165,13 +181,14 @@ INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, sett
 ('site_name', 'Ahmad Fix', 'أحمد فيكس السعودية', 'text', 'general'),
 ('phone', '+966 58 245 3440', '+966 58 245 3440', 'phone', 'contact'),
 ('whatsapp', '+966582453440', '+966582453440', 'phone', 'contact'),
-('email', 'abubakerjamal573@gmail.com', 'abubakerjamal573@gmail.com', 'email', 'contact'),
+('email', 'ahmadarian538@gmail.com', 'ahmadarian538@gmail.com', 'email', 'contact'),
 ('address_en', 'Dammam, Dhahran, Al Khobar - Eastern Province, Saudi Arabia', 'الدمام، الظهران، الخبر - المنطقة الشرقية، المملكة العربية السعودية', 'text', 'contact'),
 ('ribbon_text', '🔧 Expert Home Appliance Repair Services — Dammam, Dhahran & Khobar | Call Now: +966 58 245 3440 | ✅ Certified Technicians | ⚡ Same-Day Service', '🔧 خدمات صيانة الأجهزة المنزلية الاحترافية — الدمام، الظهران والخبر | اتصل الآن: 3440 245 58 966+ | ✅ فنيون معتمدون | ⚡ خدمة في نفس اليوم', 'textarea', 'general'),
 ('working_hours_en', 'Saturday - Thursday: 8:00 AM - 10:00 PM | Friday: 2:00 PM - 10:00 PM', 'السبت - الخميس: 8:00 ص - 10:00 م | الجمعة: 2:00 م - 10:00 م', 'text', 'general'),
-('google_maps_url', 'https://google.com/maps/search/مستشفى%20الدمام%20المركزي/@26.43311719,50.0850687,17z?hl=en', 'https://google.com/maps/search/مستشفى%20الدمام%20المركزي/@26.43311719,50.0850687,17z?hl=ar', 'url', 'contact'),
+('google_maps_url', 'https://www.google.com/maps/search/?api=1&query=Dammam%2C+Al+Khobar%2C+Dhahran', 'https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D8%AF%D9%85%D8%A7%D9%85', 'url', 'contact'),
 ('maps_embed_lat', '26.43311719', '26.43311719', 'text', 'contact'),
-('maps_embed_lng', '50.0850687', '50.0850687', 'text', 'contact');
+('maps_embed_lng', '50.0850687', '50.0850687', 'text', 'contact'),
+('schema_version', '2', '2', 'text', 'system');
 
 -- Hero Content
 INSERT INTO hero_content (title_en, title_ar, subtitle_en, subtitle_ar, cta_text_en, cta_text_ar, is_active) VALUES
@@ -182,8 +199,8 @@ INSERT INTO services (name_en, name_ar, slug_en, slug_ar, short_desc_en, short_d
 (
     'AC Repair & Maintenance',
     'صيانة وإصلاح المكيفات',
-    'ac-repair-dammam',
-    'صيانة-مكيفات-الدمام',
+    'ac-repair',
+    'صيانة-مكيفات',
     'Expert split & central AC repair, gas refilling, deep cleaning, and annual maintenance contracts in Dammam, Dhahran & Khobar.',
     'إصلاح مكيفات سبليت ومركزية، تعبئة فريون، تنظيف عميق، وعقود صيانة سنوية في الدمام والظهران والخبر.',
     '<h2>Professional AC Repair Services in Dammam, Dhahran & Khobar</h2>\n<p>Is your AC not cooling properly? Leaking water? Making unusual noises? Ahmad Fix provides comprehensive AC repair and maintenance services across the Eastern Province. Our certified technicians handle all brands and models of split and central air conditioning systems.</p>\n<h3>Our AC Services Include:</h3>\n<ul>\n<li><strong>AC Not Cooling Repair</strong> — Diagnosis and fix for all cooling issues</li>\n<li><strong>Freon/Gas Refilling</strong> — Professional refrigerant recharging</li>\n<li><strong>Deep Cleaning Service</strong> — Complete internal and external AC cleaning</li>\n<li><strong>Compressor Repair & Replacement</strong> — Expert compressor services</li>\n<li><strong>Thermostat & Control Board Repair</strong> — Electronic component fixes</li>\n<li><strong>Annual Maintenance Contracts (AMC)</strong> — Preventive maintenance plans</li>\n<li><strong>New AC Installation</strong> — Professional setup for all AC types</li>\n</ul>\n<h3>Why Choose Ahmad Fix for AC Repair?</h3>\n<p>With temperatures soaring above 45°C in the Eastern Province, a functioning AC is not a luxury — it''s a necessity. Our same-day service ensures you''re never left in the heat. We use genuine spare parts and offer warranty on all repairs.</p>',
@@ -202,10 +219,10 @@ INSERT INTO services (name_en, name_ar, slug_en, slug_ar, short_desc_en, short_d
 (
     'Refrigerator Repair',
     'صيانة وإصلاح الثلاجات',
-    'fridge-repair-khobar',
-    'صيانة-ثلاجات-الخبر',
-    'Complete fridge and freezer repair services. We fix cooling issues, compressor problems, ice maker repairs, and thermostat replacements.',
-    'خدمات إصلاح الثلاجات والفريزر الشاملة. نصلح مشاكل التبريد، أعطال الكمبروسر، وإصلاح صانع الثلج.',
+    'refrigerator-repair',
+    'صيانة-ثلاجات',
+    'Complete fridge and freezer repair in Dammam, Khobar & Dhahran. We fix cooling issues, compressor problems, ice makers, and thermostats.',
+    'إصلاح ثلاجات وفريزرات في الدمام والخبر والظهران. نصلح مشاكل التبريد، أعطال الكمبروسر، وصانع الثلج.',
     '<h2>Expert Refrigerator Repair in Dammam, Dhahran & Khobar</h2>\n<p>A malfunctioning refrigerator can lead to food spoilage and costly replacements. At Ahmad Fix, we provide fast and reliable refrigerator repair services to keep your food fresh and safe. Our experienced technicians diagnose and fix all types of fridge problems.</p>\n<h3>Our Refrigerator Services Include:</h3>\n<ul>\n<li><strong>Not Cooling / Overcooling Fix</strong> — Temperature regulation repair</li>\n<li><strong>Compressor Repair & Replacement</strong> — Heart of your fridge</li>\n<li><strong>Gas Leakage Detection & Repair</strong> — Refrigerant leak fixes</li>\n<li><strong>Ice Maker Repair</strong> — Ice production issues resolved</li>\n<li><strong>Thermostat Replacement</strong> — Accurate temperature control</li>\n<li><strong>Door Seal / Gasket Replacement</strong> — Prevent cold air leakage</li>\n<li><strong>Strange Noise Diagnosis</strong> — Quiet operation restored</li>\n</ul>',
     '<h2>إصلاح الثلاجات المتخصص في الدمام والظهران والخبر</h2>\n<p>الثلاجة المعطلة قد تؤدي إلى فساد الطعام. في أحمد فيكس، نقدم خدمات إصلاح ثلاجات سريعة وموثوقة للحفاظ على طعامك طازجاً وآمناً.</p>\n<h3>خدمات الثلاجات لدينا تشمل:</h3>\n<ul>\n<li><strong>إصلاح عدم التبريد</strong> — إصلاح تنظيم درجة الحرارة</li>\n<li><strong>إصلاح واستبدال الكمبروسر</strong> — قلب ثلاجتك</li>\n<li><strong>كشف وإصلاح تسريب الغاز</strong> — إصلاح تسريبات المبرد</li>\n<li><strong>إصلاح صانع الثلج</strong> — حل مشاكل إنتاج الثلج</li>\n<li><strong>استبدال الثرموستات</strong> — تحكم دقيق بدرجة الحرارة</li>\n<li><strong>استبدال جوان الباب</strong> — منع تسرب الهواء البارد</li>\n</ul>',
     'thermometer',
@@ -222,10 +239,10 @@ INSERT INTO services (name_en, name_ar, slug_en, slug_ar, short_desc_en, short_d
 (
     'Washing Machine Repair',
     'صيانة وإصلاح الغسالات',
-    'washing-machine-repair-dhahran',
-    'صيانة-غسالات-الظهران',
-    'Professional washing machine repair for all types — automatic, semi-automatic, and front-load. We fix drainage, spinning, and electrical issues.',
-    'إصلاح غسالات احترافي لجميع الأنواع — أوتوماتيك، نصف أوتوماتيك، وتحميل أمامي. نصلح مشاكل الصرف والدوران.',
+    'washing-machine-repair',
+    'صيانة-غسالات',
+    'Washing machine repair in Dammam, Khobar & Dhahran for all types — automatic, semi-automatic and front-load. Drainage, spinning and electrical fixes.',
+    'إصلاح غسالات في الدمام والخبر والظهران لجميع الأنواع — أوتوماتيك، نصف أوتوماتيك، وتحميل أمامي. نصلح الصرف والدوران.',
     '<h2>Washing Machine Repair Services in Dammam, Dhahran & Khobar</h2>\n<p>A broken washing machine disrupts your entire household routine. Ahmad Fix offers prompt and professional washing machine repair services for all types and brands. Whether it''s a drainage problem, spinning issue, or electrical fault — our technicians have you covered.</p>\n<h3>Our Washing Machine Services Include:</h3>\n<ul>\n<li><strong>Drainage & Water Pump Repair</strong> — Fix water not draining issues</li>\n<li><strong>Drum / Spin Motor Repair</strong> — Resolve spinning and vibration problems</li>\n<li><strong>Door Lock & Seal Repair</strong> — Fix leaking door issues</li>\n<li><strong>Control Board Repair</strong> — Electronic panel diagnostics</li>\n<li><strong>Belt Replacement</strong> — Drive belt wear and tear</li>\n<li><strong>Water Inlet Valve Repair</strong> — Water filling problems</li>\n<li><strong>Error Code Diagnosis</strong> — Decode and fix digital error codes</li>\n</ul>',
     '<h2>خدمات إصلاح الغسالات في الدمام والظهران والخبر</h2>\n<p>الغسالة المعطلة تعطل روتين منزلك بالكامل. أحمد فيكس تقدم خدمات إصلاح غسالات سريعة واحترافية لجميع الأنواع والماركات.</p>\n<h3>خدمات الغسالات لدينا تشمل:</h3>\n<ul>\n<li><strong>إصلاح الصرف ومضخة المياه</strong> — حل مشاكل عدم صرف المياه</li>\n<li><strong>إصلاح حلة الغسيل والموتور</strong> — حل مشاكل الدوران والاهتزاز</li>\n<li><strong>إصلاح قفل الباب والجوان</strong> — إصلاح تسريب الباب</li>\n<li><strong>إصلاح لوحة التحكم</strong> — تشخيص اللوحة الإلكترونية</li>\n<li><strong>استبدال السير</strong> — تآكل سير الإدارة</li>\n<li><strong>إصلاح صمام دخول المياه</strong> — مشاكل ملء المياه</li>\n</ul>',
     'rotate-cw',
@@ -242,15 +259,15 @@ INSERT INTO services (name_en, name_ar, slug_en, slug_ar, short_desc_en, short_d
 (
     'Oven & Stove Repair',
     'صيانة وإصلاح الأفران والبوتاجاز',
-    'oven-repair-eastern-province',
-    'صيانة-افران-المنطقة-الشرقية',
-    'Gas and electric oven repair, stove burner fixes, thermostat calibration, and ignition system repair. Safe and certified service.',
-    'إصلاح أفران الغاز والكهرباء، إصلاح شعلات البوتاجاز، معايرة الثرموستات، وإصلاح نظام الإشعال.',
+    'oven-repair',
+    'صيانة-افران',
+    'Gas and electric oven repair in Dammam, Khobar & Dhahran — burners, thermostats and ignition systems. Safe, certified service.',
+    'إصلاح أفران الغاز والكهرباء في الدمام والخبر والظهران — الشعلات، الثرموستات، ونظام الإشعال. خدمة آمنة ومعتمدة.',
     '<h2>Oven & Stove Repair Services in Dammam, Dhahran & Khobar</h2>\n<p>A faulty oven or stove can be both inconvenient and dangerous. Ahmad Fix provides safe and professional oven repair services for gas and electric models. Our certified technicians ensure your cooking appliances work efficiently and safely.</p>\n<h3>Our Oven & Stove Services Include:</h3>\n<ul>\n<li><strong>Gas Oven Repair</strong> — Burner, ignition, and gas valve fixes</li>\n<li><strong>Electric Oven Repair</strong> — Heating element and control panel repair</li>\n<li><strong>Thermostat Calibration</strong> — Accurate temperature cooking</li>\n<li><strong>Ignition System Repair</strong> — Fix oven not lighting issues</li>\n<li><strong>Gas Leak Detection</strong> — Safety inspection and repair</li>\n<li><strong>Door Hinge & Seal Repair</strong> — Proper heat retention</li>\n<li><strong>Stove Burner Repair</strong> — Fix uneven flames and blockages</li>\n</ul>',
     '<h2>خدمات إصلاح الأفران والبوتاجاز في الدمام والظهران والخبر</h2>\n<p>الفرن أو البوتاجاز المعطل قد يكون مزعجاً وخطيراً. أحمد فيكس تقدم خدمات إصلاح أفران آمنة واحترافية لأفران الغاز والكهرباء.</p>\n<h3>خدمات الأفران لدينا تشمل:</h3>\n<ul>\n<li><strong>إصلاح أفران الغاز</strong> — إصلاح الشعلات والإشعال وصمام الغاز</li>\n<li><strong>إصلاح أفران الكهرباء</strong> — إصلاح عناصر التسخين ولوحة التحكم</li>\n<li><strong>معايرة الثرموستات</strong> — طهي بدرجة حرارة دقيقة</li>\n<li><strong>إصلاح نظام الإشعال</strong> — حل مشاكل عدم اشتعال الفرن</li>\n<li><strong>كشف تسريب الغاز</strong> — فحص السلامة والإصلاح</li>\n<li><strong>إصلاح مفصلات وجوان الباب</strong> — احتفاظ صحيح بالحرارة</li>\n</ul>',
     'flame',
-    'Oven & Stove Repair in Eastern Province - Dammam, Khobar | Ahmad Fix',
-    'صيانة وإصلاح الأفران والبوتاجاز في المنطقة الشرقية | أحمد فيكس',
+    'Oven & Stove Repair in Dammam, Khobar & Dhahran | Ahmad Fix',
+    'صيانة أفران وبوتاجاز في الدمام والخبر والظهران | أحمد فيكس',
     'Professional oven and stove repair in Dammam, Dhahran & Khobar. Gas & electric oven repair, burner fixes, thermostat calibration. Call +966 58 245 3440',
     'إصلاح أفران وبوتاجاز في الدمام والظهران والخبر. إصلاح أفران غاز وكهرباء، إصلاح شعلات. اتصل 3440 245 58 966+',
     'oven repair Dammam, stove repair Khobar, gas oven repair Dhahran, electric oven repair, oven not heating, stove burner repair Eastern Province',
@@ -276,6 +293,6 @@ INSERT INTO service_areas (name_en, name_ar, description_en, description_ar, lat
 
 -- Pages SEO
 INSERT INTO pages_seo (page_slug, title_en, title_ar, description_en, description_ar, keywords_en, keywords_ar) VALUES
-('home', 'Ahmad Fix — Professional Home Appliance Repair in Dammam, Dhahran & Khobar', 'أحمد فيكس — صيانة الأجهزة المنزلية الاحترافية في الدمام والظهران والخبر', 'Ahmad Fix provides expert AC, refrigerator, washing machine & oven repair services in Dammam, Dhahran & Khobar. Certified technicians, same-day service, genuine parts. Call +966 58 245 3440', 'أحمد فيكس تقدم خدمات صيانة مكيفات، ثلاجات، غسالات وأفران احترافية في الدمام والظهران والخبر. فنيون معتمدون، خدمة نفس اليوم. اتصل 3440 245 58 966+', 'home appliance repair Dammam, AC repair Khobar, fridge repair Dhahran, washing machine maintenance, oven repair Eastern Province, Ahmad Fix', 'صيانة أجهزة منزلية الدمام, صيانة مكيفات الخبر, تصليح ثلاجات الظهران, صيانة غسالات, إصلاح أفران المنطقة الشرقية, أحمد فيكس'),
+('home', 'Home Appliance Repair in Dammam, Khobar & Dhahran | Ahmad Fix', 'صيانة أجهزة منزلية في الدمام والخبر والظهران | أحمد فيكس', 'Ahmad Fix provides expert AC, refrigerator, washing machine & oven repair services in Dammam, Dhahran & Khobar. Certified technicians, same-day service, genuine parts. Call +966 58 245 3440', 'أحمد فيكس تقدم خدمات صيانة مكيفات، ثلاجات، غسالات وأفران احترافية في الدمام والظهران والخبر. فنيون معتمدون، خدمة نفس اليوم. اتصل 3440 245 58 966+', 'home appliance repair Dammam, AC repair Khobar, fridge repair Dhahran, washing machine maintenance, oven repair Eastern Province, Ahmad Fix', 'صيانة أجهزة منزلية الدمام, صيانة مكيفات الخبر, تصليح ثلاجات الظهران, صيانة غسالات, إصلاح أفران المنطقة الشرقية, أحمد فيكس'),
 ('about', 'About Ahmad Fix — Trusted Appliance Repair Experts in Eastern Province', 'عن أحمد فيكس — خبراء صيانة الأجهزة الموثوقون في المنطقة الشرقية', 'Learn about Ahmad Fix, your trusted home appliance repair partner in Dammam, Dhahran & Khobar. Certified technicians with years of experience.', 'تعرف على أحمد فيكس، شريكك الموثوق في صيانة الأجهزة المنزلية في الدمام والظهران والخبر.', 'about Ahmad Fix, appliance repair company Dammam, maintenance service Eastern Province', 'عن أحمد فيكس, شركة صيانة أجهزة الدمام, خدمة صيانة المنطقة الشرقية'),
 ('contact', 'Contact Ahmad Fix — Book Appliance Repair in Dammam, Dhahran, Khobar', 'اتصل بأحمد فيكس — احجز صيانة أجهزة في الدمام والظهران والخبر', 'Contact Ahmad Fix for fast home appliance repair services. Call +966 58 245 3440 or WhatsApp us. Serving Dammam, Dhahran & Khobar.', 'اتصل بأحمد فيكس لخدمات صيانة أجهزة منزلية سريعة. اتصل 3440 245 58 966+ أو واتساب. خدمة الدمام والظهران والخبر.', 'contact Ahmad Fix, book repair service Dammam, appliance repair phone Khobar', 'اتصل أحمد فيكس, حجز صيانة الدمام, هاتف صيانة أجهزة الخبر');

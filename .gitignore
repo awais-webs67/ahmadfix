@@ -1,0 +1,12 @@
+# Private settings (passwords) — never commit
+config/config.local.php
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs
+*.log
+error_log

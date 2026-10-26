@@ -222,11 +222,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(contactForm);
             
             // Validation
-            const name = formData.get('name');
-            const phone = formData.get('phone');
+            const name = (formData.get('name') || '').trim();
+            const phone = (formData.get('phone') || '').trim();
             
             if (!name || !phone) {
-                showFormMessage(formMessage, 'Please fill in all required fields.', 'error');
+                showFormMessage(formMessage, contactForm.dataset.msgRequired || 'Please fill in all required fields.', 'error');
                 return;
             }
             
@@ -234,13 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
             
-            // Determine the base URL dynamically from current path
-            const pathParts = window.location.pathname.split('/').filter(Boolean);
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const rootFolder = (isLocal && pathParts.length > 0) ? '/' + pathParts[0] : '';
-            const baseUrl = rootFolder;
-            
-            fetch(baseUrl + '/api/contact-submit', {
+            fetch(contactForm.getAttribute('action'), {
                 method: 'POST',
                 body: formData
             })
@@ -249,12 +243,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showFormMessage(formMessage, data.message, 'success');
                     contactForm.reset();
+                    trackEvent('generate_lead', { method: 'contact_form', service: formData.get('service') || 'none' });
                 } else {
                     showFormMessage(formMessage, data.message, 'error');
                 }
             })
             .catch(error => {
-                showFormMessage(formMessage, 'Network error. Please try again.', 'error');
+                showFormMessage(formMessage, contactForm.dataset.msgNetwork || 'Network error. Please try again.', 'error');
             })
             .finally(function() {
                 submitBtn.classList.remove('loading');
@@ -286,11 +281,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Close all FAQ items
             document.querySelectorAll('.faq-item').forEach(function(faq) {
                 faq.classList.remove('active');
+                const btn = faq.querySelector('.faq-question');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
             });
             
             // Toggle the clicked item
             if (!isActive) {
                 item.classList.add('active');
+                this.setAttribute('aria-expanded', 'true');
             }
         });
     });
@@ -356,4 +354,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 16);
     }
     
+    // ============================================
+    // Conversion tracking (Google Analytics 4)
+    // Counts Call / WhatsApp clicks so you can see which pages bring customers.
+    // Does nothing until GA4_ID is set in config/config.php.
+    // ============================================
+    function trackEvent(name, params) {
+        if (typeof window.gtag === 'function') {
+            window.gtag('event', name, params || {});
+        }
+    }
+    window.ahmadFixTrack = trackEvent;
+
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest ? e.target.closest('a[href]') : null;
+        if (!link) return;
+        const href = link.getAttribute('href') || '';
+        const where = link.id || link.className.toString().split(' ')[0] || 'link';
+        if (href.indexOf('tel:') === 0) {
+            trackEvent('phone_call_click', { link_location: where, page_path: location.pathname });
+        } else if (href.indexOf('wa.me') !== -1 || href.indexOf('whatsapp') !== -1) {
+            trackEvent('whatsapp_click', { link_location: where, page_path: location.pathname });
+        }
+    }, { passive: true });
+
 });

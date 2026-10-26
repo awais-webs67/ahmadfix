@@ -8,7 +8,7 @@ require_once __DIR__ . '/auth.php';
 // ============================================
 // CSV Lead Export Handler
 // ============================================
-if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+if (isset($_GET['export']) && $_GET['export'] === 'csv' && empty($_SESSION['must_change_password'])) {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename=AhmadFix_Leads_' . date('Y-m-d') . '.csv');
     
@@ -18,8 +18,15 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     
     fputcsv($output, ['Lead ID', 'Customer Name', 'Phone Number', 'Email', 'Service Requested', 'Customer Message', 'Status', 'Submitted Date']);
     
+    // Decode stored HTML entities and stop Excel from running cells that start with = + - @
+    $csv = function ($v) {
+        $v = html_entity_decode((string)$v, ENT_QUOTES, 'UTF-8');
+        return preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v;
+    };
+
     $export_stmt = $pdo->query("SELECT * FROM contact_submissions ORDER BY submitted_at DESC");
     while ($row = $export_stmt->fetch()) {
+        $row = array_map($csv, $row);
         fputcsv($output, [
             $row['id'],
             $row['customer_name'],
@@ -41,42 +48,83 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 $msg = '';
 $msg_type = 'success';
 
+$allowed_statuses = ['new', 'contacted', 'completed', 'cancelled'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_type'])) {
-    if ($_POST['action_type'] === 'update_settings') {
+    if (!validateCSRF($_POST['csrf_token'] ?? '')) {
+        $msg = 'Security check failed. Please try again.';
+        $msg_type = 'warning';
+    } elseif ($_POST['action_type'] === 'update_settings') {
         $new_phone = trim($_POST['site_phone'] ?? '');
-        $new_wa = trim($_POST['site_wa'] ?? '');
+        $new_wa = preg_replace('/[^0-9]/', '', $_POST['site_wa'] ?? '');
         $new_email = trim($_POST['site_email'] ?? '');
-        
-        if ($new_phone && $new_email) {
-            $pdo->prepare("UPDATE site_settings SET setting_value_en = :val, setting_value_ar = :val WHERE setting_key = 'phone'")->execute([':val' => $new_phone]);
-            $pdo->prepare("UPDATE site_settings SET setting_value_en = :val, setting_value_ar = :val WHERE setting_key = 'whatsapp'")->execute([':val' => $new_wa]);
-            $pdo->prepare("UPDATE site_settings SET setting_value_en = :val, setting_value_ar = :val WHERE setting_key = 'email'")->execute([':val' => $new_email]);
-            $msg = 'Site contact settings updated successfully!';
+
+        if ($new_phone !== '' && $new_wa !== '' && filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
+            $upd = $pdo->prepare("UPDATE site_settings SET setting_value_en = :val_en, setting_value_ar = :val_ar WHERE setting_key = :k");
+            foreach (['phone' => $new_phone, 'whatsapp' => '+' . $new_wa, 'email' => $new_email] as $k => $v) {
+                $upd->execute([':val_en' => $v, ':val_ar' => $v, ':k' => $k]);
+            }
+            $_SESSION['flash'] = ['Site contact settings updated successfully!', 'success'];
+            header('Location: ' . SITE_URL . '/admin/index');
+            exit;
         }
+        $msg = 'Please enter a phone number, a WhatsApp number and a valid email.';
+        $msg_type = 'warning';
+    } elseif ($_POST['action_type'] === 'change_password') {
+        $new_pass = (string)($_POST['new_password'] ?? '');
+        $confirm = (string)($_POST['confirm_password'] ?? '');
+        if (strlen($new_pass) < 10) {
+            $msg = 'Password must be at least 10 characters.';
+            $msg_type = 'warning';
+        } elseif ($new_pass !== $confirm) {
+            $msg = 'The two passwords do not match.';
+            $msg_type = 'warning';
+        } elseif (in_array(strtolower($new_pass), ['ahmadfix2024', 'admin12345', 'password123', '1234567890'], true)) {
+            $msg = 'Please choose a less common password.';
+            $msg_type = 'warning';
+        } else {
+            $pdo->prepare("UPDATE admins SET password = :p WHERE id = :id")
+                ->execute([':p' => password_hash($new_pass, PASSWORD_DEFAULT), ':id' => (int)($_SESSION['admin_id'] ?? 0)]);
+            $_SESSION['must_change_password'] = false;
+            session_regenerate_id(true);
+            $_SESSION['flash'] = ['Password changed successfully.', 'success'];
+            header('Location: ' . SITE_URL . '/admin/index');
+            exit;
+        }
+    } elseif ($_POST['action_type'] === 'lead_action' && empty($_SESSION['must_change_password'])) {
+        $action_id = (int)($_POST['id'] ?? 0);
+        $act = $_POST['act'] ?? '';
+        if ($act === 'status' && in_array($_POST['val'] ?? '', $allowed_statuses, true)) {
+            $new_status = $_POST['val'];
+            $is_read = ($new_status === 'new') ? 0 : 1;
+            $stmt = $pdo->prepare("UPDATE contact_submissions SET status = :st, is_read = :rd WHERE id = :id");
+            $stmt->execute([':st' => $new_status, ':rd' => $is_read, ':id' => $action_id]);
+            $_SESSION['flash'] = ['Lead #' . $action_id . ' status updated to "' . strtoupper($new_status) . '".', 'success'];
+        } elseif ($act === 'delete') {
+            $stmt = $pdo->prepare("DELETE FROM contact_submissions WHERE id = :id");
+            $stmt->execute([':id' => $action_id]);
+            $_SESSION['flash'] = ['Lead #' . $action_id . ' deleted successfully.', 'warning'];
+        }
+        // Back to the same filtered list
+        $back = SITE_URL . '/admin/index' . (!empty($_POST['back']) && $_POST['back'][0] === '?' ? $_POST['back'] : '');
+        header('Location: ' . $back);
+        exit;
     }
 }
 
-if (isset($_GET['action']) && isset($_GET['id'])) {
-    $action_id = (int)$_GET['id'];
-    $act = $_GET['action'];
-    
-    if ($act === 'status' && isset($_GET['val'])) {
-        $new_status = trim($_GET['val']);
-        $is_read = ($new_status === 'new') ? 0 : 1;
-        $stmt = $pdo->prepare("UPDATE contact_submissions SET status = :st, is_read = :rd WHERE id = :id");
-        $stmt->execute([':st' => $new_status, ':rd' => $is_read, ':id' => $action_id]);
-        $msg = 'Lead #' . $action_id . ' status updated to "' . strtoupper($new_status) . '".';
-    } elseif ($act === 'delete') {
-        $stmt = $pdo->prepare("DELETE FROM contact_submissions WHERE id = :id");
-        $stmt->execute([':id' => $action_id]);
-        $msg = 'Lead #' . $action_id . ' deleted successfully.';
-        $msg_type = 'warning';
-    }
+if (!empty($_SESSION['flash'])) {
+    [$msg, $msg_type] = $_SESSION['flash'];
+    unset($_SESSION['flash']);
 }
+
+$must_change_password = !empty($_SESSION['must_change_password']);
 
 // Search and Filter logic
 $search = trim($_GET['q'] ?? '');
 $filter_status = trim($_GET['status'] ?? 'all');
+if (!in_array($filter_status, array_merge(['all', 'unread'], $allowed_statuses), true)) {
+    $filter_status = 'all';
+}
 
 $where_clauses = [];
 $params = [];
@@ -108,6 +156,12 @@ $stmt = $pdo->prepare("SELECT * FROM contact_submissions $where_sql ORDER BY sub
 $stmt->execute($params);
 $submissions = $stmt->fetchAll();
 
+// Keep the current search/filter when a lead is updated
+$back_query = '?' . http_build_query(array_filter([
+    'q' => $search,
+    'status' => $filter_status !== 'all' ? $filter_status : null,
+]));
+
 $service_labels = [
     'ac' => 'AC Repair & Maintenance',
     'fridge' => 'Refrigerator Repair',
@@ -121,6 +175,7 @@ $service_labels = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Enterprise Admin Panel — Ahmad Fix Dashboard</title>
     <link rel="icon" type="image/png" href="<?php echo ASSETS_URL; ?>/images/favicon.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
@@ -208,11 +263,41 @@ $service_labels = [
         .modal-body label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
         .modal-body input { width: 100%; padding: 12px; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
         .modal-body input:focus { border-color: #ff7a00; }
+        .inline-form { display: inline; margin: 0; }
+        .force-card { max-width: 480px; margin: 80px auto; background: #151d2a; border: 1px solid #233044; border-radius: 16px; padding: 30px; }
+        .force-card h2 { font-size: 20px; color: #fff; margin-bottom: 8px; }
+        .force-card p { color: #94a3b8; font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+        .force-msg { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
         
         .empty-state { padding: 60px 20px; text-align: center; color: #64748b; font-size: 16px; }
     </style>
 </head>
 <body>
+<?php if ($must_change_password): ?>
+<!-- First login with the default password: a new password is required -->
+<div class="force-card">
+    <h2>🔒 Set a new admin password</h2>
+    <p>You signed in with the default password. Please choose your own password now — the default one will stop working after this.</p>
+    <?php if ($msg): ?><div class="force-msg"><?php echo e($msg); ?></div><?php endif; ?>
+    <form method="POST" action="" class="modal-body">
+        <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
+        <input type="hidden" name="action_type" value="change_password">
+        <div class="form-group">
+            <label>New Password (min. 10 characters)</label>
+            <input type="password" name="new_password" autocomplete="new-password" minlength="10" required autofocus>
+        </div>
+        <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" name="confirm_password" autocomplete="new-password" minlength="10" required>
+        </div>
+        <button type="submit" class="btn-header btn-export" style="width: 100%; justify-content: center; padding: 12px;">Save New Password</button>
+    </form>
+    <p style="margin-top: 16px; margin-bottom: 0;"><a href="<?php echo SITE_URL; ?>/admin/logout" style="color: #f87171;">Sign out</a></p>
+</div>
+</body>
+</html>
+<?php return; endif; ?>
+
 
 <header>
     <a href="<?php echo SITE_URL; ?>" class="brand" target="_blank">
@@ -304,13 +389,13 @@ $service_labels = [
                     <?php else: ?>
                         <?php foreach ($submissions as $sub): 
                             $clean_phone = preg_replace('/[^+0-9]/', '', $sub['phone']);
-                            $cust_name = htmlspecialchars($sub['customer_name']);
+                            $cust_name = e($sub['customer_name']);
                             $svc_key = strtolower($sub['service_requested']);
                             $svc_name = $service_labels[$svc_key] ?? $sub['service_requested'] ?: 'General Inquiry';
                             $curr_status = $sub['status'] ?? ($sub['is_read'] ? 'contacted' : 'new');
                             
                             // Pre-fill WhatsApp greeting message
-                            $wa_msg = urlencode("Hello {$cust_name}, thank you for reaching out to Ahmad Fix! We received your request for {$svc_name}. Our technician is ready to assist you.");
+                            $wa_msg = rawurlencode("Hello " . html_entity_decode($cust_name, ENT_QUOTES, 'UTF-8') . ", thank you for reaching out to Ahmad Fix! We received your request for {$svc_name}. Our technician is ready to assist you.");
                             $wa_url = "https://wa.me/" . ltrim($clean_phone, '+') . "?text=" . $wa_msg;
                         ?>
                             <tr class="<?php echo ($curr_status === 'new') ? 'unread' : ''; ?>">
@@ -318,31 +403,38 @@ $service_labels = [
                                 <td>
                                     <strong style="color: #fff; font-size: 15px;"><?php echo $cust_name; ?></strong>
                                     <?php if (!empty($sub['email'])): ?>
-                                        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;"><?php echo htmlspecialchars($sub['email']); ?></div>
+                                        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;"><?php echo e($sub['email']); ?></div>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <a href="tel:<?php echo $clean_phone; ?>" style="color: #ff7a00; font-weight: 800; text-decoration: none;">
-                                        📞 <?php echo htmlspecialchars($sub['phone']); ?>
+                                        📞 <?php echo e($sub['phone']); ?>
                                     </a>
                                 </td>
                                 <td>
                                     <span style="background: rgba(255, 122, 0, 0.12); color: #ff7a00; font-weight: 700; padding: 5px 10px; border-radius: 6px; font-size: 12px;">
-                                        <?php echo htmlspecialchars($svc_name); ?>
+                                        <?php echo e($svc_name); ?>
                                     </span>
                                 </td>
                                 <td>
                                     <div style="color: #cbd5e1; font-size: 13px; max-width: 250px; word-break: break-word;">
-                                        <?php echo !empty($sub['message']) ? htmlspecialchars($sub['message']) : '<em style="color:#64748b;">No text message</em>'; ?>
+                                        <?php echo !empty($sub['message']) ? e($sub['message']) : '<em style="color:#64748b;">No text message</em>'; ?>
                                     </div>
                                 </td>
                                 <td>
-                                    <select class="status-select" onchange="window.location.href='?action=status&id=<?php echo $sub['id']; ?>&val=' + this.value">
+                                    <form method="POST" action="" class="inline-form">
+                                    <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
+                                    <input type="hidden" name="action_type" value="lead_action">
+                                    <input type="hidden" name="act" value="status">
+                                    <input type="hidden" name="id" value="<?php echo (int)$sub['id']; ?>">
+                                    <input type="hidden" name="back" value="<?php echo e($back_query); ?>">
+                                    <select class="status-select" name="val" onchange="this.form.submit()" aria-label="Lead status">
                                         <option value="new" <?php echo $curr_status === 'new' ? 'selected' : ''; ?>>⚡ NEW</option>
                                         <option value="contacted" <?php echo $curr_status === 'contacted' ? 'selected' : ''; ?>>🛠️ DISPATCHED</option>
                                         <option value="completed" <?php echo $curr_status === 'completed' ? 'selected' : ''; ?>>✅ COMPLETED</option>
                                         <option value="cancelled" <?php echo $curr_status === 'cancelled' ? 'selected' : ''; ?>>❌ CANCELLED</option>
                                     </select>
+                                    </form>
                                 </td>
                                 <td style="color: #94a3b8; font-size: 13px;">
                                     <?php echo date('M d, Y', strtotime($sub['submitted_at'])); ?><br>
@@ -350,9 +442,16 @@ $service_labels = [
                                 </td>
                                 <td>
                                     <div class="actions">
-                                        <a href="<?php echo $wa_url; ?>" target="_blank" class="btn-act btn-wa" title="Reply on WhatsApp with pre-filled greeting">💬 WhatsApp</a>
+                                        <a href="<?php echo e($wa_url); ?>" target="_blank" rel="noopener" class="btn-act btn-wa" title="Reply on WhatsApp with pre-filled greeting">💬 WhatsApp</a>
                                         <a href="tel:<?php echo $clean_phone; ?>" class="btn-act btn-call" title="Call Customer">📞 Call</a>
-                                        <a href="?action=delete&id=<?php echo $sub['id']; ?>" onclick="return confirm('Delete lead #<?php echo $sub['id']; ?>?');" class="btn-act btn-del" title="Delete Lead">🗑️</a>
+                                        <form method="POST" action="" class="inline-form" onsubmit="return confirm('Delete lead #<?php echo (int)$sub['id']; ?>?');">
+                                            <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
+                                            <input type="hidden" name="action_type" value="lead_action">
+                                            <input type="hidden" name="act" value="delete">
+                                            <input type="hidden" name="id" value="<?php echo (int)$sub['id']; ?>">
+                                            <input type="hidden" name="back" value="<?php echo e($back_query); ?>">
+                                            <button type="submit" class="btn-act btn-del" title="Delete Lead">🗑️</button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -373,6 +472,7 @@ $service_labels = [
             <button class="modal-close" onclick="document.getElementById('settingsModal').style.display='none';">&times;</button>
         </div>
         <form method="POST" action="" class="modal-body">
+            <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
             <input type="hidden" name="action_type" value="update_settings">
             <div class="form-group">
                 <label>Business Phone Number</label>
@@ -380,13 +480,26 @@ $service_labels = [
             </div>
             <div class="form-group">
                 <label>WhatsApp Number (without +)</label>
-                <input type="text" name="site_wa" value="<?php echo htmlspecialchars(WHATSAPP); ?>" required>
+                <input type="text" name="site_wa" value="<?php echo e(ltrim(WHATSAPP, '+')); ?>" required>
             </div>
             <div class="form-group">
-                <label>Admin Notification Email</label>
+                <label>Business Email (shown on website + receives new-lead emails)</label>
                 <input type="email" name="site_email" value="<?php echo htmlspecialchars(EMAIL); ?>" required>
             </div>
             <button type="submit" class="btn-header btn-export" style="width: 100%; justify-content: center; padding: 12px; margin-top: 15px;">Save Changes</button>
+        </form>
+        <form method="POST" action="" class="modal-body" style="margin-top: 24px; border-top: 1px solid #233044; padding-top: 20px;">
+            <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
+            <input type="hidden" name="action_type" value="change_password">
+            <div class="form-group">
+                <label>New Admin Password (min. 10 characters)</label>
+                <input type="password" name="new_password" autocomplete="new-password" minlength="10" required>
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" name="confirm_password" autocomplete="new-password" minlength="10" required>
+            </div>
+            <button type="submit" class="btn-header btn-settings" style="width: 100%; justify-content: center; padding: 12px;">Change Password</button>
         </form>
     </div>
 </div>

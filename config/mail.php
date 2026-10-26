@@ -49,7 +49,8 @@ function sendContactEmails($name, $phone, $email, $service, $message, $lang = 'e
     $clean_phone = preg_replace('/[^+0-9]/', '', $phone);
     $wa_link = "https://wa.me/" . ltrim($clean_phone, '+');
     $brand_name = defined('SITE_NAME') ? SITE_NAME : 'Ahmad Fix';
-    $admin_email = defined('ADMIN_EMAIL') ? ADMIN_EMAIL : (defined('EMAIL') ? EMAIL : 'ahmadarian538@gmail.com');
+    // New-lead emails go to the business email set in the admin panel
+    $admin_email = defined('EMAIL') ? EMAIL : (defined('ADMIN_EMAIL') ? ADMIN_EMAIL : 'ahmadarian538@gmail.com');
 
     $logo_path = SITE_ROOT . '/assets/images/logo.png';
 
@@ -135,7 +136,7 @@ function sendContactEmails($name, $phone, $email, $service, $message, $lang = 'e
                                 </tr>
                                 <tr>
                                     <td style="padding: 10px 0; font-size: 13px; font-weight: 700; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: top;">Message</td>
-                                    <td style="padding: 10px 0; font-size: 14px; color: #2d3748; line-height: 1.6; vertical-align: top; white-space: pre-line;">" . (empty($message) ? '<em style="color:#aaa;">No additional notes</em>' : htmlspecialchars($message)) . "</td>
+                                    <td style="padding: 10px 0; font-size: 14px; color: #2d3748; line-height: 1.6; vertical-align: top; white-space: pre-line;">" . (empty($message) ? '<em style="color:#aaa;">No additional notes</em>' : htmlspecialchars($message, ENT_QUOTES, 'UTF-8', false)) . "</td>
                                 </tr>
                             </table>
                         </td>

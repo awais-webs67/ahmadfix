@@ -5,7 +5,7 @@
 ?>
 <!-- ====== Floating Action Buttons ====== -->
 <div class="floating-buttons">
-    <a href="https://wa.me/<?php echo formatPhone(WHATSAPP); ?>?text=<?php echo urlencode($lang === 'ar' ? 'مرحباً، أحتاج خدمة صيانة' : 'Hello, I need a repair service'); ?>" 
+    <a href="https://wa.me/<?php echo waNumber(); ?>?text=<?php echo urlencode($lang === 'ar' ? 'مرحباً، أحتاج خدمة صيانة' : 'Hello, I need a repair service'); ?>" 
        class="floating-btn floating-whatsapp" 
        target="_blank" 
        rel="noopener" 

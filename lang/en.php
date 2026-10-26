@@ -137,4 +137,46 @@ return [
     'related_services' => 'Related Services',
     'loading' => 'Loading...',
     'close' => 'Close',
+
+    // Contact form messages
+    'contact_form_required' => 'Please enter your name and phone number.',
+    'contact_form_bad_phone' => 'Please enter a valid Saudi phone number (e.g. 05XXXXXXXX).',
+    'contact_form_bad_email' => 'Please enter a valid email address, or leave it empty.',
+    'contact_form_token' => 'Your session expired. Please refresh the page and try again.',
+    'contact_form_too_many' => 'You have sent several messages already. Please call or WhatsApp us directly.',
+    'contact_form_network' => 'Network error. Please try again or call us directly.',
+    'contact_form_honeypot' => 'Leave this field empty',
+
+    // Service pages
+    'service_h1_suffix' => 'in %s',
+    'service_cities_title' => '%1$s in %2$s',
+    'service_cities_text' => 'We provide %1$s at homes, villas, apartments and offices in every district of %2$s. Pick your city to see the neighbourhoods we cover:',
+    'service_faq_cities_q' => 'Do you provide %1$s in %2$s?',
+    'service_faq_cities_a' => 'Yes. Our certified technicians provide %1$s in all districts of %2$s. Book before 2 PM and we will usually visit the same day.',
+    'service_card_alt' => '%1$s in %2$s',
+
+    // City (service area) pages
+    'area_link_label' => 'Appliance Repair in %s',
+    'areas_view_page' => 'Services in %s',
+    'area_services_title' => 'Our Services in %s',
+    'area_services_text' => 'Every service is available in every district of %s:',
+    'area_service_link' => '%1$s in %2$s',
+    'area_districts_title' => 'Areas We Cover in %s',
+    'area_districts_note' => 'Don’t see your district? We cover all of %s — just call or WhatsApp us.',
+    'area_why_title' => 'Why Customers in %s Choose Ahmad Fix',
+    'area_other_cities' => 'Other Cities We Serve',
+    'area_map_title' => 'Service area map: %s',
+    'area_book_text' => 'Call or WhatsApp now — a technician can visit you in %s today.',
+
+    // SEO for pages without a database row
+    'seo_title_privacy-policy' => 'Privacy Policy | Ahmad Fix',
+    'seo_desc_privacy-policy' => 'How Ahmad Fix collects, uses and protects the information you share when booking an appliance repair in Dammam, Al Khobar and Dhahran.',
+    'seo_title_terms' => 'Terms of Service | Ahmad Fix',
+    'seo_desc_terms' => 'The terms for booking home appliance repair and maintenance services with Ahmad Fix in the Eastern Province, Saudi Arabia.',
+    'seo_title_404' => 'Page Not Found | Ahmad Fix',
+
+    // 404
+    'not_found_title' => 'Page Not Found',
+    'not_found_text' => 'Sorry, the page you are looking for does not exist or has been moved. These pages may help:',
+    'last_updated' => 'Last updated',
 ];

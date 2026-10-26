@@ -2,6 +2,10 @@
 /**
  * Ahmad Fix — Database Configuration & Core Setup
  * Connects to the 'fixora' MySQL database via PDO
+ *
+ * IMPORTANT: passwords (database + email) are NOT stored in this file.
+ * Put them in config/config.local.php (copy config.local.example.php).
+ * That file is ignored by git, so it never becomes public.
  */
 
 // Prevent direct access
@@ -10,27 +14,48 @@ if (!defined('FIXORA_APP')) {
 }
 
 // ============================================
-// Database Configuration
+// Private settings (passwords) — loaded first so they win
 // ============================================
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'fixora');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_CHARSET', 'utf8mb4');
+if (file_exists(__DIR__ . '/config.local.php')) {
+    require_once __DIR__ . '/config.local.php';
+}
+
+/**
+ * Define a constant only if config.local.php did not already set it.
+ */
+function fixora_define($name, $value) {
+    if (!defined($name)) {
+        define($name, $value);
+    }
+}
+
+// ============================================
+// Database Configuration (override in config.local.php)
+// ============================================
+fixora_define('DB_HOST', 'localhost');
+fixora_define('DB_NAME', 'fixora');
+fixora_define('DB_USER', 'root');
+fixora_define('DB_PASS', '');
+fixora_define('DB_CHARSET', 'utf8mb4');
 
 // ============================================
 // Site Configuration
 // ============================================
-define('SITE_NAME', 'Ahmad Fix');
-define('SITE_DOMAIN', 'ahmadfix.com');
+fixora_define('SITE_NAME', 'Ahmad Fix');
+fixora_define('SITE_NAME_AR', 'أحمد فيكس');
+fixora_define('SITE_DOMAIN', 'ahmadfix.com');
 
 // Auto-detect protocol, host, and folder path for local/live server compatibility
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $script_dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 $folder = trim($script_dir, '/');
+// Admin pages and sitemap live in sub-folders / root files — always use the project root
+$folder = trim(preg_replace('#(^|/)admin$#', '', $folder), '/');
 
-if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+define('IS_LOCAL', strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false);
+
+if (IS_LOCAL) {
     define('SITE_URL', $protocol . $host . ($folder ? '/' . $folder : ''));
 } else {
     define('SITE_URL', 'https://' . SITE_DOMAIN);
@@ -38,24 +63,46 @@ if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false
 
 define('SITE_ROOT', dirname(__DIR__));
 define('ASSETS_URL', SITE_URL . '/assets');
+// Bump this when CSS/JS change so visitors get the new files (cache busting)
+define('ASSETS_VERSION', '2.0.1');
 
-// Contact Info & Admin Email
-define('PHONE', '+966 58 245 3440');
-define('WHATSAPP', '+966582453440');
-define('EMAIL', 'ahmadarian538@gmail.com');
-define('ADMIN_EMAIL', 'ahmadarian538@gmail.com');
+// Default contact info (the admin panel can change phone / WhatsApp / email — see below)
+fixora_define('DEFAULT_PHONE', '+966 58 245 3440');
+fixora_define('DEFAULT_WHATSAPP', '+966582453440');
+fixora_define('DEFAULT_EMAIL', 'ahmadarian538@gmail.com');
+fixora_define('ADMIN_EMAIL', 'ahmadarian538@gmail.com');
+
+// ============================================
+// Google & Social (fill these in — empty values are simply skipped)
+// ============================================
+// Google Analytics 4 Measurement ID, e.g. 'G-XXXXXXXXXX'
+fixora_define('GA4_ID', '');
+// Google Search Console "HTML tag" verification code (only the content="..." value)
+fixora_define('GOOGLE_SITE_VERIFICATION', '');
+// Bing Webmaster Tools verification code (optional)
+fixora_define('BING_SITE_VERIFICATION', '');
+// Your Google Business Profile link (share link from Google Maps), e.g. 'https://maps.app.goo.gl/xxxx'
+fixora_define('GOOGLE_BUSINESS_URL', '');
+// Social profiles (full URLs). Leave empty if you don't have one.
+fixora_define('SOCIAL_INSTAGRAM', '');
+fixora_define('SOCIAL_SNAPCHAT', '');
+fixora_define('SOCIAL_TIKTOK', '');
+fixora_define('SOCIAL_FACEBOOK', '');
+fixora_define('SOCIAL_X', '');
 
 // ============================================
 // SMTP Configuration for Email Notifications
+// Set SMTP_USER / SMTP_PASS in config.local.php (never here)
 // ============================================
-define('SMTP_ENABLED', true); // Set to true to send email notifications on contact submissions
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_SECURE', 'tls'); // 'tls' or 'ssl'
-define('SMTP_USER', 'ahmadarian538@gmail.com'); // Put your SMTP username here
-define('SMTP_PASS', 'fbrk uxzw fdnv jjag');   // Put your SMTP password/app-password here
-define('SMTP_FROM_EMAIL', 'ahmadarian538@gmail.com'); // From email for customer response
-define('SMTP_FROM_NAME', 'Ahmad Fix');
+fixora_define('SMTP_HOST', 'smtp.gmail.com');
+fixora_define('SMTP_PORT', 587);
+fixora_define('SMTP_SECURE', 'tls'); // 'tls' or 'ssl'
+fixora_define('SMTP_USER', '');
+fixora_define('SMTP_PASS', '');
+fixora_define('SMTP_FROM_EMAIL', SMTP_USER ?: DEFAULT_EMAIL);
+fixora_define('SMTP_FROM_NAME', 'Ahmad Fix');
+// Emails are sent only when a password has been configured
+fixora_define('SMTP_ENABLED', SMTP_USER !== '' && SMTP_PASS !== '');
 
 // ============================================
 // Database Connection (PDO)
@@ -73,13 +120,22 @@ try {
     $pdo->exec("SET CHARACTER SET utf8mb4");
 } catch (PDOException $e) {
     error_log("Database Connection Error: " . $e->getMessage());
+    http_response_code(503);
+    header('Retry-After: 600');
     die('<h1>Service Temporarily Unavailable</h1><p>Please try again later.</p>');
 }
 
 // ============================================
-// Session Management
+// Session Management (secure cookie settings)
 // ============================================
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => !IS_LOCAL,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 
@@ -117,9 +173,22 @@ if (file_exists($lang_file)) {
 }
 
 // ============================================
-// Load Helper Functions
+// Load Helper Functions + run one-time database upgrades
 // ============================================
 require_once SITE_ROOT . '/config/functions.php';
+require_once SITE_ROOT . '/config/migrations.php';
+runMigrations($pdo);
+
+// ============================================
+// Contact info: admin panel values (database) win over defaults
+// ============================================
+$__phone = trim(setting('phone', 'en'));
+$__wa    = trim(setting('whatsapp', 'en'));
+$__email = trim(setting('email', 'en'));
+define('PHONE', $__phone !== '' ? $__phone : DEFAULT_PHONE);
+define('WHATSAPP', $__wa !== '' ? $__wa : DEFAULT_WHATSAPP);
+define('EMAIL', ($__email !== '' && filter_var($__email, FILTER_VALIDATE_EMAIL)) ? $__email : DEFAULT_EMAIL);
+unset($__phone, $__wa, $__email);
 
 // ============================================
 // CSRF Token

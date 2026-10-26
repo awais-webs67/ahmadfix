@@ -137,4 +137,46 @@ return [
     'related_services' => 'خدمات ذات صلة',
     'loading' => 'جاري التحميل...',
     'close' => 'إغلاق',
+
+    // Contact form messages
+    'contact_form_required' => 'يرجى إدخال الاسم ورقم الجوال.',
+    'contact_form_bad_phone' => 'يرجى إدخال رقم جوال سعودي صحيح (مثال: 05XXXXXXXX).',
+    'contact_form_bad_email' => 'يرجى إدخال بريد إلكتروني صحيح أو تركه فارغاً.',
+    'contact_form_token' => 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.',
+    'contact_form_too_many' => 'لقد أرسلت عدة رسائل بالفعل. يرجى الاتصال بنا أو مراسلتنا واتساب مباشرة.',
+    'contact_form_network' => 'خطأ في الشبكة. يرجى المحاولة مرة أخرى أو الاتصال بنا مباشرة.',
+    'contact_form_honeypot' => 'اترك هذا الحقل فارغاً',
+
+    // Service pages
+    'service_h1_suffix' => 'في %s',
+    'service_cities_title' => '%1$s في %2$s',
+    'service_cities_text' => 'نقدم خدمة %1$s للمنازل والفلل والشقق والمكاتب في جميع أحياء %2$s. اختر مدينتك لمعرفة الأحياء التي نغطيها:',
+    'service_faq_cities_q' => 'هل تقدمون %1$s في %2$s؟',
+    'service_faq_cities_a' => 'نعم. يقدم فنيونا المعتمدون %1$s في جميع أحياء %2$s. احجز قبل الساعة 2 ظهراً وغالباً نزورك في نفس اليوم.',
+    'service_card_alt' => '%1$s في %2$s',
+
+    // City (service area) pages
+    'area_link_label' => 'صيانة أجهزة في %s',
+    'areas_view_page' => 'خدماتنا في %s',
+    'area_services_title' => 'خدماتنا في %s',
+    'area_services_text' => 'جميع خدماتنا متوفرة في كل أحياء %s:',
+    'area_service_link' => '%1$s في %2$s',
+    'area_districts_title' => 'الأحياء التي نغطيها في %s',
+    'area_districts_note' => 'لم تجد حيّك؟ نغطي جميع أنحاء %s — فقط اتصل بنا أو راسلنا واتساب.',
+    'area_why_title' => 'لماذا يختار عملاء %s أحمد فيكس',
+    'area_other_cities' => 'مدن أخرى نخدمها',
+    'area_map_title' => 'خريطة منطقة الخدمة: %s',
+    'area_book_text' => 'اتصل أو راسلنا واتساب الآن — يمكن لفني زيارتك في %s اليوم.',
+
+    // SEO for pages without a database row
+    'seo_title_privacy-policy' => 'سياسة الخصوصية | أحمد فيكس',
+    'seo_desc_privacy-policy' => 'كيف يجمع أحمد فيكس المعلومات التي تشاركها عند حجز صيانة الأجهزة في الدمام والخبر والظهران وكيف يستخدمها ويحميها.',
+    'seo_title_terms' => 'شروط الخدمة | أحمد فيكس',
+    'seo_desc_terms' => 'شروط حجز خدمات صيانة وإصلاح الأجهزة المنزلية مع أحمد فيكس في المنطقة الشرقية بالمملكة العربية السعودية.',
+    'seo_title_404' => 'الصفحة غير موجودة | أحمد فيكس',
+
+    // 404
+    'not_found_title' => 'الصفحة غير موجودة',
+    'not_found_text' => 'عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها. قد تساعدك هذه الصفحات:',
+    'last_updated' => 'آخر تحديث',
 ];

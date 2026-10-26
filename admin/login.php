@@ -11,16 +11,51 @@ require_once dirname(__DIR__) . '/config/config.php';
 
 $error = '';
 
+// The placeholder password hash from database/setup.sql. It only works with the
+// default password, and you are forced to choose a new password right after login.
+const ADMIN_SEED_HASH = '$2y$10$8K1p/a0dN1xR0k5v8gqXZuPjY3VkVx0L5M4r7XwKjN2yF9FZ3dHCi';
+const ADMIN_SEED_PASSWORD = 'ahmadfix2024';
+const LOGIN_MAX_ATTEMPTS = 5;      // failed tries allowed...
+const LOGIN_WINDOW_MINUTES = 15;   // ...within this many minutes
+
+header('X-Robots-Tag: noindex, nofollow');
+
 if (!empty($_SESSION['admin_logged_in'])) {
     header('Location: ' . SITE_URL . '/admin/index');
     exit;
 }
 
+$ip = substr($_SERVER['REMOTE_ADDR'] ?? 'unknown', 0, 45);
+
+function tooManyLoginAttempts(PDO $pdo, $ip) {
+    try {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip_address = :ip AND attempted_at > (NOW() - INTERVAL " . LOGIN_WINDOW_MINUTES . " MINUTE)");
+        $stmt->execute([':ip' => $ip]);
+        return (int)$stmt->fetchColumn() >= LOGIN_MAX_ATTEMPTS;
+    } catch (PDOException $e) {
+        return false;
+    }
+}
+
+function recordFailedLogin(PDO $pdo, $ip) {
+    try {
+        $pdo->prepare("INSERT INTO login_attempts (ip_address) VALUES (:ip)")->execute([':ip' => $ip]);
+        // Housekeeping: forget attempts older than a day
+        $pdo->exec("DELETE FROM login_attempts WHERE attempted_at < (NOW() - INTERVAL 1 DAY)");
+    } catch (PDOException $e) {
+        error_log('Login attempt logging failed: ' . $e->getMessage());
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
+    $password = (string)($_POST['password'] ?? '');
 
-    if (empty($username) || empty($password)) {
+    if (!validateCSRF($_POST['csrf_token'] ?? '')) {
+        $error = 'Your session expired. Please try again.';
+    } elseif (tooManyLoginAttempts($pdo, $ip)) {
+        $error = 'Too many failed attempts. Please wait ' . LOGIN_WINDOW_MINUTES . ' minutes and try again.';
+    } elseif ($username === '' || $password === '') {
         $error = 'Please enter both username and password.';
     } else {
         try {
@@ -28,29 +63,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([':username' => $username]);
             $admin = $stmt->fetch();
 
-            if ($admin && (password_verify($password, $admin['password']) || $password === 'admin' || $password === 'admin123' || $password === 'ahmadfix2024')) {
+            $ok = false;
+            $must_change = false;
+            if ($admin) {
+                if (password_verify($password, $admin['password'])) {
+                    $ok = true;
+                } elseif (hash_equals(ADMIN_SEED_HASH, $admin['password']) && hash_equals(ADMIN_SEED_PASSWORD, $password)) {
+                    // First login with the default password → must set a new one
+                    $ok = true;
+                    $must_change = true;
+                }
+            }
+
+            if ($ok) {
+                session_regenerate_id(true);
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_id'] = $admin['id'];
                 $_SESSION['admin_name'] = $admin['full_name'] ?: $admin['username'];
-                
-                // Update last login
+                $_SESSION['must_change_password'] = $must_change;
+
                 $pdo->prepare("UPDATE admins SET last_login = NOW() WHERE id = :id")->execute([':id' => $admin['id']]);
+                $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = :ip")->execute([':ip' => $ip]);
 
                 header('Location: ' . SITE_URL . '/admin/index');
                 exit;
-            } else {
-                $error = 'Invalid username or password.';
             }
+
+            recordFailedLogin($pdo, $ip);
+            $error = 'Invalid username or password.';
         } catch (PDOException $e) {
-            // Fallback for initial setup if table doesn't exist yet
-            if (($username === 'admin' && ($password === 'admin' || $password === 'admin123' || $password === 'ahmadfix2024'))) {
-                $_SESSION['admin_logged_in'] = true;
-                $_SESSION['admin_name'] = 'Ahmad Fix Admin';
-                header('Location: ' . SITE_URL . '/admin/index');
-                exit;
-            } else {
-                $error = 'Invalid credentials or database connection issue.';
-            }
+            error_log('Admin login error: ' . $e->getMessage());
+            $error = 'Login is temporarily unavailable. Please try again later.';
         }
     }
 }
@@ -60,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Admin Login — Ahmad Fix</title>
     <link rel="icon" type="image/png" href="<?php echo ASSETS_URL; ?>/images/favicon.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
@@ -95,13 +139,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST" action="">
+        <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="admin" required autofocus>
+            <input type="text" id="username" name="username" placeholder="admin" autocomplete="username" required autofocus>
         </div>
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
         </div>
         <button type="submit" class="btn-submit">Sign In to Dashboard</button>
     </form>
