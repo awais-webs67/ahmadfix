@@ -16,7 +16,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv' && empty($_SESSION['must
     // Output UTF-8 BOM for Excel Arabic support
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
     
-    fputcsv($output, ['Lead ID', 'Customer Name', 'Phone Number', 'Email', 'Service Requested', 'Customer Message', 'Status', 'Submitted Date']);
+    fputcsv($output, ['Lead ID', 'Customer Name', 'Phone Number', 'Email', 'Service Requested', 'City', 'Address', 'Preferred Date', 'Preferred Time', 'Customer Message', 'Status', 'Notes', 'Submitted Date']);
     
     // Decode stored HTML entities and stop Excel from running cells that start with = + - @
     $csv = function ($v) {
@@ -32,9 +32,14 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv' && empty($_SESSION['must
             $row['customer_name'],
             $row['phone'],
             $row['email'] ?: 'Not Provided',
-            $row['service_requested'],
+            serviceLabel($row['service_requested'], 'en'),
+            $row['city'] ?? '',
+            $row['address'] ?? '',
+            $row['preferred_date'] ?? '',
+            $row['preferred_time'] ?? '',
             $row['message'],
             strtoupper($row['status'] ?? ($row['is_read'] ? 'read' : 'new')),
+            $row['notes'] ?? '',
             $row['submitted_at']
         ]);
     }
@@ -53,22 +58,6 @@ $allowed_statuses = ['new', 'contacted', 'completed', 'cancelled'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_type'])) {
     if (!validateCSRF($_POST['csrf_token'] ?? '')) {
         $msg = 'Security check failed. Please try again.';
-        $msg_type = 'warning';
-    } elseif ($_POST['action_type'] === 'update_settings') {
-        $new_phone = trim($_POST['site_phone'] ?? '');
-        $new_wa = preg_replace('/[^0-9]/', '', $_POST['site_wa'] ?? '');
-        $new_email = trim($_POST['site_email'] ?? '');
-
-        if ($new_phone !== '' && $new_wa !== '' && filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
-            $upd = $pdo->prepare("UPDATE site_settings SET setting_value_en = :val_en, setting_value_ar = :val_ar WHERE setting_key = :k");
-            foreach (['phone' => $new_phone, 'whatsapp' => '+' . $new_wa, 'email' => $new_email] as $k => $v) {
-                $upd->execute([':val_en' => $v, ':val_ar' => $v, ':k' => $k]);
-            }
-            $_SESSION['flash'] = ['Site contact settings updated successfully!', 'success'];
-            header('Location: ' . SITE_URL . '/admin/index');
-            exit;
-        }
-        $msg = 'Please enter a phone number, a WhatsApp number and a valid email.';
         $msg_type = 'warning';
     } elseif ($_POST['action_type'] === 'change_password') {
         $new_pass = (string)($_POST['new_password'] ?? '');
@@ -315,13 +304,14 @@ $service_labels = [
 
 <header>
     <a href="<?php echo SITE_URL; ?>" class="brand" target="_blank">
-        <img src="<?php echo ASSETS_URL; ?>/images/logo-header.png" alt="Ahmad Fix">
-        <h1>Ahmad Fix Enterprise</h1>
+        <img src="<?php echo ASSETS_URL; ?>/images/logo-header.png" alt="<?php echo e(SITE_NAME); ?>" style="background:#fff;border-radius:6px;padding:3px 6px;">
+        <h1><?php echo e(SITE_NAME); ?> Admin</h1>
     </a>
     <div class="user-nav">
         <span class="user-name">👤 <?php echo htmlspecialchars($_SESSION['admin_name'] ?? 'Admin'); ?></span>
+        <a href="<?php echo SITE_URL; ?>/admin/emails" class="btn-header btn-settings">✉️ Emails</a>
         <a href="<?php echo SITE_URL; ?>/admin/reviews" class="btn-header btn-settings">⭐ Reviews</a>
-        <button onclick="document.getElementById('settingsModal').style.display='flex';" class="btn-header btn-settings">⚙️ Site Settings</button>
+        <a href="<?php echo SITE_URL; ?>/admin/settings" class="btn-header btn-settings">⚙️ Settings</a>
         <a href="?export=csv" class="btn-header btn-export">📥 Export CSV</a>
         <a href="<?php echo SITE_URL; ?>/admin/logout" class="btn-header btn-logout">Sign Out</a>
     </div>
@@ -406,17 +396,17 @@ $service_labels = [
                             $clean_phone = preg_replace('/[^+0-9]/', '', $sub['phone']);
                             $cust_name = e($sub['customer_name']);
                             $svc_key = strtolower($sub['service_requested']);
-                            $svc_name = $service_labels[$svc_key] ?? $sub['service_requested'] ?: 'General Inquiry';
+                            $svc_name = serviceLabel($svc_key, 'en');
                             $curr_status = $sub['status'] ?? ($sub['is_read'] ? 'contacted' : 'new');
                             
                             // Pre-fill WhatsApp greeting message
-                            $wa_msg = rawurlencode("Hello " . html_entity_decode($cust_name, ENT_QUOTES, 'UTF-8') . ", thank you for reaching out to Ahmad Fix! We received your request for {$svc_name}. Our technician is ready to assist you.");
-                            $wa_url = "https://wa.me/" . ltrim($clean_phone, '+') . "?text=" . $wa_msg;
+                            $wa_msg = rawurlencode("Hello " . html_entity_decode($cust_name, ENT_QUOTES, 'UTF-8') . ", thank you for reaching out to " . SITE_NAME . "! We received your request for {$svc_name}. Our technician is ready to assist you.");
+                            $wa_url = "https://wa.me/" . customerWhatsApp($sub['phone']) . "?text=" . $wa_msg;
                         ?>
                             <tr class="<?php echo ($curr_status === 'new') ? 'unread' : ''; ?>">
                                 <td><strong>#<?php echo $sub['id']; ?></strong></td>
                                 <td>
-                                    <strong style="color: #fff; font-size: 15px;"><?php echo $cust_name; ?></strong>
+                                    <a href="<?php echo SITE_URL; ?>/admin/lead?id=<?php echo (int)$sub['id']; ?>" style="color: #fff; font-size: 15px; font-weight: 700; text-decoration: none;"><?php echo $cust_name; ?></a>
                                     <?php if (!empty($sub['email'])): ?>
                                         <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;"><?php echo e($sub['email']); ?></div>
                                     <?php endif; ?>
@@ -430,6 +420,12 @@ $service_labels = [
                                     <span style="background: rgba(255, 122, 0, 0.12); color: #ff7a00; font-weight: 700; padding: 5px 10px; border-radius: 6px; font-size: 12px;">
                                         <?php echo e($svc_name); ?>
                                     </span>
+                                    <?php if (!empty($sub['city']) || !empty($sub['preferred_date'])): ?>
+                                    <div style="font-size: 12px; color: #94a3b8; margin-top: 8px; line-height: 1.6;">
+                                        <?php if (!empty($sub['city'])): ?>📍 <?php echo e($sub['city']); ?><br><?php endif; ?>
+                                        <?php if (!empty($sub['preferred_date'])): ?>🗓️ <?php echo e(date('D j M', strtotime($sub['preferred_date']))); ?><?php echo !empty($sub['preferred_time']) ? ' · ' . e(ucfirst($sub['preferred_time'])) : ''; ?><?php endif; ?>
+                                    </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <div style="color: #cbd5e1; font-size: 13px; max-width: 250px; word-break: break-word;">
@@ -457,6 +453,7 @@ $service_labels = [
                                 </td>
                                 <td>
                                     <div class="actions">
+                                        <a href="<?php echo SITE_URL; ?>/admin/lead?id=<?php echo (int)$sub['id']; ?>" class="btn-act btn-call" title="Open lead, reply by email">👁️ View / Reply</a>
                                         <a href="<?php echo e($wa_url); ?>" target="_blank" rel="noopener" class="btn-act btn-wa" title="Reply on WhatsApp with pre-filled greeting">💬 WhatsApp</a>
                                         <a href="tel:<?php echo $clean_phone; ?>" class="btn-act btn-call" title="Call Customer">📞 Call</a>
                                         <form method="POST" action="" class="inline-form" onsubmit="return confirm('Delete lead #<?php echo (int)$sub['id']; ?>?');">
@@ -477,46 +474,6 @@ $service_labels = [
         </div>
     </div>
 
-</div>
-
-<!-- Quick Settings Modal -->
-<div class="modal-overlay" id="settingsModal">
-    <div class="modal-card">
-        <div class="modal-header">
-            <h3>⚙️ Site Contact Settings</h3>
-            <button class="modal-close" onclick="document.getElementById('settingsModal').style.display='none';">&times;</button>
-        </div>
-        <form method="POST" action="" class="modal-body">
-            <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
-            <input type="hidden" name="action_type" value="update_settings">
-            <div class="form-group">
-                <label>Business Phone Number</label>
-                <input type="text" name="site_phone" value="<?php echo htmlspecialchars(PHONE); ?>" required>
-            </div>
-            <div class="form-group">
-                <label>WhatsApp Number (without +)</label>
-                <input type="text" name="site_wa" value="<?php echo e(ltrim(WHATSAPP, '+')); ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Business Email (shown on website + receives new-lead emails)</label>
-                <input type="email" name="site_email" value="<?php echo htmlspecialchars(EMAIL); ?>" required>
-            </div>
-            <button type="submit" class="btn-header btn-export" style="width: 100%; justify-content: center; padding: 12px; margin-top: 15px;">Save Changes</button>
-        </form>
-        <form method="POST" action="" class="modal-body" style="margin-top: 24px; border-top: 1px solid #233044; padding-top: 20px;">
-            <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
-            <input type="hidden" name="action_type" value="change_password">
-            <div class="form-group">
-                <label>New Admin Password (min. 10 characters)</label>
-                <input type="password" name="new_password" autocomplete="new-password" minlength="10" required>
-            </div>
-            <div class="form-group">
-                <label>Confirm New Password</label>
-                <input type="password" name="confirm_password" autocomplete="new-password" minlength="10" required>
-            </div>
-            <button type="submit" class="btn-header btn-settings" style="width: 100%; justify-content: center; padding: 12px;">Change Password</button>
-        </form>
-    </div>
 </div>
 
 </body>

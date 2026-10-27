@@ -1,7 +1,12 @@
 <?php
 /**
- * Ahmad Fix — Contact Page
+ * Ahmad Fix — Contact / Booking Page
+ * ?service=ac|fridge|washer|oven and ?city=dammam|khobar|dhahran pre-fill the form
  */
+$pre_service = in_array($_GET['service'] ?? '', ['ac', 'fridge', 'washer', 'oven', 'other'], true) ? $_GET['service'] : '';
+$pre_city = isset(getAreas()[$_GET['city'] ?? '']) ? $_GET['city'] : '';
+$min_date = date('Y-m-d');
+$max_date = date('Y-m-d', strtotime('+3 months'));
 ?>
 
 <!-- ====== Page Header ====== -->
@@ -24,8 +29,9 @@
             <!-- Contact Form -->
             <div class="contact-form reveal-left" id="contact-section">
                 <h2 style="font-size: var(--text-2xl); font-weight: 800; margin-bottom: var(--space-6);">
-                    <?php echo $lang === 'ar' ? 'أرسل لنا رسالة' : 'Send Us a Message'; ?>
+                    <?php echo __('contact_form_heading'); ?>
                 </h2>
+                <p class="contact-form-note"><?php echo __('contact_form_note'); ?></p>
                 
                 <div class="form-message" id="form-message"></div>
                 
@@ -57,12 +63,44 @@
                         <label for="contact-service"><?php echo __('contact_form_service'); ?></label>
                         <select id="contact-service" name="service" class="form-control">
                             <option value=""><?php echo $lang === 'ar' ? '— اختر الخدمة —' : '— Select a Service —'; ?></option>
-                            <option value="ac"><?php echo __('contact_select_ac'); ?></option>
-                            <option value="fridge"><?php echo __('contact_select_fridge'); ?></option>
-                            <option value="washer"><?php echo __('contact_select_washer'); ?></option>
-                            <option value="oven"><?php echo __('contact_select_oven'); ?></option>
-                            <option value="other"><?php echo __('contact_select_other'); ?></option>
+                            <option value="ac" <?php echo $pre_service === 'ac' ? 'selected' : ''; ?>><?php echo __('contact_select_ac'); ?></option>
+                            <option value="fridge" <?php echo $pre_service === 'fridge' ? 'selected' : ''; ?>><?php echo __('contact_select_fridge'); ?></option>
+                            <option value="washer" <?php echo $pre_service === 'washer' ? 'selected' : ''; ?>><?php echo __('contact_select_washer'); ?></option>
+                            <option value="oven" <?php echo $pre_service === 'oven' ? 'selected' : ''; ?>><?php echo __('contact_select_oven'); ?></option>
+                            <option value="other" <?php echo $pre_service === 'other' ? 'selected' : ''; ?>><?php echo __('contact_select_other'); ?></option>
                         </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-city"><?php echo __('contact_form_city'); ?></label>
+                            <select id="contact-city" name="city" class="form-control">
+                                <option value=""><?php echo __('contact_form_city_select'); ?></option>
+                                <?php foreach (getAreas() as $city_key => $city_row): ?>
+                                <option value="<?php echo e($city_key); ?>" <?php echo $pre_city === $city_key ? 'selected' : ''; ?>><?php echo e($city_row['name_' . $lang]); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-address"><?php echo __('contact_form_address'); ?></label>
+                            <input type="text" id="contact-address" name="address" class="form-control" autocomplete="street-address" maxlength="255" placeholder="<?php echo e(__('contact_form_address_ph')); ?>">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-date"><?php echo __('contact_form_date'); ?></label>
+                            <input type="date" id="contact-date" name="preferred_date" class="form-control" min="<?php echo $min_date; ?>" max="<?php echo $max_date; ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-time"><?php echo __('contact_form_time'); ?></label>
+                            <select id="contact-time" name="preferred_time" class="form-control">
+                                <option value=""><?php echo __('contact_form_time_any'); ?></option>
+                                <option value="morning"><?php echo __('time_morning'); ?></option>
+                                <option value="afternoon"><?php echo __('time_afternoon'); ?></option>
+                                <option value="evening"><?php echo __('time_evening'); ?></option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="form-group">

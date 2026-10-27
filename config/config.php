@@ -1,10 +1,13 @@
 <?php
 /**
- * Ahmad Fix — Database Configuration & Core Setup
- * Connects to the 'fixora' MySQL database via PDO
+ * Ahmad Fix — Core Setup
  *
- * IMPORTANT: passwords (database + email) are NOT stored in this file.
- * Put them in config/config.local.php (copy config.local.example.php).
+ * Nothing about the business is written here: name, website address, phone,
+ * email, SMTP, Google codes, social links etc. are all edited in
+ * Admin → Settings and stored in the database.
+ *
+ * The ONLY thing this file needs is how to reach the database. Put your real
+ * database login in config/config.local.php (copy config.local.example.php).
  * That file is ignored by git, so it never becomes public.
  */
 
@@ -14,7 +17,7 @@ if (!defined('FIXORA_APP')) {
 }
 
 // ============================================
-// Private settings (passwords) — loaded first so they win
+// Private settings (database login) — loaded first so they win
 // ============================================
 if (file_exists(__DIR__ . '/config.local.php')) {
     require_once __DIR__ . '/config.local.php';
@@ -30,7 +33,7 @@ function fixora_define($name, $value) {
 }
 
 // ============================================
-// Database Configuration (override in config.local.php)
+// Database (defaults suit XAMPP/WAMP; override in config.local.php)
 // ============================================
 fixora_define('DB_HOST', 'localhost');
 fixora_define('DB_NAME', 'fixora');
@@ -38,22 +41,25 @@ fixora_define('DB_USER', 'root');
 fixora_define('DB_PASS', '');
 fixora_define('DB_CHARSET', 'utf8mb4');
 
-// ============================================
-// Site Configuration
-// ============================================
-fixora_define('SITE_NAME', 'Ahmad Fix');
-fixora_define('SITE_NAME_AR', 'أحمد فيكس');
-fixora_define('SITE_DOMAIN', 'ahmadfix.com');
+define('SITE_ROOT', dirname(__DIR__));
+// Bump this when CSS/JS change so visitors get the new files (cache busting)
+define('ASSETS_VERSION', '2.2.0');
 
-// Auto-detect protocol, host, and folder path for local/live server compatibility
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+// ============================================
+// Who is asking? (host, https, local or live)
+// ============================================
+$host = strtolower($_SERVER['HTTP_HOST'] ?? 'localhost');
+$host = preg_replace('/[^a-z0-9.\-:\[\]]/', '', $host); // never trust odd characters in Host
+$is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+    || (($_SERVER['SERVER_PORT'] ?? '') == 443);
 $script_dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
-$folder = trim($script_dir, '/');
-// Admin pages and sitemap live in sub-folders / root files — always use the project root
-$folder = trim(preg_replace('#(^|/)admin$#', '', $folder), '/');
+// Admin pages live in a sub-folder — always use the project root
+$folder = trim(preg_replace('#(^|/)admin$#', '', trim($script_dir, '/')), '/');
 
-define('IS_LOCAL', strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false);
+define('IS_LOCAL', (bool)preg_match('/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/', $host));
+define('IS_HTTPS', $is_https);
+define('IS_ADMIN_REQUEST', str_starts_with(trim($_GET['route'] ?? '', '/'), 'admin') || str_contains($script_dir, '/admin'));
 
 // Live site: never show PHP errors to visitors (they are written to the server error log instead)
 if (!IS_LOCAL) {
@@ -62,54 +68,8 @@ if (!IS_LOCAL) {
     error_reporting(E_ALL);
 }
 
-if (IS_LOCAL) {
-    define('SITE_URL', $protocol . $host . ($folder ? '/' . $folder : ''));
-} else {
-    define('SITE_URL', 'https://' . SITE_DOMAIN);
-}
-
-define('SITE_ROOT', dirname(__DIR__));
-define('ASSETS_URL', SITE_URL . '/assets');
-// Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.1.1');
-
-// Default contact info (the admin panel can change phone / WhatsApp / email — see below)
-fixora_define('DEFAULT_PHONE', '+966 58 245 3440');
-fixora_define('DEFAULT_WHATSAPP', '+966582453440');
-fixora_define('DEFAULT_EMAIL', 'ahmadarian538@gmail.com');
-fixora_define('ADMIN_EMAIL', 'ahmadarian538@gmail.com');
-
-// ============================================
-// Google & Social (fill these in — empty values are simply skipped)
-// ============================================
-// Google Analytics 4 Measurement ID, e.g. 'G-XXXXXXXXXX'
-fixora_define('GA4_ID', '');
-// Google Search Console "HTML tag" verification code (only the content="..." value)
-fixora_define('GOOGLE_SITE_VERIFICATION', '');
-// Bing Webmaster Tools verification code (optional)
-fixora_define('BING_SITE_VERIFICATION', '');
-// Your Google Business Profile link (share link from Google Maps), e.g. 'https://maps.app.goo.gl/xxxx'
-fixora_define('GOOGLE_BUSINESS_URL', '');
-// Social profiles (full URLs). Leave empty if you don't have one.
-fixora_define('SOCIAL_INSTAGRAM', '');
-fixora_define('SOCIAL_SNAPCHAT', '');
-fixora_define('SOCIAL_TIKTOK', '');
-fixora_define('SOCIAL_FACEBOOK', '');
-fixora_define('SOCIAL_X', '');
-
-// ============================================
-// SMTP Configuration for Email Notifications
-// Set SMTP_USER / SMTP_PASS in config.local.php (never here)
-// ============================================
-fixora_define('SMTP_HOST', 'smtp.gmail.com');
-fixora_define('SMTP_PORT', 587);
-fixora_define('SMTP_SECURE', 'tls'); // 'tls' or 'ssl'
-fixora_define('SMTP_USER', '');
-fixora_define('SMTP_PASS', '');
-fixora_define('SMTP_FROM_EMAIL', SMTP_USER ?: DEFAULT_EMAIL);
-fixora_define('SMTP_FROM_NAME', 'Ahmad Fix');
-// Emails are sent only when a password has been configured
-fixora_define('SMTP_ENABLED', SMTP_USER !== '' && SMTP_PASS !== '');
+// The address this request came in on (used when no website address is saved yet)
+define('REQUEST_BASE_URL', ($is_https ? 'https://' : 'http://') . $host . ($folder ? '/' . $folder : ''));
 
 // ============================================
 // Database Connection (PDO)
@@ -139,7 +99,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',
-        'secure'   => !IS_LOCAL,
+        'secure'   => IS_HTTPS,
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
@@ -187,15 +147,33 @@ require_once SITE_ROOT . '/config/migrations.php';
 runMigrations($pdo);
 
 // ============================================
-// Contact info: admin panel values (database) win over defaults
+// Website address (Admin → Settings → Business → Website address)
 // ============================================
-$__phone = trim(setting('phone', 'en'));
-$__wa    = trim(setting('whatsapp', 'en'));
+$__site_url = rtrim(trim(setting('site_url', 'en')), '/');
+if (defined('SITE_URL_OVERRIDE')) {
+    $__site_url = rtrim(SITE_URL_OVERRIDE, '/');        // emergency override from config.local.php
+}
+$__valid = $__site_url !== '' && filter_var($__site_url, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $__site_url);
+
+// Local testing and the admin panel always use the address in the browser,
+// so a wrong saved address can never lock you out of the admin panel.
+define('SITE_URL_CONFIGURED', $__valid && !IS_LOCAL);
+define('SITE_URL', (SITE_URL_CONFIGURED && !IS_ADMIN_REQUEST) ? $__site_url : REQUEST_BASE_URL);
+define('SITE_DOMAIN', parse_url($__valid ? $__site_url : REQUEST_BASE_URL, PHP_URL_HOST) ?: $host);
+define('ASSETS_URL', SITE_URL . '/assets');
+unset($__site_url, $__valid);
+
+// ============================================
+// Business details (all from Admin → Settings)
+// ============================================
+$__schema = settingsSchema();
+fixora_define('SITE_NAME', trim(setting('site_name', 'en')) ?: $__schema['business']['fields']['site_name']['default'][0]);
+fixora_define('SITE_NAME_AR', trim(setting('site_name', 'ar')) ?: SITE_NAME);
+define('PHONE', trim(setting('phone', 'en')) ?: $__schema['business']['fields']['phone']['default']);
+define('WHATSAPP', trim(setting('whatsapp', 'en')) ?: PHONE);
 $__email = trim(setting('email', 'en'));
-define('PHONE', $__phone !== '' ? $__phone : DEFAULT_PHONE);
-define('WHATSAPP', $__wa !== '' ? $__wa : DEFAULT_WHATSAPP);
-define('EMAIL', ($__email !== '' && filter_var($__email, FILTER_VALIDATE_EMAIL)) ? $__email : DEFAULT_EMAIL);
-unset($__phone, $__wa, $__email);
+define('EMAIL', filter_var($__email, FILTER_VALIDATE_EMAIL) ? $__email : $__schema['business']['fields']['email']['default']);
+unset($__schema, $__email);
 
 // ============================================
 // CSRF Token

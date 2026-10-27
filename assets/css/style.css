@@ -1420,3 +1420,9 @@ main, footer { overflow-x: clip; }
 
 /* Inactive language button: readable grey */
 .lang-btn:not(.active) { color: var(--gray-600); }
+
+/* Contact / booking form: two fields side by side on wider screens */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.contact-form-note { font-size: var(--text-sm); color: var(--gray-600); margin: -14px 0 20px; line-height: 1.6; }
+input[type="date"].form-control { min-height: 46px; }
+@media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }

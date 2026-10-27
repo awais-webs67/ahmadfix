@@ -11,7 +11,7 @@ if (!defined('FIXORA_APP')) {
     die('Direct access not allowed.');
 }
 
-define('SCHEMA_VERSION', 2);
+define('SCHEMA_VERSION', 3);
 
 /**
  * Old service URLs → new city-neutral URLs (every service is offered in every city).
@@ -131,7 +131,94 @@ function runMigrations(PDO $pdo) {
         // 6. Email setting: the seed value was never shown on the site — keep showing the real one
         'email_setting' => function (PDO $pdo) {
             $stmt = $pdo->prepare("UPDATE site_settings SET setting_value_en = :new_en, setting_value_ar = :new_ar WHERE setting_key = 'email' AND setting_value_en = :old");
-            $stmt->execute([':new_en' => DEFAULT_EMAIL, ':new_ar' => DEFAULT_EMAIL, ':old' => 'abubakerjamal573@gmail.com']);
+            $real = settingsSchema()['business']['fields']['email']['default'];
+            $stmt->execute([':new_en' => $real, ':new_ar' => $real, ':old' => 'abubakerjamal573@gmail.com']);
+        },
+
+        // ---------------- Version 3 ----------------
+
+        // 7. Booking details + language + notes on each lead
+        'lead_booking_columns' => function (PDO $pdo) {
+            $cols = [
+                'city'           => "VARCHAR(60) NULL AFTER service_requested",
+                'address'        => "VARCHAR(255) NULL AFTER city",
+                'preferred_date' => "DATE NULL AFTER address",
+                'preferred_time' => "VARCHAR(30) NULL AFTER preferred_date",
+                'lang'           => "CHAR(2) NOT NULL DEFAULT 'en' AFTER message",
+                'notes'          => "TEXT NULL AFTER status",
+                'ip_address'     => "VARCHAR(45) NULL AFTER notes",
+            ];
+            foreach ($cols as $col => $def) {
+                if (!columnExists($pdo, 'contact_submissions', $col)) {
+                    $pdo->exec("ALTER TABLE contact_submissions ADD COLUMN {$col} {$def}");
+                }
+            }
+        },
+
+        // 8. History of every email the website sends
+        'email_log_table' => function (PDO $pdo) {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS email_log (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                lead_id INT NULL,
+                type VARCHAR(30) NOT NULL DEFAULT 'compose',
+                to_email VARCHAR(190) NOT NULL,
+                to_name VARCHAR(100) NULL,
+                subject VARCHAR(255) NOT NULL,
+                message TEXT NULL,
+                status VARCHAR(10) NOT NULL DEFAULT 'sent',
+                error VARCHAR(500) NULL,
+                sent_by VARCHAR(100) NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_lead (lead_id),
+                INDEX idx_created (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        },
+
+        // 9. Copy every admin-editable setting into the database (existing values are kept)
+        'settings_defaults' => function (PDO $pdo) {
+            $schema = settingsSchema();
+            $ins = $pdo->prepare("INSERT IGNORE INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
+                                  VALUES (:k, :en, :ar, :t, :g)");
+            // Values that used to live in config.php / config.local.php move into the database
+            $from_constants = [
+                'ga4_id' => 'GA4_ID', 'google_site_verification' => 'GOOGLE_SITE_VERIFICATION', 'bing_site_verification' => 'BING_SITE_VERIFICATION',
+                'google_business_url' => 'GOOGLE_BUSINESS_URL', 'social_instagram' => 'SOCIAL_INSTAGRAM', 'social_snapchat' => 'SOCIAL_SNAPCHAT',
+                'social_tiktok' => 'SOCIAL_TIKTOK', 'social_facebook' => 'SOCIAL_FACEBOOK', 'social_x' => 'SOCIAL_X',
+                'smtp_host' => 'SMTP_HOST', 'smtp_port' => 'SMTP_PORT', 'smtp_secure' => 'SMTP_SECURE', 'smtp_user' => 'SMTP_USER',
+                'smtp_from_name' => 'SMTP_FROM_NAME',
+            ];
+            $types = ['textarea' => 'textarea', 'url' => 'url', 'email' => 'email'];
+            // New-lead alerts go to the business email already saved in the admin panel
+            $cur_email = $pdo->query("SELECT setting_value_en FROM site_settings WHERE setting_key = 'email'")->fetchColumn();
+            foreach ($schema as $group => $section) {
+                foreach ($section['fields'] as $key => $f) {
+                    $d = $f['default'] ?? '';
+                    [$en, $ar] = is_array($d) ? $d : [$d, $d];
+                    if ($key === 'notify_emails' && $cur_email) {
+                        $en = $ar = $cur_email;
+                    }
+                    if (isset($from_constants[$key]) && defined($from_constants[$key]) && (string)constant($from_constants[$key]) !== '') {
+                        $en = $ar = (string)constant($from_constants[$key]);
+                    }
+                    $ins->execute([':k' => $key, ':en' => $en, ':ar' => $ar, ':t' => $types[$f['type']] ?? 'text', ':g' => $group]);
+                }
+            }
+            // A Gmail password saved in config.local.php moves in too (encrypted)
+            if (defined('SMTP_PASS') && SMTP_PASS !== '') {
+                $enc = encryptSecret(SMTP_PASS);
+                $pdo->prepare("UPDATE site_settings SET setting_value_en = :v1, setting_value_ar = :v2 WHERE setting_key = 'smtp_pass' AND (setting_value_en = '' OR setting_value_en IS NULL)")
+                    ->execute([':v1' => $enc, ':v2' => $enc]);
+            }
+        },
+
+        // 10. Values the site displayed before (seed data differed)
+        'settings_display_fixes' => function (PDO $pdo) {
+            $fix = $pdo->prepare("UPDATE site_settings SET setting_value_ar = :new WHERE setting_key = 'site_name' AND setting_value_ar = :old");
+            $fix->execute([':new' => 'أحمد فيكس', ':old' => 'أحمد فيكس السعودية']);
+            // Map pin pointed at a hospital — use the Dammam city centre
+            $coords = $pdo->prepare("UPDATE site_settings SET setting_value_en = :v1, setting_value_ar = :v2 WHERE setting_key = :k AND setting_value_en = :old");
+            $coords->execute([':v1' => '26.4207', ':v2' => '26.4207', ':k' => 'maps_embed_lat', ':old' => '26.43311719']);
+            $coords->execute([':v1' => '50.0888', ':v2' => '50.0888', ':k' => 'maps_embed_lng', ':old' => '50.0850687']);
         },
     ];
 

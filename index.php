@@ -27,11 +27,41 @@ if (!empty($segments[0]) && in_array($segments[0], $supported_langs, true)) {
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/mail.php';
 
+// One official address (https / www) — set in Admin → Settings → Website address
+enforceCanonicalUrl();
+
 // ============================================
-// Sitemap (generated from the database, always up to date)
+// Sitemap, robots.txt, web manifest (generated, always use the current domain)
 // ============================================
 if ($route === 'sitemap.xml') {
     require __DIR__ . '/sitemap.php';
+    exit;
+}
+if ($route === 'robots.txt') {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "# " . SITE_NAME . " — robots.txt\n\n";
+    echo "User-agent: *\nAllow: /\n\n";
+    echo "# Private / technical areas\nDisallow: /admin\nDisallow: /api/\nDisallow: /config/\nDisallow: /database/\nDisallow: /includes/\nDisallow: /lang/\n\n";
+    echo "Sitemap: " . SITE_URL . "/sitemap.xml\n";
+    exit;
+}
+if ($route === 'site.webmanifest') {
+    header('Content-Type: application/manifest+json; charset=utf-8');
+    $base = parse_url(SITE_URL, PHP_URL_PATH) ?: '';
+    echo json_encode([
+        'name' => SITE_NAME . ' — ' . __('site_tagline'),
+        'short_name' => SITE_NAME,
+        'description' => trim(setting('business_description', $lang)),
+        'start_url' => $base . '/' . $lang,
+        'display' => 'browser',
+        'background_color' => '#FFFFFF',
+        'theme_color' => '#FF7A00',
+        'icons' => [
+            ['src' => $base . '/assets/images/favicon.png', 'sizes' => '64x64', 'type' => 'image/png'],
+            ['src' => $base . '/assets/images/apple-touch-icon.png', 'sizes' => '180x180', 'type' => 'image/png'],
+            ['src' => $base . '/assets/images/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png'],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
@@ -75,16 +105,48 @@ if ($route === 'api/contact-submit') {
         exit;
     }
 
+    // Also limit by internet address (stops bots that drop cookies): max 10 per hour
+    try {
+        $ip_check = $pdo->prepare("SELECT COUNT(*) FROM contact_submissions WHERE ip_address = :ip AND submitted_at > (NOW() - INTERVAL 1 HOUR)");
+        $ip_check->execute([':ip' => substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45)]);
+        if ((int)$ip_check->fetchColumn() >= 10) {
+            echo json_encode(['success' => false, 'message' => __('contact_form_too_many')]);
+            exit;
+        }
+    } catch (PDOException $e) {
+        error_log('Contact rate check failed: ' . $e->getMessage());
+    }
+
     // Validate required fields
     $name = sanitize(mb_substr($_POST['name'] ?? '', 0, 100));
     $phone = sanitize(mb_substr($_POST['phone'] ?? '', 0, 20));
     $email = sanitize(mb_substr($_POST['email'] ?? '', 0, 100));
     $service = sanitize($_POST['service'] ?? '');
     $message = sanitize(mb_substr($_POST['message'] ?? '', 0, 2000));
+    $address = sanitize(mb_substr($_POST['address'] ?? '', 0, 255));
 
     if (!in_array($service, ['', 'ac', 'fridge', 'washer', 'oven', 'other'], true)) {
         $service = 'other';
     }
+
+    // City must be one of the cities we serve (or empty)
+    $city = '';
+    $city_key = $_POST['city'] ?? '';
+    if ($city_key !== '' && isset(getAreas()[$city_key])) {
+        $city = getAreas()[$city_key]['name_en'];
+    }
+
+    // Preferred date: today or later (within 3 months)
+    $preferred_date = null;
+    $date_in = $_POST['preferred_date'] ?? '';
+    if ($date_in !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_in)) {
+        $d = DateTime::createFromFormat('Y-m-d', $date_in);
+        $today = new DateTime('today');
+        if ($d && $d >= $today && $d <= (clone $today)->modify('+3 months')) {
+            $preferred_date = $d->format('Y-m-d');
+        }
+    }
+    $preferred_time = in_array($_POST['preferred_time'] ?? '', ['morning', 'afternoon', 'evening'], true) ? $_POST['preferred_time'] : '';
 
     if (empty($name) || empty($phone)) {
         echo json_encode(['success' => false, 'message' => __('contact_form_required')]);
@@ -106,19 +168,35 @@ if ($route === 'api/contact-submit') {
     $phone = $phone_digits;
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO contact_submissions (customer_name, phone, email, service_requested, message) VALUES (:name, :phone, :email, :service, :message)");
+        $stmt = $pdo->prepare("INSERT INTO contact_submissions
+            (customer_name, phone, email, service_requested, city, address, preferred_date, preferred_time, message, lang, ip_address)
+            VALUES (:name, :phone, :email, :service, :city, :address, :pdate, :ptime, :message, :lang, :ip)");
         $stmt->execute([
             ':name' => $name,
             ':phone' => $phone,
             ':email' => $email,
             ':service' => $service,
-            ':message' => $message
+            ':city' => $city,
+            ':address' => $address,
+            ':pdate' => $preferred_date,
+            ':ptime' => $preferred_time,
+            ':message' => $message,
+            ':lang' => $lang,
+            ':ip' => substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45),
         ]);
+        $lead_id = (int)$pdo->lastInsertId();
 
         $_SESSION['contact_times'][] = $now;
 
-        // Send email notifications via SMTP (handled gracefully inside the helper)
-        sendContactEmails($name, $phone, $email, $service, $message, $lang);
+        // Email: alert to you + "Thank you" to the customer (never blocks the form if email fails)
+        try {
+            $lead = $pdo->query("SELECT * FROM contact_submissions WHERE id = " . $lead_id)->fetch();
+            if ($lead) {
+                sendContactEmails($lead);
+            }
+        } catch (Throwable $mail_error) {
+            error_log('Contact email error: ' . $mail_error->getMessage());
+        }
 
         echo json_encode(['success' => true, 'message' => __('contact_form_success')]);
     } catch (PDOException $e) {
@@ -137,7 +215,7 @@ if ($route === 'admin' || str_starts_with($route, 'admin/')) {
     $admin_page = $admin_page ?: 'index';
 
     $admin_file = __DIR__ . '/admin/' . basename($admin_page) . '.php';
-    if ($admin_page !== 'auth' && file_exists($admin_file)) {
+    if ($admin_page !== 'auth' && !str_starts_with(basename($admin_page), '_') && file_exists($admin_file)) {
         require_once $admin_file;
     } else {
         require_once __DIR__ . '/admin/index.php';
@@ -205,13 +283,13 @@ if (isset($static_pages[$page])) {
     $path = $page === 'home' ? '' : $page;
     $alt_paths = ['en' => $path, 'ar' => $path];
 
-    $page_seo = getPageSEO($page);
-    if (!$page_seo) {
-        // Pages without a database row get their title/description from the language files
-        $page_seo = [
-            'title_' . $lang => __('seo_title_' . $page, ''),
-            'description_' . $lang => __('seo_desc_' . $page, ''),
-        ];
+    // Title/description from Admin → Settings → Google Titles; empty fields use the built-in text
+    $page_seo = getPageSEO($page) ?: [];
+    foreach (['title' => 'seo_title_', 'description' => 'seo_desc_'] as $field => $prefix) {
+        if (trim($page_seo[$field . '_' . $lang] ?? '') === '') {
+            $fallback = __($prefix . $page, '');
+            $page_seo[$field . '_' . $lang] = $fallback === $prefix . $page ? '' : $fallback;
+        }
     }
 
     $crumb_names = ['about' => __('nav_about'), 'contact' => __('nav_contact'), 'privacy-policy' => __('footer_privacy'), 'terms' => __('footer_terms')];

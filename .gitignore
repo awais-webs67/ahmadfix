@@ -10,3 +10,6 @@ Thumbs.db
 # Logs
 *.log
 error_log
+
+# Auto-generated secret key (encrypts saved passwords)
+config/app_key.php

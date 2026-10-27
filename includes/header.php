@@ -16,9 +16,7 @@ if (isset($page_seo) && $page_seo) {
 }
 
 if (empty($seo_title)) {
-    $seo_title = $lang === 'ar'
-        ? 'أحمد فيكس — صيانة الأجهزة المنزلية في الدمام والظهران والخبر'
-        : 'Ahmad Fix — Professional Home Appliance Repair in Dammam, Dhahran & Khobar';
+    $seo_title = ($lang === 'ar' ? SITE_NAME_AR : SITE_NAME) . ' — ' . __('site_tagline');
 }
 if (empty($seo_desc)) {
     $seo_desc = __('footer_about');
@@ -56,18 +54,18 @@ $fonts_url = $lang === 'ar'
     <meta name="keywords" content="<?php echo e($seo_keywords); ?>">
 <?php endif; ?>
     <meta name="robots" content="<?php echo $is_404 ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'; ?>">
-    <meta name="author" content="<?php echo e(SITE_NAME); ?>">
+    <meta name="author" content="<?php echo e($lang === 'ar' ? SITE_NAME_AR : SITE_NAME); ?>">
     <meta name="theme-color" content="#FF7A00">
     <meta name="format-detection" content="telephone=yes">
     <meta name="geo.region" content="SA-04">
-    <meta name="geo.placename" content="<?php echo $lang === 'ar' ? 'الدمام، الخبر، الظهران' : 'Dammam, Al Khobar, Dhahran'; ?>">
-    <meta name="geo.position" content="26.4207;50.0888">
-    <meta name="ICBM" content="26.4207, 50.0888">
-<?php if (GOOGLE_SITE_VERIFICATION): ?>
-    <meta name="google-site-verification" content="<?php echo e(GOOGLE_SITE_VERIFICATION); ?>">
+    <meta name="geo.placename" content="<?php echo e(implode($lang === 'ar' ? '، ' : ', ', array_map(fn($a) => $a['name_' . $lang], array_values(getAreas())))); ?>">
+    <meta name="geo.position" content="<?php echo geoLat() . ';' . geoLng(); ?>">
+    <meta name="ICBM" content="<?php echo geoLat() . ', ' . geoLng(); ?>">
+<?php if (opt('google_site_verification')): ?>
+    <meta name="google-site-verification" content="<?php echo e(opt('google_site_verification')); ?>">
 <?php endif; ?>
-<?php if (BING_SITE_VERIFICATION): ?>
-    <meta name="msvalidate.01" content="<?php echo e(BING_SITE_VERIFICATION); ?>">
+<?php if (opt('bing_site_verification')): ?>
+    <meta name="msvalidate.01" content="<?php echo e(opt('bing_site_verification')); ?>">
 <?php endif; ?>
 
 <?php if ($canonical_url): ?>
@@ -132,14 +130,14 @@ $fonts_url = $lang === 'ar'
     <?php echo getBreadcrumbSchema($breadcrumbs); ?>
 <?php endif; ?>
 
-<?php if (GA4_ID): ?>
+<?php $ga4 = preg_replace('/[^A-Za-z0-9\-]/', '', opt('ga4_id')); if ($ga4): ?>
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo e(GA4_ID); ?>"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo e($ga4); ?>"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', '<?php echo e(GA4_ID); ?>');
+        gtag('config', '<?php echo e($ga4); ?>');
     </script>
 <?php endif; ?>
     <!-- If JavaScript is off, show content that normally animates in -->

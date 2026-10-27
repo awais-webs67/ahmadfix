@@ -144,7 +144,9 @@ $v = fn($k, $d = '') => e($edit[$k] ?? $d);
         <h1>Customer Reviews</h1>
     </a>
     <div class="nav">
-        <a href="<?php echo SITE_URL; ?>/admin/index" class="btn btn-blue">← Leads Dashboard</a>
+        <a href="<?php echo SITE_URL; ?>/admin/index" class="btn btn-blue">📋 Leads</a>
+        <a href="<?php echo SITE_URL; ?>/admin/emails" class="btn btn-blue">✉️ Emails</a>
+        <a href="<?php echo SITE_URL; ?>/admin/settings" class="btn btn-blue">⚙️ Settings</a>
         <a href="<?php echo SITE_URL; ?>/admin/logout" class="btn btn-red">Sign Out</a>
     </div>
 </header>

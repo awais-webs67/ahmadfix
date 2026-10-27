@@ -30,13 +30,13 @@ function getSetting($key, $language = null) {
 }
 
 /**
- * Get all settings (cached)
+ * Get all settings (cached). Pass true to re-read after saving.
  */
-function getAllSettings() {
+function getAllSettings($reset = false) {
     global $pdo;
     static $settings = null;
 
-    if ($settings === null) {
+    if ($settings === null || $reset) {
         $stmt = $pdo->query("SELECT * FROM site_settings");
         $settings = [];
         while ($row = $stmt->fetch()) {
@@ -45,6 +45,86 @@ function getAllSettings() {
     }
 
     return $settings;
+}
+
+/**
+ * Save (insert or update) one setting
+ */
+function saveSetting($key, $value_en, $value_ar = null, $group = 'general') {
+    global $pdo;
+    $value_ar = $value_ar ?? $value_en;
+    $stmt = $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_group)
+                           VALUES (:k, :en, :ar, :g)
+                           ON DUPLICATE KEY UPDATE setting_value_en = :en2, setting_value_ar = :ar2");
+    $stmt->execute([':k' => $key, ':en' => $value_en, ':ar' => $value_ar, ':g' => $group, ':en2' => $value_en, ':ar2' => $value_ar]);
+}
+
+/**
+ * Single-language setting, trimmed (for codes, links, numbers)
+ */
+function opt($key, $default = '') {
+    $v = trim((string)setting($key, 'en'));
+    return $v !== '' ? $v : $default;
+}
+
+/**
+ * The list of admin-editable settings (config/settings-schema.php)
+ */
+function settingsSchema() {
+    static $schema = null;
+    if ($schema === null) {
+        $schema = require SITE_ROOT . '/config/settings-schema.php';
+    }
+    return $schema;
+}
+
+// ============================================
+// Encrypted secrets (SMTP password)
+// ============================================
+
+/**
+ * Secret key used to encrypt passwords stored in the database.
+ * Kept in config/app_key.php (never committed). Created automatically.
+ */
+function appSecretKey() {
+    static $key = null;
+    if ($key !== null) return $key;
+    if (defined('APP_KEY') && APP_KEY !== '') {
+        return $key = hash('sha256', APP_KEY, true);
+    }
+    $file = SITE_ROOT . '/config/app_key.php';
+    if (is_file($file)) {
+        $stored = include $file;
+        if (is_string($stored) && strlen($stored) >= 32) return $key = hash('sha256', $stored, true);
+    }
+    $new = bin2hex(random_bytes(32));
+    if (@file_put_contents($file, "<?php\n// Auto-generated secret key. Keep private, do not delete (saved passwords need it).\nreturn '" . $new . "';\n", LOCK_EX) !== false) {
+        return $key = hash('sha256', $new, true);
+    }
+    // Folder not writable: fall back to a key stored in the database
+    $db_key = opt('app_key');
+    if ($db_key === '') {
+        $db_key = $new;
+        saveSetting('app_key', $db_key, $db_key, 'system');
+    }
+    return $key = hash('sha256', $db_key, true);
+}
+
+function encryptSecret($plain) {
+    if ($plain === '' || $plain === null) return '';
+    $iv = random_bytes(12);
+    $tag = '';
+    $cipher = openssl_encrypt($plain, 'aes-256-gcm', appSecretKey(), OPENSSL_RAW_DATA, $iv, $tag);
+    return 'enc:' . base64_encode($iv . $tag . $cipher);
+}
+
+function decryptSecret($stored) {
+    if (!is_string($stored) || $stored === '') return '';
+    if (!str_starts_with($stored, 'enc:')) return $stored; // plain value (older installs)
+    $raw = base64_decode(substr($stored, 4), true);
+    if ($raw === false || strlen($raw) < 29) return '';
+    $plain = openssl_decrypt(substr($raw, 28), 'aes-256-gcm', appSecretKey(), OPENSSL_RAW_DATA, substr($raw, 0, 12), substr($raw, 12, 16));
+    return $plain === false ? '' : $plain;
 }
 
 /**
@@ -336,14 +416,105 @@ function jsonLd(array $schema) {
  */
 function socialLinks() {
     $links = [
-        'google'    => GOOGLE_BUSINESS_URL,
-        'instagram' => SOCIAL_INSTAGRAM,
-        'snapchat'  => SOCIAL_SNAPCHAT,
-        'tiktok'    => SOCIAL_TIKTOK,
-        'facebook'  => SOCIAL_FACEBOOK,
-        'x'         => SOCIAL_X,
+        'google'    => opt('google_business_url'),
+        'instagram' => opt('social_instagram'),
+        'snapchat'  => opt('social_snapchat'),
+        'tiktok'    => opt('social_tiktok'),
+        'facebook'  => opt('social_facebook'),
+        'x'         => opt('social_x'),
+        'youtube'   => opt('social_youtube'),
     ];
-    return array_filter($links, fn($u) => is_string($u) && $u !== '');
+    return array_filter($links, fn($u) => is_string($u) && filter_var($u, FILTER_VALIDATE_URL));
+}
+
+/**
+ * Brands list from Admin → Settings
+ */
+function brandsList() {
+    return implode(', ', array_filter(array_map('trim', explode(',', opt('brands')))));
+}
+
+/**
+ * Opening hours for Google (from Admin → Settings → Working Hours)
+ */
+function openingHoursSchema() {
+    $out = [];
+    $t = fn($v) => preg_match('/^\d{1,2}:\d{2}$/', $v) ? str_pad($v, 5, '0', STR_PAD_LEFT) : '';
+    $wo = $t(opt('hours_week_open')); $wc = $t(opt('hours_week_close'));
+    if ($wo && $wc) {
+        $out[] = ['@type' => 'OpeningHoursSpecification', 'dayOfWeek' => ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'], 'opens' => $wo, 'closes' => $wc];
+    }
+    $fo = $t(opt('hours_friday_open')); $fc = $t(opt('hours_friday_close'));
+    if ($fo && $fc) {
+        $out[] = ['@type' => 'OpeningHoursSpecification', 'dayOfWeek' => 'Friday', 'opens' => $fo, 'closes' => $fc];
+    }
+    return $out;
+}
+
+/**
+ * Business map coordinates
+ */
+function geoLat() { $v = opt('maps_embed_lat', '26.4207'); return is_numeric($v) ? (float)$v : 26.4207; }
+function geoLng() { $v = opt('maps_embed_lng', '50.0888'); return is_numeric($v) ? (float)$v : 50.0888; }
+
+/**
+ * Send visitors to the one official address saved in Admin → Settings
+ * (https, with or without www). Only runs for normal page views.
+ */
+function enforceCanonicalUrl() {
+    if (!SITE_URL_CONFIGURED || IS_ADMIN_REQUEST || !in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'HEAD'], true)) return;
+    $want = parse_url(SITE_URL);
+    $want_scheme = strtolower($want['scheme'] ?? 'https');
+    $want_host = strtolower(($want['host'] ?? '') . (isset($want['port']) ? ':' . $want['port'] : ''));
+    $have_scheme = IS_HTTPS ? 'https' : 'http';
+    $have_host = strtolower(preg_replace('/[^a-z0-9.\-:\[\]]/i', '', $_SERVER['HTTP_HOST'] ?? ''));
+    if ($want_host !== '' && ($want_scheme !== $have_scheme || $want_host !== $have_host)) {
+        header('Location: ' . $want_scheme . '://' . $want_host . ($_SERVER['REQUEST_URI'] ?? '/'), true, 301);
+        exit;
+    }
+}
+
+/**
+ * Replace {placeholders} in email texts
+ */
+function fillTemplate($text, array $vars) {
+    $base = [
+        '{site_name}' => SITE_NAME,
+        '{phone}'     => PHONE,
+        '{whatsapp}'  => WHATSAPP,
+        '{email}'     => EMAIL,
+    ];
+    foreach ($vars as $k => $v) {
+        $base['{' . trim($k, '{}') . '}'] = (string)$v;
+    }
+    return strtr((string)$text, $base);
+}
+
+/**
+ * Service keys used by the contact form
+ */
+function serviceKeys() {
+    return ['ac' => 'snowflake', 'fridge' => 'thermometer', 'washer' => 'rotate-cw', 'oven' => 'flame'];
+}
+
+/**
+ * Human name of a contact-form service key (uses the live service names)
+ */
+function serviceLabel($key, $language = 'en') {
+    $icon = serviceKeys()[$key] ?? null;
+    if ($icon) {
+        foreach (getServices() as $svc) {
+            if ($svc['icon'] === $icon) return $svc['name_' . $language] ?? $svc['name_en'];
+        }
+    }
+    return $language === 'ar' ? 'استفسار عام' : 'General enquiry';
+}
+
+/**
+ * Contact-form service key for a service row (for "Book online" links)
+ */
+function serviceKeyFor(array $service) {
+    return array_search($service['icon'], serviceKeys(), true) ?: 'other';
 }
 
 /**
@@ -380,15 +551,13 @@ function getLocalBusinessSchema() {
         '@id' => SITE_URL . '/#business',
         'name' => $is_ar ? SITE_NAME_AR : SITE_NAME,
         'alternateName' => $is_ar ? SITE_NAME : SITE_NAME_AR,
-        'description' => $is_ar
-            ? 'صيانة وإصلاح المكيفات والثلاجات والغسالات والأفران في الدمام والخبر والظهران. فنيون معتمدون وخدمة في نفس اليوم.'
-            : 'Professional AC, refrigerator, washing machine and oven repair in Dammam, Al Khobar and Dhahran. Certified technicians and same-day service.',
+        'description' => trim(setting('business_description', $lang)),
         'url' => url(''),
         'logo' => ASSETS_URL . '/images/logo.png',
         'image' => [ASSETS_URL . '/images/og-image.jpg', ASSETS_URL . '/images/hero/hero-main.jpg'],
         'telephone' => formatPhone(PHONE),
         'email' => EMAIL,
-        'priceRange' => '$$',
+        'priceRange' => opt('price_range', '$$'),
         'currenciesAccepted' => 'SAR',
         'address' => [
             '@type' => 'PostalAddress',
@@ -398,8 +567,8 @@ function getLocalBusinessSchema() {
         ],
         'geo' => [
             '@type' => 'GeoCoordinates',
-            'latitude' => 26.4207,
-            'longitude' => 50.0888,
+            'latitude' => geoLat(),
+            'longitude' => geoLng(),
         ],
         'areaServed' => $areas,
         'knowsLanguage' => ['ar', 'en'],
@@ -410,20 +579,7 @@ function getLocalBusinessSchema() {
             'areaServed' => 'SA',
             'availableLanguage' => ['Arabic', 'English'],
         ],
-        'openingHoursSpecification' => [
-            [
-                '@type' => 'OpeningHoursSpecification',
-                'dayOfWeek' => ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
-                'opens' => '08:00',
-                'closes' => '22:00',
-            ],
-            [
-                '@type' => 'OpeningHoursSpecification',
-                'dayOfWeek' => 'Friday',
-                'opens' => '14:00',
-                'closes' => '22:00',
-            ],
-        ],
+        'openingHoursSpecification' => openingHoursSchema(),
         'hasOfferCatalog' => [
             '@type' => 'OfferCatalog',
             'name' => $is_ar ? 'خدمات الصيانة' : 'Repair Services',
@@ -434,9 +590,13 @@ function getLocalBusinessSchema() {
     if ($links = socialLinks()) {
         $schema['sameAs'] = array_values($links);
     }
-    if (GOOGLE_BUSINESS_URL) {
-        $schema['hasMap'] = GOOGLE_BUSINESS_URL;
+    if (opt('google_business_url')) {
+        $schema['hasMap'] = opt('google_business_url');
+    } elseif (opt('google_maps_url')) {
+        $schema['hasMap'] = opt('google_maps_url');
     }
+    if (empty($schema['openingHoursSpecification'])) unset($schema['openingHoursSpecification']);
+    if ($schema['description'] === '') unset($schema['description']);
 
     return jsonLd($schema);
 }
@@ -451,7 +611,7 @@ function getWebsiteSchema() {
         '@type' => 'WebSite',
         '@id' => SITE_URL . '/#website',
         'name' => $lang === 'ar' ? SITE_NAME_AR : SITE_NAME,
-        'alternateName' => [$lang === 'ar' ? SITE_NAME : SITE_NAME_AR, 'AhmadFix'],
+        'alternateName' => array_values(array_unique([$lang === 'ar' ? SITE_NAME : SITE_NAME_AR, str_replace(' ', '', SITE_NAME)])),
         'url' => url(''),
         'inLanguage' => $lang === 'ar' ? 'ar-SA' : 'en-SA',
         'publisher' => ['@id' => SITE_URL . '/#business'],

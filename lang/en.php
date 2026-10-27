@@ -217,4 +217,19 @@ return [
     'about_faq_a3' => 'Yes. Every repair comes with a service warranty on the work and the parts we install.',
     'about_faq_q4' => 'What are your working hours?',
     'about_faq_a4' => 'Saturday to Thursday from 8:00 AM to 10:00 PM, and Friday from 2:00 PM to 10:00 PM. You can send us a WhatsApp message at any time.',
+
+    // Booking fields (contact form)
+    'contact_form_city' => 'City',
+    'contact_form_city_select' => '— Select your city —',
+    'contact_form_address' => 'District / Address (optional)',
+    'contact_form_address_ph' => 'e.g. Al Faisaliyah, street name',
+    'contact_form_date' => 'Preferred Date (optional)',
+    'contact_form_time' => 'Preferred Time (optional)',
+    'contact_form_time_any' => 'Any time',
+    'time_morning' => 'Morning (8 AM – 12 PM)',
+    'time_afternoon' => 'Afternoon (12 – 4 PM)',
+    'time_evening' => 'Evening (4 – 10 PM)',
+    'contact_form_heading' => 'Book a Technician or Send a Message',
+    'contact_form_note' => 'We usually reply within 30 minutes during working hours. Add your email to get a confirmation.',
+    'book_online' => 'Book Online',
 ];
