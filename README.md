@@ -71,8 +71,24 @@ These matter as much as the website itself for getting customers from Google.
 - **Phone, WhatsApp, email:** Admin panel → Settings.
 - **Images:** after replacing a photo, also replace the matching `-640.webp` and `-1024.webp` files, or delete them (the JPG is used as a fallback).
   Then bump `ASSETS_VERSION` in `config/config.php` so visitors get the new files.
-- **Testimonials:** the 5 reviews in `database/setup.sql` are sample text. Replace them with real customer reviews
-  (Google's guidelines require reviews to be genuine).
+- **Customer reviews (homepage):** Admin panel → **⭐ Reviews**. You can add, edit, hide or delete reviews there.
+  The 5 reviews that come with the site are sample text, so replace them with real ones (Google's guidelines require reviews to be genuine).
+  If you write a review in only one language, it is shown in both.
+
+## Launch checklist
+
+- [ ] Hosting runs **PHP 8.0+** and **MySQL 5.7+ / MariaDB 10.3+**, with Apache `mod_rewrite` turned on
+- [ ] **SSL certificate** installed for `ahmadfix.com` (the site forces `https://`). Most hosts offer free Let's Encrypt.
+- [ ] `config/config.local.php` created with the database login and the **new** Gmail app password
+- [ ] Database imported (`database/setup.sql`) or the existing one kept; it upgrades itself on the first visit
+- [ ] Admin password changed (first login forces this)
+- [ ] Sample reviews replaced in Admin → ⭐ Reviews
+- [ ] Send yourself a test message from the Contact page and check that the email arrives
+- [ ] Google Business Profile, Search Console (submit the sitemap) and Analytics set up (see above)
+- [ ] Check `https://ahmadfix.com/sitemap.xml` and `https://ahmadfix.com/robots.txt` open in the browser
+
+Quality check before launch (Google Lighthouse, mobile): Performance 96–100, Accessibility 96–100,
+Best Practices 100, SEO 100 on the home, about, service, city and contact pages.
 
 ## Local development
 

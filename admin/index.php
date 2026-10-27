@@ -188,7 +188,7 @@ $service_labels = [
         .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: #fff; }
         .brand img { max-height: 44px; }
         .brand h1 { font-size: 20px; font-weight: 800; color: #ff7a00; letter-spacing: -0.5px; }
-        .user-nav { display: flex; align-items: center; gap: 16px; }
+        .user-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .user-name { font-size: 14px; color: #94a3b8; font-weight: 600; background: #0b0f19; padding: 6px 14px; border-radius: 20px; border: 1px solid #233044; }
         .btn-header { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; }
         .btn-settings { background: #1e293b; color: #38bdf8; border: 1px solid #0284c7; }
@@ -270,6 +270,20 @@ $service_labels = [
         .force-msg { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
         
         .empty-state { padding: 60px 20px; text-align: center; color: #64748b; font-size: 16px; }
+        @media (max-width: 720px) {
+            header { padding: 14px 16px; }
+            .brand h1 { font-size: 17px; }
+            .brand img { max-height: 36px; }
+            .user-nav { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+            .user-nav .user-name { grid-column: 1 / -1; text-align: center; }
+            .user-nav .btn-header { justify-content: center; }
+            .container { margin: 20px auto; padding: 0 12px; }
+            .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+            .stat-card { padding: 16px !important; }
+            .stat-value { font-size: 28px !important; }
+            .toolbar-card { padding: 14px; }
+            .search-box, .search-box input { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -301,11 +315,12 @@ $service_labels = [
 
 <header>
     <a href="<?php echo SITE_URL; ?>" class="brand" target="_blank">
-        <img src="<?php echo ASSETS_URL; ?>/images/logo.png" alt="Ahmad Fix">
+        <img src="<?php echo ASSETS_URL; ?>/images/logo-header.png" alt="Ahmad Fix">
         <h1>Ahmad Fix Enterprise</h1>
     </a>
     <div class="user-nav">
         <span class="user-name">👤 <?php echo htmlspecialchars($_SESSION['admin_name'] ?? 'Admin'); ?></span>
+        <a href="<?php echo SITE_URL; ?>/admin/reviews" class="btn-header btn-settings">⭐ Reviews</a>
         <button onclick="document.getElementById('settingsModal').style.display='flex';" class="btn-header btn-settings">⚙️ Site Settings</button>
         <a href="?export=csv" class="btn-header btn-export">📥 Export CSV</a>
         <a href="<?php echo SITE_URL; ?>/admin/logout" class="btn-header btn-logout">Sign Out</a>

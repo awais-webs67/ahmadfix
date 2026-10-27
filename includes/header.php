@@ -111,11 +111,14 @@ $fonts_url = $lang === 'ar'
     <!-- Fonts (only the font this language needs) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="<?php echo $fonts_url; ?>">
+    <!-- Loaded without blocking the first paint; text shows in a system font for a moment -->
+    <link rel="preload" as="style" href="<?php echo $fonts_url; ?>">
+    <link rel="stylesheet" href="<?php echo $fonts_url; ?>" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="<?php echo $fonts_url; ?>"></noscript>
 
 <?php if ($current_nav === 'home' && file_exists(SITE_ROOT . '/assets/images/hero/hero-main-1024.webp')): ?>
     <!-- Load the big homepage photo first (faster first paint) -->
-    <link rel="preload" as="image" type="image/webp" imagesrcset="<?php echo ASSETS_URL; ?>/images/hero/hero-main-640.webp?v=<?php echo ASSETS_VERSION; ?> 640w, <?php echo ASSETS_URL; ?>/images/hero/hero-main-1024.webp?v=<?php echo ASSETS_VERSION; ?> 1024w" imagesizes="(max-width: 768px) 100vw, 600px" fetchpriority="high">
+    <link rel="preload" as="image" type="image/webp" imagesrcset="<?php foreach ([400, 640, 800, 1024] as $i => $w) { echo ($i ? ', ' : '') . ASSETS_URL . '/images/hero/hero-main-' . $w . '.webp?v=' . ASSETS_VERSION . ' ' . $w . 'w'; } ?>" imagesizes="(max-width: 768px) 100vw, 600px" fetchpriority="high">
 <?php endif; ?>
 
     <!-- Stylesheets -->
@@ -139,8 +142,11 @@ $fonts_url = $lang === 'ar'
         gtag('config', '<?php echo e(GA4_ID); ?>');
     </script>
 <?php endif; ?>
+    <!-- If JavaScript is off, show content that normally animates in -->
+    <noscript><style>.reveal,.reveal-left,.reveal-right,.reveal-scale,.stagger-children>*{opacity:1!important;transform:none!important}</style></noscript>
 </head>
 <body class="page-transition">
+<a class="skip-link" href="#main"><?php echo $lang === 'ar' ? 'انتقل إلى المحتوى' : 'Skip to content'; ?></a>
 
 <!-- ====== Top Ribbon (Scrolling Ticker) ====== -->
 <div class="top-ribbon" role="region" aria-label="<?php echo $lang === 'ar' ? 'شريط الإعلانات' : 'Announcement Bar'; ?>">
@@ -247,4 +253,4 @@ $fonts_url = $lang === 'ar'
     </div>
 </nav>
 
-<main>
+<main id="main" tabindex="-1">

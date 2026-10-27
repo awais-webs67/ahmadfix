@@ -55,6 +55,13 @@ $folder = trim(preg_replace('#(^|/)admin$#', '', $folder), '/');
 
 define('IS_LOCAL', strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false);
 
+// Live site: never show PHP errors to visitors (they are written to the server error log instead)
+if (!IS_LOCAL) {
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+    error_reporting(E_ALL);
+}
+
 if (IS_LOCAL) {
     define('SITE_URL', $protocol . $host . ($folder ? '/' . $folder : ''));
 } else {
@@ -64,7 +71,7 @@ if (IS_LOCAL) {
 define('SITE_ROOT', dirname(__DIR__));
 define('ASSETS_URL', SITE_URL . '/assets');
 // Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.0.1');
+define('ASSETS_VERSION', '2.1.1');
 
 // Default contact info (the admin panel can change phone / WhatsApp / email — see below)
 fixora_define('DEFAULT_PHONE', '+966 58 245 3440');

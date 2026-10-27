@@ -279,7 +279,7 @@ function waNumber() {
 
 /**
  * Responsive <picture> with WebP versions + original JPG fallback.
- * Looks for {name}-640.webp and {name}-1024.webp next to the original.
+ * Looks for {name}-400/-640/-800/-1024.webp next to the original.
  *
  * @param string $src   path relative to /assets/images, e.g. 'services/ac-repair.jpg'
  * @param array  $attrs extra <img> attributes (alt, width, height, loading, class, sizes...)
@@ -291,7 +291,7 @@ function picture($src, array $attrs = []) {
     unset($attrs['sizes']);
 
     $srcset = [];
-    foreach ([640, 1024] as $w) {
+    foreach ([400, 640, 800, 1024] as $w) {
         if (file_exists($dir . $base . '-' . $w . '.webp')) {
             $srcset[] = ASSETS_URL . '/images/' . $base . '-' . $w . '.webp?v=' . ASSETS_VERSION . ' ' . $w . 'w';
         }
