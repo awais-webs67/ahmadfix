@@ -38,6 +38,8 @@ Nothing about the business is written in the code. The domain is not in `.htacce
 - **Customer:** if they entered an email, they automatically get "Thank you, we received your request" in their own language (English or Arabic),
   with a summary of their booking. You can edit the text in *Settings → Email Texts* (placeholders like `{name}`, `{service}`, `{date}`).
 - **From the admin panel:** send emails and replies with your logo and signature. When customers reply, the reply arrives in your normal inbox (the business email).
+- **Where to put the SMTP login:** either in `config/config.local.php` (see `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_EMAILS` in the example file)
+  or in Admin → Settings → Email. Values in `config.local.php` win and show as 🔒 locked in the admin panel. Never put them in `config.php`.
 - **Gmail:** SMTP server `smtp.gmail.com`, port `587`, security `TLS`, username = your Gmail address, password = a 16-letter **App password**
   (Google Account → Security → 2-Step Verification → App passwords). The password is stored encrypted.
 - **Locked out by a wrong website address?** Add `define('SITE_URL_OVERRIDE', 'https://yourdomain.com');` to `config/config.local.php`.

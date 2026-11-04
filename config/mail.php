@@ -25,24 +25,70 @@ use PHPMailer\PHPMailer\PHPMailer;
 // ============================================
 
 /**
- * SMTP settings from Admin → Settings → Email (config.local.php values are a fallback)
+ * Email settings that can be set in config/config.local.php.
+ * A value set there (not empty) wins over Admin → Settings → Email, and the
+ * admin panel shows that field as locked.
+ */
+function mailConfigConstants() {
+    return [
+        'smtp_host'          => 'SMTP_HOST',
+        'smtp_port'          => 'SMTP_PORT',
+        'smtp_secure'        => 'SMTP_SECURE',
+        'smtp_user'          => 'SMTP_USER',
+        'smtp_pass'          => 'SMTP_PASS',
+        'smtp_from_email'    => 'SMTP_FROM_EMAIL',
+        'smtp_from_name'     => 'SMTP_FROM_NAME',
+        'notify_emails'      => 'NOTIFY_EMAILS',
+        'auto_reply_enabled' => 'AUTO_REPLY_ENABLED',
+    ];
+}
+
+/**
+ * Value of an email setting from config.local.php, or null if it is not set there
+ */
+function mailFromConfigFile($key) {
+    $const = mailConfigConstants()[$key] ?? null;
+    if (!$const || !defined($const)) return null;
+    $v = constant($const);
+    if (is_bool($v)) return $v ? '1' : '0';
+    $v = trim((string)$v);
+    return $v === '' ? null : $v;
+}
+
+/**
+ * One email setting: config.local.php first, then Admin → Settings
+ */
+function mailValue($key, $default = '') {
+    $v = mailFromConfigFile($key);
+    if ($v !== null) return $v;
+    if ($key === 'smtp_pass') return decryptSecret(opt('smtp_pass'));
+    return opt($key, $default);
+}
+
+/**
+ * The SMTP settings in use
  */
 function mailConfig() {
-    $user = opt('smtp_user', defined('SMTP_USER') ? (string)SMTP_USER : '');
-    $pass = decryptSecret(opt('smtp_pass'));
-    if ($pass === '' && defined('SMTP_PASS')) $pass = (string)SMTP_PASS;
-    $from = opt('smtp_from_email');
-    $notify = array_values(array_filter(array_map('trim', preg_split('/[,;\s]+/', opt('notify_emails', EMAIL))), fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
+    $user = mailValue('smtp_user');
+    $pass = mailValue('smtp_pass');
+    $from = mailValue('smtp_from_email');
+    $notify = array_values(array_filter(array_map('trim', preg_split('/[,;\s]+/', mailValue('notify_emails', EMAIL))), fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
+    $secure = strtolower(mailValue('smtp_secure', 'tls'));
+    $host = mailValue('smtp_host', 'smtp.gmail.com');
+    // Gmail shows App passwords as "abcd efgh ijkl mnop" — the spaces are not part of it
+    if (stripos($host, 'gmail') !== false || stripos($host, 'google') !== false) {
+        $pass = str_replace(' ', '', $pass);
+    }
     return [
-        'host'       => opt('smtp_host', defined('SMTP_HOST') ? (string)SMTP_HOST : 'smtp.gmail.com'),
-        'port'       => (int)opt('smtp_port', defined('SMTP_PORT') ? (string)SMTP_PORT : '587'),
-        'secure'     => opt('smtp_secure', 'tls'),
+        'host'       => $host,
+        'port'       => (int)mailValue('smtp_port', '587'),
+        'secure'     => in_array($secure, ['tls', 'ssl', 'none'], true) ? $secure : 'tls',
         'user'       => $user,
         'pass'       => $pass,
         'from_email' => filter_var($from, FILTER_VALIDATE_EMAIL) ? $from : ($user ?: EMAIL),
-        'from_name'  => opt('smtp_from_name', SITE_NAME),
+        'from_name'  => mailValue('smtp_from_name', SITE_NAME),
         'notify'     => $notify ?: [EMAIL],
-        'auto_reply' => opt('auto_reply_enabled', '1') === '1',
+        'auto_reply' => mailValue('auto_reply_enabled', '1') === '1',
     ];
 }
 

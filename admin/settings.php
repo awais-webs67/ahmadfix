@@ -53,6 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save' && isset($schema[$section])) {
         $to_save = [];
         foreach ($schema[$section]['fields'] as $key => $f) {
+            // Set in config/config.local.php → not editable here
+            if (mailFromConfigFile($key) !== null) {
+                continue;
+            }
             if ($f['type'] === 'password') {
                 if (!empty($_POST[$key . '_clear'])) {
                     $to_save[$key] = ['', ''];
@@ -214,6 +218,13 @@ adminHead('Settings', 'settings');
             Status: <?php echo $mail_ok ? '<span class="badge b-sent">Email is set up</span>' : '<span class="badge b-failed">Not set up — enter the SMTP username and password</span>'; ?>
             &nbsp; Customers who reply to your emails reach <strong><?php echo e(EMAIL); ?></strong> (your business email).
         </p>
+        <?php $from_file = array_filter(array_keys(mailConfigConstants()), fn($k) => mailFromConfigFile($k) !== null); ?>
+        <?php if ($from_file): ?>
+        <div class="toast" style="background: rgba(56,189,248,.1); border-color: #0284c7; color: #7dd3fc;">
+            🔒 <?php echo count($from_file); ?> email setting(s) come from <strong>config/config.local.php</strong> on the server and are shown locked below.
+            To change them, edit that file in cPanel → File Manager.
+        </div>
+        <?php endif; ?>
     <?php elseif (!empty($sec['help'])): ?>
         <p class="hint"><?php echo e($sec['help']); ?></p>
     <?php else: ?>
@@ -224,6 +235,15 @@ adminHead('Settings', 'settings');
     <?php foreach ($sec['fields'] as $key => $f):
         $wide = !empty($f['bilingual']) || $f['type'] === 'textarea'; ?>
         <div class="fg" style="<?php echo $wide ? 'grid-column: 1 / -1;' : ''; ?>">
+            <?php if (($locked_value = mailFromConfigFile($key)) !== null): ?>
+                <label><?php echo e($f['label']); ?> <span class="badge b-contacted">🔒 config file</span></label>
+                <input type="text" disabled value="<?php
+                    if ($f['type'] === 'password') echo '•••••••• (set in config.local.php)';
+                    elseif ($f['type'] === 'toggle') echo $locked_value === '1' ? 'On' : 'Off';
+                    else echo e($locked_value); ?>">
+                <div class="help">Set by <code><?php echo e(mailConfigConstants()[$key]); ?></code> in config/config.local.php</div>
+            </div>
+            <?php continue; endif; ?>
             <?php if ($f['type'] === 'toggle'): ?>
                 <label class="switch"><input type="checkbox" name="<?php echo e($key); ?>" value="1" <?php echo fieldValue($key) === '1' ? 'checked' : ''; ?>> <?php echo e($f['label']); ?></label>
             <?php elseif (!empty($f['bilingual'])): ?>
