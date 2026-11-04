@@ -81,7 +81,7 @@ $fonts_url = $lang === 'ar'
     <!-- Hreflang Tags (English / Arabic versions of this page) -->
     <link rel="alternate" hreflang="en" href="<?php echo e($alt_en); ?>">
     <link rel="alternate" hreflang="ar" href="<?php echo e($alt_ar); ?>">
-    <link rel="alternate" hreflang="x-default" href="<?php echo e($alt_en); ?>">
+    <link rel="alternate" hreflang="x-default" href="<?php echo e(DEFAULT_LANG === 'ar' ? $alt_ar : $alt_en); ?>">
 <?php endif; ?>
 
     <!-- Open Graph (WhatsApp, Facebook, Snapchat link previews) -->

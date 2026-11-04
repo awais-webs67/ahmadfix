@@ -75,7 +75,7 @@ foreach ($entries as $entry) {
         echo "    <lastmod>" . $entry['lastmod'] . "</lastmod>\n";
         echo '    <xhtml:link rel="alternate" hreflang="en" href="' . $x($en) . '"/>' . "\n";
         echo '    <xhtml:link rel="alternate" hreflang="ar" href="' . $x($ar) . '"/>' . "\n";
-        echo '    <xhtml:link rel="alternate" hreflang="x-default" href="' . $x($en) . '"/>' . "\n";
+        echo '    <xhtml:link rel="alternate" hreflang="x-default" href="' . $x(DEFAULT_LANG === 'ar' ? $ar : $en) . '"/>' . "\n";
         foreach ($entry['images'] as $img) {
             echo "    <image:image><image:loc>" . $x($img) . "</image:loc></image:image>\n";
         }

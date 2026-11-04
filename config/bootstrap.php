@@ -142,43 +142,6 @@ if (NEEDS_SESSION) {
 }
 
 // ============================================
-// Language Detection & Setup
-// ============================================
-$supported_langs = ['en', 'ar'];
-$default_lang = 'en';
-
-// Check URL prefix first, then the language the visitor used last (cookie), then browser
-if (isset($url_lang) && in_array($url_lang, $supported_langs)) {
-    $lang = $url_lang;
-} elseif (isset($_GET['lang']) && in_array($_GET['lang'], $supported_langs)) {
-    $lang = $_GET['lang'];
-} elseif (isset($_COOKIE['site_lang']) && in_array($_COOKIE['site_lang'], $supported_langs, true)) {
-    $lang = $_COOKIE['site_lang'];
-} elseif (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $supported_langs)) {
-    $lang = $_SESSION['lang'];
-} else {
-    // Detect from browser Accept-Language
-    $browser_lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'en', 0, 2);
-    $lang = in_array($browser_lang, $supported_langs) ? $browser_lang : $default_lang;
-}
-
-if (session_status() === PHP_SESSION_ACTIVE) {
-    $_SESSION['lang'] = $lang;
-}
-$is_rtl = ($lang === 'ar');
-$dir = $is_rtl ? 'rtl' : 'ltr';
-
-// ============================================
-// Load Language File
-// ============================================
-$lang_file = SITE_ROOT . '/lang/' . $lang . '.php';
-if (file_exists($lang_file)) {
-    $translations = require $lang_file;
-} else {
-    $translations = require SITE_ROOT . '/lang/en.php';
-}
-
-// ============================================
 // Load Helper Functions + run one-time database upgrades
 // ============================================
 require_once SITE_ROOT . '/config/functions.php';
@@ -213,6 +176,50 @@ define('WHATSAPP', trim(setting('whatsapp', 'en')) ?: PHONE);
 $__email = trim(setting('email', 'en'));
 define('EMAIL', filter_var($__email, FILTER_VALIDATE_EMAIL) ? $__email : $__schema['business']['fields']['email']['default']);
 unset($__schema, $__email);
+
+// ============================================
+// Language Detection & Setup
+// ============================================
+$supported_langs = ['en', 'ar'];
+// Admin → Settings → Business → Default website language: 'ar', 'en' or 'auto' (visitor's phone/browser)
+$__lang_setting = opt('default_language', 'auto');
+if (!in_array($__lang_setting, ['ar', 'en', 'auto'], true)) $__lang_setting = 'auto';
+$default_lang = $__lang_setting === 'ar' ? 'ar' : 'en';
+define('DEFAULT_LANG', $default_lang);   // also the version Google shows by default (x-default)
+
+// Check URL prefix first, then the language the visitor used last (cookie), then the admin's choice / browser
+if (isset($url_lang) && in_array($url_lang, $supported_langs)) {
+    $lang = $url_lang;
+} elseif (isset($_GET['lang']) && in_array($_GET['lang'], $supported_langs)) {
+    $lang = $_GET['lang'];
+} elseif (isset($_COOKIE['site_lang']) && in_array($_COOKIE['site_lang'], $supported_langs, true)) {
+    $lang = $_COOKIE['site_lang'];
+} elseif (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $supported_langs)) {
+    $lang = $_SESSION['lang'];
+} elseif ($__lang_setting !== 'auto') {
+    $lang = $__lang_setting;
+} else {
+    // Detect from browser Accept-Language
+    $browser_lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'en', 0, 2);
+    $lang = in_array($browser_lang, $supported_langs) ? $browser_lang : $default_lang;
+}
+
+if (session_status() === PHP_SESSION_ACTIVE) {
+    $_SESSION['lang'] = $lang;
+}
+$is_rtl = ($lang === 'ar');
+$dir = $is_rtl ? 'rtl' : 'ltr';
+unset($__lang_setting);
+
+// ============================================
+// Load Language File
+// ============================================
+$lang_file = SITE_ROOT . '/lang/' . $lang . '.php';
+if (file_exists($lang_file)) {
+    $translations = require $lang_file;
+} else {
+    $translations = require SITE_ROOT . '/lang/en.php';
+}
 
 // ============================================
 // CSRF Token (only when a session is running)

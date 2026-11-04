@@ -230,7 +230,7 @@ if ($route === 'admin' || str_starts_with($route, 'admin/')) {
 // ============================================
 if ($url_lang === null) {
     if ($route === '') {
-        // Homepage: send visitors to their language (Google sees x-default = English)
+        // Homepage: send visitors to their language (Admin → Settings → Default website language)
         header('Vary: Accept-Language');
         header('Location: ' . SITE_URL . '/' . $lang, true, 302);
         exit;
