@@ -52,15 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'save' && isset($schema[$section])) {
         $to_save = [];
+        // Email settings are written into config/config.php when the file can be updated
+        $write_config = $section === 'email' && privateConfigWritable();
+        $plain_pass = mailValue('smtp_pass');   // kept when the password box is left empty
         foreach ($schema[$section]['fields'] as $key => $f) {
-            // Set in your config file → not editable here
-            if (mailFromConfigFile($key) !== null) {
+            // Set in your config file and the file can't be updated from here → not editable
+            if (!$write_config && mailFromConfigFile($key) !== null) {
                 continue;
             }
             if ($f['type'] === 'password') {
                 if (!empty($_POST[$key . '_clear'])) {
                     $to_save[$key] = ['', ''];
+                    $plain_pass = '';
                 } elseif (($_POST[$key] ?? '') !== '') {
+                    $plain_pass = trim($_POST[$key]);
                     // Gmail shows app passwords with spaces — remove them
                     $plain = trim($_POST[$key]);
                     if (stripos(opt('smtp_host'), 'gmail') !== false || stripos($_POST['smtp_host'] ?? '', 'gmail') !== false) {
@@ -101,11 +106,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($to_save as $k => [$en, $ar]) {
                 saveSetting($k, $en, $ar, $section);
             }
+            $saved_where = '';
+            if ($write_config) {
+                // Same values into config/config.php
+                $defines = [];
+                foreach (mailConfigConstants() as $k => $const) {
+                    if ($k === 'smtp_pass') {
+                        $defines[$const] = $plain_pass;
+                    } elseif ($k === 'auto_reply_enabled') {
+                        $defines[$const] = ($to_save[$k][0] ?? '1') === '1';
+                    } elseif ($k === 'smtp_port') {
+                        $defines[$const] = (int)($to_save[$k][0] ?? 587);
+                    } else {
+                        $defines[$const] = (string)($to_save[$k][0] ?? '');
+                    }
+                }
+                $write_error = writePrivateConfig($defines);
+                $saved_where = $write_error ? ' (saved in the database only: ' . $write_error . ')' : ' — written to ' . PRIVATE_CONFIG_FILE . '.';
+            }
             if ($section === 'email') {
-                saveSetting('_smtp_blocked', '', '', 'system');   // re-test the server with the new settings
+                saveSetting('_smtp_blocked', '', '', 'system');   // re-test the servers with the new settings
+                saveSetting('_smtp_working', '', '', 'system');
             }
             getAllSettings(true);
-            flash($schema[$section]['title'] . ' saved.');
+            flash($schema[$section]['title'] . ' saved' . ($saved_where ?: '.'), !empty($write_error) ? 'warning' : 'success');
             header('Location: ' . SITE_URL . '/admin/settings#' . $section);
             exit;
         }
@@ -221,6 +245,10 @@ function fieldValue($key, $language = 'en') {
         $posted = $_POST[$key . '_' . $language] ?? $_POST[$key] ?? null;
         if ($posted !== null) return $posted;
     }
+    // Email settings: show what is really used (config/config.php wins over the database)
+    if ($key !== 'smtp_pass' && function_exists('mailFromConfigFile') && ($from_file = mailFromConfigFile($key)) !== null) {
+        return $from_file;
+    }
     return setting($key, $language);
 }
 
@@ -266,10 +294,14 @@ adminHead('Settings', 'settings');
             &nbsp; Customers who reply to your emails reach <strong><?php echo e(EMAIL); ?></strong> (your business email).
         </p>
         <?php $from_file = array_filter(array_keys(mailConfigConstants()), fn($k) => mailFromConfigFile($k) !== null); ?>
-        <?php if ($from_file): ?>
+        <?php if (privateConfigWritable()): ?>
         <div class="toast" style="background: rgba(56,189,248,.1); border-color: #0284c7; color: #7dd3fc;">
-            🔒 <?php echo count($from_file); ?> email setting(s) come from <strong><?php echo e(PRIVATE_CONFIG_FILE); ?></strong> on the server and are shown locked below.
-            To change them, edit that file in cPanel → File Manager.
+            💾 Saving this section writes the email settings into <strong><?php echo e(PRIVATE_CONFIG_FILE); ?></strong> (a backup is kept as <?php echo e(PRIVATE_CONFIG_FILE); ?>.bak). You can also edit that file directly.
+        </div>
+        <?php elseif ($from_file): ?>
+        <div class="toast" style="background: rgba(56,189,248,.1); border-color: #0284c7; color: #7dd3fc;">
+            🔒 <?php echo count($from_file); ?> email setting(s) come from <strong><?php echo e(PRIVATE_CONFIG_FILE); ?></strong>, which this page cannot update (file permission). They are shown locked below —
+            edit that file in cPanel → File Manager, or set its permission to 644.
         </div>
         <?php endif; ?>
     <?php elseif (!empty($sec['help'])): ?>
@@ -282,7 +314,7 @@ adminHead('Settings', 'settings');
     <?php foreach ($sec['fields'] as $key => $f):
         $wide = !empty($f['bilingual']) || $f['type'] === 'textarea'; ?>
         <div class="fg" style="<?php echo $wide ? 'grid-column: 1 / -1;' : ''; ?>">
-            <?php if (($locked_value = mailFromConfigFile($key)) !== null): ?>
+            <?php if (!privateConfigWritable() && ($locked_value = mailFromConfigFile($key)) !== null): ?>
                 <label><?php echo e($f['label']); ?> <span class="badge b-contacted">🔒 config file</span></label>
                 <input type="text" disabled value="<?php
                     if ($f['type'] === 'password') echo '•••••••• (set in ' . PRIVATE_CONFIG_FILE . ')';
@@ -318,8 +350,8 @@ adminHead('Settings', 'settings');
                         <?php endforeach; ?>
                     </select>
                 <?php elseif ($f['type'] === 'password'): ?>
-                    <input id="f-<?php echo e($key); ?>" type="password" name="<?php echo e($key); ?>" autocomplete="new-password" placeholder="<?php echo opt($key) !== '' ? '•••••••• saved — type a new one to change' : 'Not set'; ?>">
-                    <?php if (opt($key) !== ''): ?>
+                    <input id="f-<?php echo e($key); ?>" type="password" name="<?php echo e($key); ?>" autocomplete="new-password" placeholder="<?php echo mailValue($key) !== '' ? '•••••••• saved — type a new one to change' : 'Not set'; ?>">
+                    <?php if (mailValue($key) !== ''): ?>
                         <label class="switch" style="margin-top: 8px; font-size: 13px;"><input type="checkbox" name="<?php echo e($key); ?>_clear" value="1"> Remove saved password</label>
                     <?php endif; ?>
                 <?php else: ?>
@@ -420,6 +452,11 @@ adminHead('Settings', 'settings');
         <tr><th>Email sending</th><td><?php echo $sys['mail']['transport'] === 'phpmail' ? 'Server mail (PHP mail)' . (function_exists('mail') ? ' <span class="badge b-sent">available</span>' : ' <span class="badge b-failed">disabled on this server</span>') : 'SMTP ' . e($sys['mail']['host'] . ':' . $sys['mail']['port']); ?>
             <?php if ($sys['port'] === null && $sys['mail']['transport'] === 'smtp'): ?> — <a href="<?php echo SITE_URL; ?>/admin/settings?check_mail=1#system">check connection</a><?php endif; ?>
             <?php if ($sys['port'] !== null): ?> — connection <?php echo $sys['port'] === 'open' ? '<span class="badge b-sent">open</span>' : '<span class="badge b-failed">' . e($sys['port']) . '</span><div class="help">Your hosting blocks this server. Choose "Server mail" in Email (SMTP), or use your cPanel email account with server "localhost".</div>'; ?><?php endif; ?></td></tr>
+        <?php $ok_srv = json_decode((string)opt('_smtp_working'), true); ?>
+        <tr><th>Email servers</th><td>
+            <?php if (!empty($ok_srv['host'])): ?>Last worked: <strong><?php echo e($ok_srv['host'] . ':' . $ok_srv['port']); ?></strong> (<?php echo e($ok_srv['at'] ?? ''); ?>)<br><?php endif; ?>
+            <span class="muted">Tries in order: <?php echo e(implode(', ', array_map(fn($x) => $x[0] . ':' . $x[1], smtpCandidates($sys['mail']))) ?: '—'); ?><?php echo PHP_OS_FAMILY !== 'Windows' && function_exists('mail') ? ', then server mail' : ''; ?></span>
+        </td></tr>
         <tr><th>Settings file</th><td><?php echo PRIVATE_CONFIG_EXISTS ? e(PRIVATE_CONFIG_FILE) . ' <span class="badge b-sent">found</span>' : 'config/config.php <span class="badge b-failed">missing</span>'; ?></td></tr>
     </table>
     <div class="row-actions" style="margin-top: 14px;">

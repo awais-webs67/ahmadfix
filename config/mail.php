@@ -67,7 +67,7 @@ function mailValue($key, $default = '') {
 }
 
 /**
- * The SMTP settings in use
+ * The email settings in use. smtp_host may be empty: the server is then found automatically.
  */
 function mailConfig() {
     $user = mailValue('smtp_user');
@@ -75,28 +75,27 @@ function mailConfig() {
     $from = mailValue('smtp_from_email');
     $notify = array_values(array_filter(array_map('trim', preg_split('/[,;\s]+/', mailValue('notify_emails', EMAIL))), fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
     $secure = strtolower(mailValue('smtp_secure', 'tls'));
-    $host = mailValue('smtp_host', 'smtp.gmail.com');
+    $host = strtolower(trim(mailValue('smtp_host', '')));
+    if ($host === 'auto') $host = '';
     $port = (int)mailValue('smtp_port', '587');
-    // A Gmail account can only send through Gmail's own server: if the server is set to
-    // "localhost" (or left empty) with a Gmail address, use smtp.gmail.com automatically
-    if (preg_match('/@(gmail|googlemail)\.com$/i', $user) && in_array(strtolower($host), ['localhost', '127.0.0.1', ''], true)) {
+    // A Gmail account can only send through Gmail's own server
+    if (preg_match('/@(gmail|googlemail)\.com$/i', $user) && in_array($host, ['localhost', '127.0.0.1'], true)) {
         $host = 'smtp.gmail.com';
-        if (!in_array($port, [587, 465], true)) $port = 587;
-        $secure = $port === 465 ? 'ssl' : 'tls';
     }
-    // Gmail shows App passwords as "abcd efgh ijkl mnop" — the spaces are not part of it
-    if (stripos($host, 'gmail') !== false || stripos($host, 'google') !== false) {
+    // Gmail and Google show App passwords as "abcd efgh ijkl mnop" — the spaces are not part of it
+    if (preg_match('/@(gmail|googlemail)\.com$/i', $user) || str_contains($host, 'gmail') || str_contains($host, 'google')) {
         $pass = str_replace(' ', '', $pass);
     }
     $transport = mailValue('mail_transport', 'smtp') === 'phpmail' ? 'phpmail' : 'smtp';
+    $own_domain = preg_replace('/^www\./', '', SITE_DOMAIN);
     if ($transport === 'phpmail' && !filter_var($from, FILTER_VALIDATE_EMAIL)) {
         // Server mail must come from an address on your own domain (Gmail addresses would land in spam)
-        $from = 'no-reply@' . preg_replace('/^www\./', '', SITE_DOMAIN);
+        $from = 'no-reply@' . $own_domain;
     }
     return [
         'transport'  => $transport,
         'host'       => $host,
-        'port'       => $port,
+        'port'       => ($port >= 1 && $port <= 65535) ? $port : 587,
         'secure'     => in_array($secure, ['tls', 'ssl', 'none'], true) ? $secure : 'tls',
         'user'       => $user,
         'pass'       => $pass,
@@ -104,7 +103,75 @@ function mailConfig() {
         'from_name'  => mailValue('smtp_from_name', SITE_NAME),
         'notify'     => $notify ?: [EMAIL],
         'auto_reply' => mailValue('auto_reply_enabled', '1') === '1',
+        'own_domain' => $own_domain,
     ];
+}
+
+/**
+ * Well-known email providers: domain → servers [host, port, security]
+ */
+function knownMailProviders() {
+    $gmail   = [['smtp.gmail.com', 587, 'tls'], ['smtp.gmail.com', 465, 'ssl']];
+    $outlook = [['smtp-mail.outlook.com', 587, 'tls'], ['smtp.office365.com', 587, 'tls']];
+    $yahoo   = [['smtp.mail.yahoo.com', 465, 'ssl'], ['smtp.mail.yahoo.com', 587, 'tls']];
+    $zoho    = [['smtp.zoho.com', 465, 'ssl'], ['smtp.zoho.com', 587, 'tls']];
+    $icloud  = [['smtp.mail.me.com', 587, 'tls']];
+    return [
+        'gmail.com' => $gmail, 'googlemail.com' => $gmail,
+        'outlook.com' => $outlook, 'hotmail.com' => $outlook, 'live.com' => $outlook, 'msn.com' => $outlook,
+        'yahoo.com' => $yahoo, 'ymail.com' => $yahoo,
+        'zoho.com' => $zoho, 'zohomail.com' => $zoho,
+        'icloud.com' => $icloud, 'me.com' => $icloud, 'mac.com' => $icloud,
+    ];
+}
+
+/**
+ * The servers to try, best first: [host, port, security, verify-certificate]
+ * - the server you entered (and the same server on the other port)
+ * - known providers by your email address (Gmail, Outlook, Yahoo, Zoho, iCloud)
+ * - business email (contact@yourdomain.com): mail.yourdomain.com, then this hosting's own mail server
+ */
+function smtpCandidates(array $c) {
+    $list = [];
+    $add = function ($host, $port, $secure, $verify = true) use (&$list) {
+        $key = "$host:$port";
+        if ($host !== '' && !isset($list[$key])) $list[$key] = [$host, $port, $secure, $verify];
+    };
+    $domain = strtolower(substr(strrchr($c['user'], '@') ?: '', 1));
+    $known = knownMailProviders()[$domain] ?? null;
+    $local = ['localhost', '127.0.0.1'];
+
+    // 1. The last server that worked with these settings
+    $ok = json_decode((string)opt('_smtp_working'), true);
+    if (($ok['for'] ?? '') === smtpSettingsKey($c)) {
+        $add($ok['host'], (int)$ok['port'], $ok['secure'], (bool)$ok['verify']);
+    }
+    // 2. The server you entered, then the same server on the other usual port
+    if ($c['host'] !== '') {
+        $isLocal = in_array($c['host'], $local, true);
+        $add($c['host'], $c['port'], $c['secure'], !$isLocal);
+        $add($c['host'], $c['secure'] === 'ssl' ? 587 : 465, $c['secure'] === 'ssl' ? 'tls' : 'ssl', !$isLocal);
+    }
+    // 3. Known provider for this address
+    foreach ($known ?? [] as [$h, $p, $sec]) $add($h, $p, $sec);
+    // 4. Business email: the domain's mail server, then this hosting's own mail server
+    if (!$known && $domain !== '') {
+        $add("mail.$domain", 465, 'ssl');
+        $add("mail.$domain", 587, 'tls');
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $add('localhost', 587, 'tls', false);
+            $add('localhost', 465, 'ssl', false);
+            $add('localhost', 25, 'none', false);
+        }
+    }
+    return array_values($list);
+}
+
+/**
+ * Identifies the current login (so a remembered server is forgotten when you change it)
+ */
+function smtpSettingsKey(array $c) {
+    return md5($c['user'] . '|' . $c['host'] . '|' . $c['port'] . '|' . $c['secure']);
 }
 
 function mailEnabled() {
@@ -112,7 +179,7 @@ function mailEnabled() {
     if ($c['transport'] === 'phpmail') {
         return function_exists('mail');
     }
-    return $c['host'] !== '' && $c['user'] !== '' && $c['pass'] !== '';
+    return $c['user'] !== '' && $c['pass'] !== '';
 }
 
 /**
@@ -382,44 +449,93 @@ function sendEmail(array $o) {
     }
 
     $note = '';
-    $block_key = $c['host'] . ':' . $c['port'];
-    $blocked = json_decode((string)opt('_smtp_blocked'), true);
-    $known_blocked = $c['transport'] === 'smtp' && PHP_OS_FAMILY !== 'Windows' && function_exists('mail')
-        && ($blocked['server'] ?? '') === $block_key && strtotime($blocked['at'] ?? '') > time() - 3600;
+    $result = ['ok' => false, 'error' => ''];
 
-    // Already know this server is blocked (checked within the last hour): don't wait for it again
-    $result = $known_blocked ? ['ok' => false, 'error' => 'Could not connect: ' . $block_key . ' is blocked by the hosting (remembered)'] : trySendEmail($c, $o);
-    if (!$known_blocked && !$result['ok'] && $c['transport'] === 'smtp' && isConnectionError($result['error'])) {
-        saveSetting('_smtp_blocked', json_encode(['server' => $block_key, 'at' => date('Y-m-d H:i:s')]), null, 'system');
-    }
-
-    // Hosting blocks the SMTP server (e.g. Gmail on cPanel): send through the server's own mail instead
-    if (!$result['ok'] && $c['transport'] === 'smtp' && isConnectionError($result['error'])
-        && PHP_OS_FAMILY !== 'Windows' && function_exists('mail')) {
-        $fallback = $c;
-        $fallback['transport'] = 'phpmail';
-        $own_domain = preg_replace('/^www\./', '', SITE_DOMAIN);
-        if (!str_ends_with(strtolower($c['from_email']), '@' . strtolower($own_domain)) && filter_var('no-reply@' . $own_domain, FILTER_VALIDATE_EMAIL)) {
-            // Server mail must come from your own domain, or Gmail/Outlook put it in spam
-            $fallback['from_email'] = 'no-reply@' . $own_domain;
+    if ($c['transport'] === 'phpmail') {
+        $result = trySendEmail($c, $o);
+    } else {
+        $blocked = json_decode((string)opt('_smtp_blocked'), true) ?: [];
+        $auth_error = '';
+        $tried = [];
+        foreach (smtpCandidates($c) as [$host, $port, $secure, $verify]) {
+            $key = "$host:$port";
+            // Known to be blocked by this hosting within the last hour → skip without waiting
+            if (!empty($blocked[$key]) && strtotime($blocked[$key]) > time() - 3600) {
+                $tried[] = "$key blocked";
+                continue;
+            }
+            // Quick check that the server can be reached at all (a blocked port fails here fast)
+            if (!smtpReachable($host, $port)) {
+                $blocked[$key] = date('Y-m-d H:i:s');
+                $tried[] = "$key unreachable";
+                continue;
+            }
+            $try = array_merge($c, ['host' => $host, 'port' => $port, 'secure' => $secure, 'verify' => $verify]);
+            $result = trySendEmail($try, $o);
+            if (!$result['ok'] && $verify && !isAuthError($result['error'])) {
+                // Many hosting mail servers have a certificate for another name — try again without checking it
+                $try['verify'] = false;
+                $result = trySendEmail($try, $o);
+            }
+            if ($result['ok']) {
+                saveSetting('_smtp_working', json_encode(['for' => smtpSettingsKey($c), 'host' => $host, 'port' => $port, 'secure' => $secure, 'verify' => $try['verify'], 'at' => date('Y-m-d H:i:s')]), null, 'system');
+                getAllSettings(true);
+                if ($host !== $c['host'] || $port !== $c['port']) {
+                    $note = "sent through $host:$port";
+                }
+                break;
+            }
+            if (isAuthError($result['error']) && $auth_error === '') {
+                $auth_error = "$key: " . $result['error'];
+            }
+            $tried[] = "$key: " . $result['error'];
         }
-        $second = trySendEmail($fallback, $o);
-        if ($second['ok']) {
-            $note = 'SMTP server ' . $c['host'] . ' is blocked by the hosting — sent with server mail instead';
-            error_log('Email: ' . $note . ' (to ' . $o['to'] . ')');
-            $result = $second;
-        } else {
-            $result['error'] .= ' | Server mail also failed: ' . $second['error'];
+        saveSetting('_smtp_blocked', json_encode($blocked), null, 'system');
+        getAllSettings(true);   // the next email in this same page load uses what we just learned
+
+        // No SMTP server worked: send through this hosting's own mail system
+        if (!$result['ok'] && PHP_OS_FAMILY !== 'Windows' && function_exists('mail')) {
+            $fallback = array_merge($c, ['transport' => 'phpmail']);
+            if (!str_ends_with(strtolower($c['from_email']), '@' . strtolower($c['own_domain'])) && filter_var('no-reply@' . $c['own_domain'], FILTER_VALIDATE_EMAIL)) {
+                $fallback['from_email'] = 'no-reply@' . $c['own_domain'];   // must be your own domain, or it lands in spam
+            }
+            $second = trySendEmail($fallback, $o);
+            if ($second['ok']) {
+                $note = 'no SMTP server could be used (' . ($auth_error ? 'wrong password' : 'blocked by the hosting') . ') — sent with server mail instead';
+                $result = $second;
+            }
+        }
+        if (!$result['ok']) {
+            $result['error'] = $auth_error ?: ($tried ? implode(' | ', array_slice($tried, 0, 4)) : 'No email server could be found for ' . $c['user']);
         }
     }
 
     if ($result['ok']) {
+        if ($note) error_log('Email: ' . $note . ' (to ' . $o['to'] . ')');
         logEmail($log + ['status' => 'sent', 'error' => $note ?: null]);
         return ['ok' => true, 'error' => '', 'note' => $note];
     }
     error_log('Email send failed to ' . $o['to'] . ': ' . $result['error']);
     logEmail($log + ['status' => 'failed', 'error' => $result['error']]);
     return ['ok' => false, 'error' => $result['error']];
+}
+
+/**
+ * Can we open a connection to this mail server at all? (fails fast when the hosting blocks it)
+ */
+function smtpReachable($host, $port) {
+    $errno = 0; $errstr = '';
+    $fp = @stream_socket_client("tcp://$host:$port", $errno, $errstr, 6);
+    if ($fp) { fclose($fp); return true; }
+    return false;
+}
+
+/**
+ * Wrong username/password?
+ */
+function isAuthError($error) {
+    $e = strtolower((string)$error);
+    return str_contains($e, 'authenticate') || str_contains($e, 'username and password') || str_contains($e, '535') || str_contains($e, 'invalid login') || str_contains($e, 'authentication failed');
 }
 
 /**
@@ -456,9 +572,10 @@ function trySendEmail(array $c, array $o) {
             } else {
                 $m->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             }
-            $m->Timeout = 15;
-            // The server's own mail service has a certificate for its hostname, not "localhost"
-            if (in_array(strtolower($c['host']), ['localhost', '127.0.0.1'], true)) {
+            $m->Timeout = 12;                       // connecting
+            $m->getSMTPInstance()->Timelimit = 15;  // waiting for each answer (default is 5 minutes)
+            // Hosting mail servers often have a certificate for another name (e.g. the server's own name)
+            if (array_key_exists('verify', $c) ? !$c['verify'] : in_array(strtolower($c['host']), ['localhost', '127.0.0.1'], true)) {
                 $m->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]];
             }
         }

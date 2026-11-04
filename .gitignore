@@ -1,6 +1,8 @@
 # Your private settings (database + email login) — never commit
 config/config.php
 config/config.local.php
+config/*.bak
+config/*.tmp*
 
 # OS / editor files
 .DS_Store

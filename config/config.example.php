@@ -28,14 +28,15 @@ define('DB_PASS', 'your_database_password');
 // it sends through the hosting server's own mail system and needs no password.
 // define('MAIL_TRANSPORT', 'phpmail');
 //
-// Otherwise SMTP: Gmail (smtp.gmail.com) or your cPanel email account (server 'localhost', port 587, 'tls').
+// Otherwise just fill SMTP_USER and SMTP_PASS — the server is found automatically
+// (or edit everything in Admin → Settings → Email, which writes into this file).
 // Gmail: create an App password at myaccount.google.com → Security →
 // 2-Step Verification → App passwords (16 letters, spaces are fine).
-define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_HOST', '');               // '' = automatic (from your email address)
 define('SMTP_PORT', 587);              // 587 with 'tls', or 465 with 'ssl'
 define('SMTP_SECURE', 'tls');          // 'tls', 'ssl' or 'none'
-define('SMTP_USER', '');               // your Gmail address, e.g. 'name@gmail.com'
-define('SMTP_PASS', '');               // the 16-letter App password
+define('SMTP_USER', '');               // Gmail or business email, e.g. 'contact@yourdomain.com'
+define('SMTP_PASS', '');               // mailbox password (Gmail: 16-letter App password)
 define('SMTP_FROM_EMAIL', '');         // '' = same as SMTP_USER
 define('SMTP_FROM_NAME', '');          // '' = business name from Settings
 define('NOTIFY_EMAILS', '');           // where new-lead alerts go, e.g. 'you@gmail.com, partner@gmail.com' ('' = Settings)

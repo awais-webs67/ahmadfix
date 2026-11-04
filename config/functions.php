@@ -733,3 +733,76 @@ function purgePageCache() {
     }
 }
 
+
+// ============================================
+// Writing settings into config/config.php (Admin → Settings → Email)
+// ============================================
+
+/**
+ * The private settings file the admin panel writes to
+ */
+function privateConfigPath() {
+    return SITE_ROOT . '/' . PRIVATE_CONFIG_FILE;
+}
+
+/**
+ * Can the admin panel update config/config.php?
+ */
+function privateConfigWritable() {
+    $f = privateConfigPath();
+    return is_file($f) ? is_writable($f) : is_writable(dirname($f));
+}
+
+/**
+ * Put define('NAME', value) lines into config/config.php.
+ * Old lines for the same names are removed, the new ones go in one clearly marked block.
+ * The file is backed up (config.php.bak), syntax-checked, then replaced in one step.
+ * Returns '' on success, otherwise the reason it could not be written.
+ */
+function writePrivateConfig(array $defines, $title = 'EMAIL SETTINGS') {
+    $file = privateConfigPath();
+    if (!privateConfigWritable()) {
+        return 'The file ' . PRIVATE_CONFIG_FILE . ' is not writable (set its permission to 644 or 664 in File Manager).';
+    }
+    $src = is_file($file) ? (string)file_get_contents($file) : "<?php\nif (!defined('FIXORA_APP')) { die('Direct access not allowed.'); }\n";
+
+    // Remove the previous block and any single define() lines for these names
+    $begin = "// ==== {$title} — written by Admin → Settings (you can also edit them here) ====";
+    $end = "// ==== END {$title} ====";
+    $src = preg_replace('/\n?' . preg_quote($begin, '/') . '.*?' . preg_quote($end, '/') . '\n?/su', "\n", $src);
+    $names = implode('|', array_map(fn($n) => preg_quote($n, '/'), array_keys($defines)));
+    $src = preg_replace('/^[ \t]*define\(\s*[\'"](' . $names . ')[\'"]\s*,.*?\);[^\n]*\n?/mu', '', $src);
+    $src = rtrim(preg_replace('/\?>\s*$/', '', $src)) . "\n";
+
+    $block = "\n{$begin}\n";
+    foreach ($defines as $name => $value) {
+        $block .= "define('" . $name . "', " . var_export($value, true) . ");\n";
+    }
+    $block .= "{$end}\n";
+    $new = $src . $block;
+
+    // Never write a file that would break the website
+    try {
+        token_get_all($new, TOKEN_PARSE);
+    } catch (Throwable $e) {
+        return 'Generated settings were not valid PHP (' . $e->getMessage() . '). Nothing was changed.';
+    }
+
+    $perms = is_file($file) ? (fileperms($file) & 0777) : 0644;
+    if (is_file($file)) {
+        @copy($file, $file . '.bak');
+    }
+    $tmp = $file . '.tmp' . bin2hex(random_bytes(3));
+    if (@file_put_contents($tmp, $new, LOCK_EX) === false || !@rename($tmp, $file)) {
+        @unlink($tmp);
+        // Some hosts don't allow rename: write in place
+        if (@file_put_contents($file, $new, LOCK_EX) === false) {
+            return 'Could not save ' . PRIVATE_CONFIG_FILE . '.';
+        }
+    }
+    @chmod($file, $perms ?: 0644);
+    if (function_exists('opcache_invalidate')) {
+        @opcache_invalidate($file, true);
+    }
+    return '';
+}
