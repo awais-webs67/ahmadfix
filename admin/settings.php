@@ -457,6 +457,11 @@ adminHead('Settings', 'settings');
             <?php if (!empty($ok_srv['host'])): ?>Last worked: <strong><?php echo e($ok_srv['host'] . ':' . $ok_srv['port']); ?></strong> (<?php echo e($ok_srv['at'] ?? ''); ?>)<br><?php endif; ?>
             <span class="muted">Tries in order: <?php echo e(implode(', ', array_map(fn($x) => $x[0] . ':' . $x[1], smtpCandidates($sys['mail']))) ?: '—'); ?><?php echo PHP_OS_FAMILY !== 'Windows' && function_exists('mail') ? ', then server mail' : ''; ?></span>
         </td></tr>
+        <tr><th>Hosting's own mail</th><td>
+            Mail server on this machine (localhost:25): <?php echo PHP_OS_FAMILY !== 'Windows' && smtpReachable('localhost', 25) ? '<span class="badge b-sent">available</span>' : '<span class="badge b-failed">not available</span>'; ?>
+            &nbsp; PHP mail(): <?php echo function_exists('mail') ? '<span class="badge b-sent">on</span>' : '<span class="badge b-failed">turned off by the hosting</span>'; ?>
+            <div class="help">Used automatically when outside servers (like Gmail) are blocked.</div>
+        </td></tr>
         <tr><th>Settings file</th><td><?php echo PRIVATE_CONFIG_EXISTS ? e(PRIVATE_CONFIG_FILE) . ' <span class="badge b-sent">found</span>' : 'config/config.php <span class="badge b-failed">missing</span>'; ?></td></tr>
     </table>
     <div class="row-actions" style="margin-top: 14px;">

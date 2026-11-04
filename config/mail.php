@@ -197,9 +197,13 @@ function mailErrorHint($error) {
         return 'Your computer could not reach the email server (often antivirus/firewall or the internet provider blocks port 587). '
              . 'Try port 465 with SSL, or test on the live website instead.';
     }
-    if (str_contains($e, 'connection refused') || str_contains($e, 'could not connect') || str_contains($e, 'timed out') || str_contains($e, 'network is unreachable')) {
-        return 'Your hosting is blocking connections to this email server (common on cPanel with Gmail). Fix: in Settings → Email choose "Server mail", '
-             . 'OR create an email account in cPanel → Email Accounts and use it with SMTP server "localhost", port 587, TLS, its full address and password.';
+    if (str_contains($e, 'unreachable') || str_contains($e, 'blocked') || str_contains($e, 'connection refused') || str_contains($e, 'could not connect') || str_contains($e, 'timed out')) {
+        if (PHP_OS_FAMILY !== 'Windows') {
+            return 'Your hosting blocks connections to outside email servers like Gmail (normal on shared cPanel hosting — SSL or another port will not help). '
+                 . 'Fix: create an email account in cPanel → Email Accounts (e.g. contact@' . preg_replace('/^www\./', '', SITE_DOMAIN) . ') and enter THAT address and its password here, leaving the server empty — '
+                 . 'it then sends through your hosting, which is allowed. Booking alerts can still go to your Gmail. Or ask your hosting to allow outgoing SMTP to Gmail.';
+        }
+        return 'Your computer could not reach the email server (antivirus, firewall or the internet provider may block it). Try port 465 with SSL, or test on the live website.';
     }
     if (str_contains($e, 'authenticate') || str_contains($e, 'username and password') || str_contains($e, '535')) {
         return 'The server rejected the login. For Gmail use an App password (16 letters), not your normal password, and turn on 2-Step Verification first.';
@@ -493,20 +497,47 @@ function sendEmail(array $o) {
         saveSetting('_smtp_blocked', json_encode($blocked), null, 'system');
         getAllSettings(true);   // the next email in this same page load uses what we just learned
 
-        // No SMTP server worked: send through this hosting's own mail system
-        if (!$result['ok'] && PHP_OS_FAMILY !== 'Windows' && function_exists('mail')) {
-            $fallback = array_merge($c, ['transport' => 'phpmail']);
-            if (!str_ends_with(strtolower($c['from_email']), '@' . strtolower($c['own_domain'])) && filter_var('no-reply@' . $c['own_domain'], FILTER_VALIDATE_EMAIL)) {
-                $fallback['from_email'] = 'no-reply@' . $c['own_domain'];   // must be your own domain, or it lands in spam
+        // No SMTP server worked: use this hosting's own mail system.
+        // Emails must then come from your own domain, or Gmail/Outlook put them in spam.
+        $own_from = 'no-reply@' . $c['own_domain'];
+        $from_own = str_ends_with(strtolower($c['from_email']), '@' . strtolower($c['own_domain'])) || !filter_var($own_from, FILTER_VALIDATE_EMAIL)
+            ? $c['from_email'] : $own_from;
+        $why = $auth_error ? 'wrong password' : 'blocked by the hosting';
+        $fallback_errors = [];
+
+        if (!$result['ok'] && PHP_OS_FAMILY !== 'Windows') {
+            // a) The hosting's mail server on this machine, without a password (cPanel allows this
+            //    even when connections to Gmail and other outside servers are blocked)
+            foreach ([25, 587] as $lp) {
+                if (!smtpReachable('localhost', $lp)) continue;
+                $relay = array_merge($c, ['transport' => 'smtp', 'host' => 'localhost', 'port' => $lp, 'secure' => 'none',
+                                          'verify' => false, 'auth' => false, 'from_email' => $from_own]);
+                $r = trySendEmail($relay, $o);
+                if ($r['ok']) {
+                    $note = "no SMTP server could be used ($why) — sent through the hosting's mail server (localhost:$lp) instead";
+                    $result = $r;
+                    break;
+                }
+                $fallback_errors[] = "hosting mail server localhost:$lp: " . $r['error'];
             }
-            $second = trySendEmail($fallback, $o);
-            if ($second['ok']) {
-                $note = 'no SMTP server could be used (' . ($auth_error ? 'wrong password' : 'blocked by the hosting') . ') — sent with server mail instead';
-                $result = $second;
+            // b) PHP's mail() function
+            if (!$result['ok']) {
+                if (!function_exists('mail')) {
+                    $fallback_errors[] = 'server mail: the PHP mail() function is turned off on this hosting';
+                } else {
+                    $r = trySendEmail(array_merge($c, ['transport' => 'phpmail', 'from_email' => $from_own]), $o);
+                    if ($r['ok']) {
+                        $note = "no SMTP server could be used ($why) — sent with server mail instead";
+                        $result = $r;
+                    } else {
+                        $fallback_errors[] = 'server mail: ' . $r['error'];
+                    }
+                }
             }
         }
         if (!$result['ok']) {
-            $result['error'] = $auth_error ?: ($tried ? implode(' | ', array_slice($tried, 0, 4)) : 'No email server could be found for ' . $c['user']);
+            $parts = $auth_error ? [$auth_error] : array_slice($tried, 0, 4);
+            $result['error'] = implode(' | ', array_merge($parts ?: ['No email server could be found for ' . $c['user']], $fallback_errors));
         }
     }
 
@@ -561,9 +592,11 @@ function trySendEmail(array $c, array $o) {
             $m->isSMTP();
             $m->Host = $c['host'];
             $m->Port = $c['port'] ?: 587;
-            $m->SMTPAuth = true;
-            $m->Username = $c['user'];
-            $m->Password = $c['pass'];
+            $m->SMTPAuth = $c['auth'] ?? true;
+            if ($m->SMTPAuth) {
+                $m->Username = $c['user'];
+                $m->Password = $c['pass'];
+            }
             if ($c['secure'] === 'ssl') {
                 $m->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             } elseif ($c['secure'] === 'none') {
