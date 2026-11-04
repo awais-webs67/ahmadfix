@@ -89,6 +89,11 @@ try {
     error_log("Database Connection Error: " . $e->getMessage());
     http_response_code(503);
     header('Retry-After: 600');
+    if (!file_exists(__DIR__ . '/config.local.php')) {
+        // First install: tell the owner what is missing (no secrets are shown)
+        die('<h1>Website setup needed</h1><p>The database login is missing. Create the file <code>config/config.local.php</code> '
+            . '(copy <code>config/config.local.example.php</code>) and enter your database name, user and password.</p>');
+    }
     die('<h1>Service Temporarily Unavailable</h1><p>Please try again later.</p>');
 }
 
