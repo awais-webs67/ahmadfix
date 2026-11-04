@@ -72,7 +72,11 @@ return [
         'title' => 'Email (SMTP)',
         'icon'  => '✉️',
         'fields' => [
-            'smtp_host'       => ['label' => 'SMTP server', 'type' => 'text', 'default' => 'smtp.gmail.com', 'help' => 'Gmail: smtp.gmail.com · Outlook: smtp.office365.com · Your hosting: usually mail.yourdomain.com'],
+            'mail_transport'  => ['label' => 'How to send emails', 'type' => 'select',
+                                  'options' => ['smtp' => 'SMTP server (Gmail, your hosting email…)', 'phpmail' => 'Server mail — no password needed (use if SMTP is blocked)'],
+                                  'default' => 'smtp',
+                                  'help' => 'Many cPanel hosts block outside servers like Gmail ("Connection refused"). Then choose Server mail, or use your cPanel email account with server "localhost".'],
+            'smtp_host'       => ['label' => 'SMTP server', 'type' => 'text', 'default' => 'smtp.gmail.com', 'help' => 'Gmail: smtp.gmail.com · Your cPanel email account: localhost (port 587, TLS) · Outlook: smtp.office365.com'],
             'smtp_port'       => ['label' => 'Port', 'type' => 'number', 'default' => '587'],
             'smtp_secure'     => ['label' => 'Security', 'type' => 'select', 'options' => ['tls' => 'TLS (port 587)', 'ssl' => 'SSL (port 465)', 'none' => 'None (not recommended)'], 'default' => 'tls'],
             'smtp_user'       => ['label' => 'SMTP username (email address)', 'type' => 'text', 'default' => ''],

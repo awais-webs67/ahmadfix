@@ -31,6 +31,7 @@ use PHPMailer\PHPMailer\PHPMailer;
  */
 function mailConfigConstants() {
     return [
+        'mail_transport'     => 'MAIL_TRANSPORT',
         'smtp_host'          => 'SMTP_HOST',
         'smtp_port'          => 'SMTP_PORT',
         'smtp_secure'        => 'SMTP_SECURE',
@@ -79,7 +80,13 @@ function mailConfig() {
     if (stripos($host, 'gmail') !== false || stripos($host, 'google') !== false) {
         $pass = str_replace(' ', '', $pass);
     }
+    $transport = mailValue('mail_transport', 'smtp') === 'phpmail' ? 'phpmail' : 'smtp';
+    if ($transport === 'phpmail' && !filter_var($from, FILTER_VALIDATE_EMAIL)) {
+        // Server mail must come from an address on your own domain (Gmail addresses would land in spam)
+        $from = 'no-reply@' . preg_replace('/^www\./', '', SITE_DOMAIN);
+    }
     return [
+        'transport'  => $transport,
         'host'       => $host,
         'port'       => (int)mailValue('smtp_port', '587'),
         'secure'     => in_array($secure, ['tls', 'ssl', 'none'], true) ? $secure : 'tls',
@@ -94,7 +101,28 @@ function mailConfig() {
 
 function mailEnabled() {
     $c = mailConfig();
+    if ($c['transport'] === 'phpmail') {
+        return function_exists('mail');
+    }
     return $c['host'] !== '' && $c['user'] !== '' && $c['pass'] !== '';
+}
+
+/**
+ * Plain-language advice for common SMTP errors (shown in the admin panel)
+ */
+function mailErrorHint($error) {
+    $e = strtolower((string)$error);
+    if (str_contains($e, 'connection refused') || str_contains($e, 'could not connect') || str_contains($e, 'timed out') || str_contains($e, 'network is unreachable')) {
+        return 'Your hosting is blocking connections to this email server (common on cPanel with Gmail). Fix: in Settings → Email choose "Server mail", '
+             . 'OR create an email account in cPanel → Email Accounts and use it with SMTP server "localhost", port 587, TLS, its full address and password.';
+    }
+    if (str_contains($e, 'authenticate') || str_contains($e, 'username and password') || str_contains($e, '535')) {
+        return 'The server rejected the login. For Gmail use an App password (16 letters), not your normal password, and turn on 2-Step Verification first.';
+    }
+    if (str_contains($e, 'certificate') || str_contains($e, 'ssl') || str_contains($e, 'tls')) {
+        return 'Encryption problem: try port 587 with TLS, or port 465 with SSL.';
+    }
+    return '';
 }
 
 /**
@@ -332,26 +360,34 @@ function sendEmail(array $o) {
     }
     if (!mailEnabled()) {
         logEmail($log + ['status' => 'failed', 'error' => 'SMTP not configured']);
-        return ['ok' => false, 'error' => 'Email is not set up yet. Add your SMTP login in Admin → Settings → Email.'];
+        return ['ok' => false, 'error' => 'Email is not set up yet. Add your SMTP login in Admin → Settings → Email, or choose "Server mail".'];
     }
 
     try {
         $m = new PHPMailer(true);
-        $m->isSMTP();
-        $m->Host = $c['host'];
-        $m->Port = $c['port'] ?: 587;
-        $m->SMTPAuth = true;
-        $m->Username = $c['user'];
-        $m->Password = $c['pass'];
-        if ($c['secure'] === 'ssl') {
-            $m->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        } elseif ($c['secure'] === 'none') {
-            $m->SMTPSecure = '';
-            $m->SMTPAutoTLS = false;
+        if ($c['transport'] === 'phpmail') {
+            $m->isMail();       // the hosting server's own mail system (no SMTP login)
         } else {
-            $m->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $m->isSMTP();
+            $m->Host = $c['host'];
+            $m->Port = $c['port'] ?: 587;
+            $m->SMTPAuth = true;
+            $m->Username = $c['user'];
+            $m->Password = $c['pass'];
+            if ($c['secure'] === 'ssl') {
+                $m->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } elseif ($c['secure'] === 'none') {
+                $m->SMTPSecure = '';
+                $m->SMTPAutoTLS = false;
+            } else {
+                $m->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            }
+            $m->Timeout = 20;
+            // The server's own mail service has a certificate for its hostname, not "localhost"
+            if (in_array(strtolower($c['host']), ['localhost', '127.0.0.1'], true)) {
+                $m->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]];
+            }
         }
-        $m->Timeout = 20;
         $m->CharSet = 'UTF-8';
         $m->Encoding = 'base64';
         $m->setFrom($c['from_email'], $c['from_name']);

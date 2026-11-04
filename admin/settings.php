@@ -114,6 +114,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: ' . SITE_URL . '/admin/settings#email');
             exit;
         }
+    } elseif ($action === 'repair_arabic') {
+        $r = repairArabic($pdo);
+        $pdo = $GLOBALS['pdo'];
+        getAllSettings(true);
+        if ($r['ok']) {
+            flash('Arabic repaired: ' . $r['restored'] . ' value(s) restored, and the database now saves Arabic correctly.');
+        } else {
+            flash('Arabic repair did not finish: ' . implode(' · ', $r['errors'] ?: ['still ' . $r['damaged_left'] . ' value(s) with question marks']), 'error');
+        }
+        header('Location: ' . SITE_URL . '/admin/settings#system');
+        exit;
     } elseif ($action === 'page_seo') {
         $pages = ['home', 'about', 'contact', 'privacy-policy', 'terms'];
         $stmt = $pdo->prepare("INSERT INTO pages_seo (page_slug, title_en, title_ar, description_en, description_ar)
@@ -169,6 +180,32 @@ foreach ($pdo->query("SELECT * FROM pages_seo") as $r) {
 $services = $pdo->query("SELECT * FROM services ORDER BY sort_order")->fetchAll();
 $mail_ok = mailEnabled();
 
+// ---- System check ----
+$sys = [];
+$sys['php'] = PHP_VERSION;
+try { $sys['db'] = $pdo->query("SELECT VERSION()")->fetchColumn(); } catch (Throwable $e) { $sys['db'] = '?'; }
+try { $sys['conn'] = implode(' / ', $pdo->query("SELECT @@character_set_client, @@character_set_connection, @@character_set_results")->fetch(PDO::FETCH_NUM)); } catch (Throwable $e) { $sys['conn'] = '?'; }
+try {
+    $sys['bad_tables'] = $pdo->query("SELECT CONCAT(TABLE_NAME, '.', COLUMN_NAME, ' (', CHARACTER_SET_NAME, ')') FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND CHARACTER_SET_NAME IS NOT NULL AND CHARACTER_SET_NAME NOT IN ('utf8mb4','utf8','utf8mb3')
+        AND TABLE_NAME IN ('" . implode("','", siteTables()) . "') LIMIT 12")->fetchAll(PDO::FETCH_COLUMN);
+} catch (Throwable $e) { $sys['bad_tables'] = ['could not read: ' . $e->getMessage()]; }
+$sys['arabic_ok'] = arabicSelfTest($pdo);
+$sys['damaged'] = countDamagedArabic($pdo);
+$sys['repair'] = json_decode((string)opt('_arabic_repair'), true) ?: null;
+$sys['migration'] = json_decode((string)opt('_migration_log'), true) ?: null;
+$mc = mailConfig();
+$sys['mail'] = $mc;
+$sys['port'] = null;
+if ($mc['transport'] === 'smtp' && $mc['host'] !== '') {
+    $errno = 0; $errstr = '';
+    $target = ($mc['secure'] === 'ssl' ? 'ssl://' : '') . $mc['host'];
+    $fp = @fsockopen($target, $mc['port'] ?: 587, $errno, $errstr, 5);
+    $sys['port'] = $fp ? 'open' : ('blocked — ' . ($errstr ?: 'error ' . $errno));
+    if ($fp) fclose($fp);
+}
+$sys_problem = !$sys['arabic_ok'] || $sys['damaged'] > 0;
+
 /**
  * Value to show in a field: what was just submitted (if there was an error) or what is saved
  */
@@ -187,14 +224,17 @@ adminHead('Settings', 'settings');
 <p class="a-sub">Everything about your business lives here. Changes appear on the website immediately — no code editing needed.</p>
 
 <?php adminFlash(); ?>
+<?php if ($sys_problem): ?>
+    <div class="toast warning">⚠️ Arabic text problem detected (<?php echo (int)$sys['damaged']; ?> value(s) with question marks<?php echo $sys['arabic_ok'] ? '' : ', database cannot save Arabic yet'; ?>). <a href="#system">Open System check</a> and press "Repair Arabic now".</div>
+<?php endif; ?>
 <?php if ($errors): ?>
     <div class="toast error">Not saved: <?php echo e(implode(' · ', $errors)); ?></div>
 <?php endif; ?>
 <?php if ($test_result && !$test_result['ok']): ?>
     <div class="toast error">
         Test email failed: <?php echo e($test_result['error']); ?>
-        <?php if (stripos($test_result['error'], 'authenticate') !== false || stripos($test_result['error'], 'Username') !== false): ?>
-            <br><br>Gmail tip: use an <strong>App password</strong> (16 letters), not your normal Gmail password. Turn on 2-Step Verification first, then create the app password.
+        <?php if ($hint = mailErrorHint($test_result['error'])): ?>
+            <br><br><strong>What to do:</strong> <?php echo e($hint); ?>
         <?php endif; ?>
     </div>
 <?php endif; ?>
@@ -205,6 +245,7 @@ adminHead('Settings', 'settings');
     <?php endforeach; ?>
     <a href="#pageseo" class="btn btn-gray btn-sm">🔎 Google Titles</a>
     <a href="#account" class="btn btn-gray btn-sm">🔒 Password</a>
+    <a href="#system" class="btn btn-gray btn-sm">🩺 System check</a>
 </div>
 
 <?php foreach ($schema as $sk => $sec): ?>
@@ -348,6 +389,44 @@ adminHead('Settings', 'settings');
     <?php endforeach; ?>
     <button type="submit" class="btn btn-orange" style="margin-top: 14px;">Save Google titles</button>
 </form>
+
+<!-- System check -->
+<div class="card" id="system">
+    <h2>🩺 System check</h2>
+    <p class="hint">If something doesn't work, take a screenshot of this box and send it to your developer.</p>
+    <table class="kv-sys">
+        <tr><th>PHP / Database</th><td><?php echo e($sys['php']); ?> / <?php echo e($sys['db']); ?></td></tr>
+        <tr><th>Database connection charset</th><td><?php echo e($sys['conn']); ?> <?php echo str_contains($sys['conn'], 'utf8') ? '<span class="badge b-sent">OK</span>' : '<span class="badge b-failed">Problem</span>'; ?></td></tr>
+        <tr><th>Tables that cannot hold Arabic</th><td><?php echo $sys['bad_tables'] ? e(implode(', ', $sys['bad_tables'])) . ' <span class="badge b-failed">Problem</span>' : 'None <span class="badge b-sent">OK</span>'; ?></td></tr>
+        <tr><th>Arabic save test</th><td><?php echo $sys['arabic_ok'] ? 'Arabic is saved correctly <span class="badge b-sent">OK</span>' : 'Arabic turns into ???? <span class="badge b-failed">Problem</span>'; ?></td></tr>
+        <tr><th>Arabic values with ????</th><td><?php echo (int)$sys['damaged']; ?> <?php echo $sys['damaged'] ? '<span class="badge b-failed">Problem</span>' : '<span class="badge b-sent">OK</span>'; ?></td></tr>
+        <?php if ($sys['repair']): ?>
+        <tr><th>Last Arabic repair</th><td><?php echo e($sys['repair']['at'] ?? ''); ?> — restored <?php echo (int)($sys['repair']['restored'] ?? 0); ?>
+            <?php foreach ($sys['repair']['errors'] ?? [] as $er): ?><div style="color:#f87171;font-size:12px;"><?php echo e($er); ?></div><?php endforeach; ?>
+            <?php if (str_contains(implode(' ', $sys['repair']['errors'] ?? []), 'ALTER command denied')): ?>
+                <div class="help" style="color:#fcd34d;">Fix: cPanel → <strong>MySQL Databases</strong> → "Add User To Database" (or click your user under "Privileged Users") → tick <strong>ALL PRIVILEGES</strong> → Make Changes. Then press "Repair Arabic now".</div>
+            <?php endif; ?></td></tr>
+        <?php endif; ?>
+        <?php if (!empty($sys['migration']['failed'])): ?>
+        <tr><th>Upgrade steps that failed</th><td><?php foreach ($sys['migration']['failed'] as $step => $msg): ?><div style="color:#f87171;font-size:12px;"><?php echo e($step . ': ' . $msg); ?></div><?php endforeach; ?></td></tr>
+        <?php endif; ?>
+        <tr><th>Email sending</th><td><?php echo $sys['mail']['transport'] === 'phpmail' ? 'Server mail (PHP mail)' . (function_exists('mail') ? ' <span class="badge b-sent">available</span>' : ' <span class="badge b-failed">disabled on this server</span>') : 'SMTP ' . e($sys['mail']['host'] . ':' . $sys['mail']['port']); ?>
+            <?php if ($sys['port'] !== null): ?> — connection <?php echo $sys['port'] === 'open' ? '<span class="badge b-sent">open</span>' : '<span class="badge b-failed">' . e($sys['port']) . '</span><div class="help">Your hosting blocks this server. Choose "Server mail" in Email (SMTP), or use your cPanel email account with server "localhost".</div>'; ?><?php endif; ?></td></tr>
+        <tr><th>Settings file</th><td><?php echo PRIVATE_CONFIG_EXISTS ? e(PRIVATE_CONFIG_FILE) . ' <span class="badge b-sent">found</span>' : 'config/config.php <span class="badge b-failed">missing</span>'; ?></td></tr>
+    </table>
+    <div class="row-actions" style="margin-top: 14px;">
+        <form method="POST" action="<?php echo SITE_URL; ?>/admin/settings#system" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
+            <input type="hidden" name="action" value="repair_arabic">
+            <button type="submit" class="btn btn-orange">Repair Arabic now</button>
+        </form>
+        <a href="<?php echo SITE_URL; ?>/admin/settings#system" class="btn btn-gray">Check again</a>
+    </div>
+</div>
+<style>
+    .kv-sys th { width: 34%; text-transform: none; letter-spacing: 0; font-size: 13px; color: #94a3b8; font-weight: 600; vertical-align: top; }
+    .kv-sys td { font-size: 14px; }
+</style>
 
 <!-- Password -->
 <form method="POST" action="<?php echo SITE_URL; ?>/admin/settings#account" class="card" id="account">

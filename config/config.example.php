@@ -23,7 +23,12 @@ define('DB_NAME', 'fixora');
 define('DB_USER', 'your_database_user');
 define('DB_PASS', 'your_database_password');
 
-// ---- Email (SMTP) ----
+// ---- Email ----
+// If your hosting blocks Gmail ("Connection refused" in the test email), uncomment the next line:
+// it sends through the hosting server's own mail system and needs no password.
+// define('MAIL_TRANSPORT', 'phpmail');
+//
+// Otherwise SMTP: Gmail (smtp.gmail.com) or your cPanel email account (server 'localhost', port 587, 'tls').
 // Gmail: create an App password at myaccount.google.com → Security →
 // 2-Step Verification → App passwords (16 letters, spaces are fine).
 define('SMTP_HOST', 'smtp.gmail.com');

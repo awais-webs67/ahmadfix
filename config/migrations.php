@@ -62,7 +62,7 @@ function siteTables() {
 /**
  * Convert any table stored in a character set that cannot hold Arabic (e.g. latin1) to UTF-8
  */
-function fixTableCharsets(PDO $pdo) {
+function fixTableCharsets(PDO $pdo, array &$errors = []) {
     $converted = false;
     try {
         $pdo->exec("ALTER DATABASE CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
@@ -79,12 +79,18 @@ function fixTableCharsets(PDO $pdo) {
         if (!(int)$bad->fetchColumn()) continue;
         try {
             $pdo->exec("ALTER TABLE `{$t}` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-        } catch (Throwable $e) {
-            // Very old MySQL without utf8mb4: utf8 still holds Arabic
-            $pdo->exec("ALTER TABLE `{$t}` CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci");
+            $converted = true;
+        } catch (Throwable $e1) {
+            try {
+                // Very old MySQL without utf8mb4: utf8 still holds Arabic
+                $pdo->exec("ALTER TABLE `{$t}` CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci");
+                $converted = true;
+            } catch (Throwable $e2) {
+                $errors[] = "Table {$t} could not be converted: " . $e2->getMessage();
+                continue;
+            }
         }
         error_log("Ahmad Fix: table {$t} converted to UTF-8 so Arabic text can be stored.");
-        $converted = true;
     }
     return $converted;
 }
@@ -260,9 +266,105 @@ function restoreArabicText(PDO $pdo) {
     return $fixed;
 }
 
+/**
+ * Can this database save and read back Arabic? (writes a tiny test setting)
+ */
+function arabicSelfTest(PDO $pdo) {
+    $word = 'اختبار عربي';
+    try {
+        $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_group)
+                       VALUES ('_arabic_test', 'test', :a, 'system')
+                       ON DUPLICATE KEY UPDATE setting_value_ar = :b")->execute([':a' => $word, ':b' => $word]);
+        $back = $pdo->query("SELECT setting_value_ar FROM site_settings WHERE setting_key = '_arabic_test'")->fetchColumn();
+        return $back === $word;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+/**
+ * How many Arabic values are still only question marks
+ */
+function countDamagedArabic(PDO $pdo) {
+    $checks = [
+        'site_settings' => ['setting_value_ar'],
+        'services'      => ['name_ar', 'slug_ar', 'short_desc_ar', 'meta_title_ar', 'meta_desc_ar'],
+        'pages_seo'     => ['title_ar', 'description_ar'],
+        'testimonials'  => ['review_text_ar'],
+        'service_areas' => ['name_ar', 'description_ar'],
+        'hero_content'  => ['title_ar', 'subtitle_ar'],
+    ];
+    $n = 0;
+    foreach ($checks as $table => $cols) {
+        try {
+            foreach ($pdo->query("SELECT " . implode(', ', $cols) . " FROM `{$table}`") as $row) {
+                foreach ($row as $v) if (looksDamaged($v)) $n++;
+            }
+        } catch (Throwable $e) { /* table missing */ }
+    }
+    return $n;
+}
+
+/**
+ * Full Arabic repair: convert tables, reconnect, restore text, test.
+ * Returns ['ok' => bool, 'restored' => int, 'damaged_left' => int, 'errors' => [...]]
+ */
+function repairArabic(PDO $pdo) {
+    $errors = [];
+    try {
+        if (fixTableCharsets($pdo, $errors)) {
+            $pdo = freshConnection();
+            $GLOBALS['pdo'] = $pdo;
+        }
+    } catch (Throwable $e) {
+        $errors[] = 'Checking tables failed: ' . $e->getMessage();
+    }
+    $restored = 0;
+    try {
+        $restored = restoreArabicText($pdo);
+    } catch (Throwable $e) {
+        $errors[] = 'Restoring text failed: ' . $e->getMessage();
+    }
+    $test_ok = arabicSelfTest($pdo);
+    if (!$test_ok) {
+        $errors[] = 'The database still cannot save Arabic (test word came back as question marks).';
+    }
+    $left = countDamagedArabic($pdo);
+    $result = ['ok' => $test_ok && $left === 0, 'restored' => $restored, 'damaged_left' => $left, 'errors' => $errors, 'at' => date('Y-m-d H:i:s')];
+    try {
+        $json = json_encode($result, JSON_UNESCAPED_UNICODE);
+        $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_group) VALUES ('_arabic_repair', :a, :b, 'system')
+                       ON DUPLICATE KEY UPDATE setting_value_en = :c, setting_value_ar = :d")->execute([':a' => $json, ':b' => $json, ':c' => $json, ':d' => $json]);
+    } catch (Throwable $e) { /* ignore */ }
+    return $result;
+}
+
+/**
+ * Runs on page loads until Arabic is healthy: retries the repair at most every 10 minutes
+ */
+function arabicHealthCheck(PDO $pdo) {
+    try {
+        $state = json_decode((string)$pdo->query("SELECT setting_value_en FROM site_settings WHERE setting_key = '_arabic_repair'")->fetchColumn(), true);
+    } catch (Throwable $e) {
+        return;
+    }
+    if (!empty($state['ok'])) return;                                         // healthy
+    if (!empty($state['at']) && strtotime($state['at']) > time() - 600) return;  // tried recently
+    repairArabic($pdo);
+}
+
 function runMigrations(PDO $pdo) {
     if (getSchemaVersion($pdo) >= SCHEMA_VERSION) {
-        return;
+        // Up to date — but if a step failed last time (e.g. missing permission), retry every 10 minutes
+        $last = null;
+        try {
+            $last = json_decode((string)$pdo->query("SELECT setting_value_en FROM site_settings WHERE setting_key = '_migration_log'")->fetchColumn(), true);
+        } catch (Throwable $e) { /* ignore */ }
+        $retry = !empty($last['failed']) && (empty($last['at']) || strtotime($last['at']) < time() - 600);
+        if (!$retry) {
+            arabicHealthCheck($pdo);
+            return;
+        }
     }
 
     $steps = [
@@ -270,8 +372,10 @@ function runMigrations(PDO $pdo) {
         // Tables that cannot store Arabic → UTF-8, then put lost Arabic text back
         // After a conversion the old connection still writes "?", so everything after
         // this step (and the rest of this page load) uses a fresh connection
-        'utf8_tables'    => fn(PDO $pdo) => fixTableCharsets($pdo) ? freshConnection() : null,
-        'restore_arabic' => fn(PDO $pdo) => restoreArabicText($pdo),
+        'repair_arabic'  => function (PDO $pdo) {
+            $r = repairArabic($pdo);
+            return $GLOBALS['pdo'] instanceof PDO ? $GLOBALS['pdo'] : null;   // keep using the fresh connection
+        },
 
         // 1. Lead status column used by the admin dashboard
         'lead_status_column' => function (PDO $pdo) {
@@ -479,6 +583,7 @@ function runMigrations(PDO $pdo) {
         },
     ];
 
+    $failed = [];
     foreach ($steps as $name => $step) {
         try {
             $result = $step($pdo);
@@ -489,8 +594,16 @@ function runMigrations(PDO $pdo) {
             }
         } catch (Throwable $e) {
             error_log("Ahmad Fix migration '{$name}' failed: " . $e->getMessage());
+            $failed[$name] = $e->getMessage();
         }
     }
+
+    // Shown in Admin → Settings → System check
+    try {
+        $json = json_encode(['at' => date('Y-m-d H:i:s'), 'failed' => $failed], JSON_UNESCAPED_UNICODE);
+        $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_group) VALUES ('_migration_log', :a, :b, 'system')
+                       ON DUPLICATE KEY UPDATE setting_value_en = :c, setting_value_ar = :d")->execute([':a' => $json, ':b' => $json, ':c' => $json, ':d' => $json]);
+    } catch (Throwable $e) { /* ignore */ }
 
     try {
         $stmt = $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
