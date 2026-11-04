@@ -9,6 +9,11 @@ AddDefaultCharset UTF-8
 
 RewriteEngine On
 
+# ---- LiteSpeed Cache: serve saved copies of normal pages (the site decides what can be cached) ----
+<IfModule LiteSpeed>
+    CacheLookup on
+</IfModule>
+
 # ---- HTTPS and www / non-www ----
 # No domain is written here. The website redirects every page to the
 # "Website address" saved in Admin → Settings (e.g. https://yourdomain.com),

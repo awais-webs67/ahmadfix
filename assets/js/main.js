@@ -3,6 +3,12 @@
  * Menu, Scroll, Animations, Form, Slider
  */
 
+// Remember the visitor's language (used when they open the homepage address without /en or /ar)
+try {
+    var pageLang = (document.documentElement.lang || 'en').slice(0, 2);
+    document.cookie = 'site_lang=' + pageLang + ';path=/;max-age=31536000;SameSite=Lax';
+} catch (e) {}
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // ============================================
@@ -377,5 +383,30 @@ document.addEventListener('DOMContentLoaded', function() {
             trackEvent('whatsapp_click', { link_location: where, page_path: location.pathname });
         }
     }, { passive: true });
+
+    // ============================================
+    // Instant page loads: start loading a page as soon as the visitor
+    // points at (or touches) a link, so the click opens it right away
+    // ============================================
+    (function () {
+        var done = {};
+        var supports = (function () { var l = document.createElement('link'); return l.relList && l.relList.supports && l.relList.supports('prefetch'); })();
+        if (!supports || (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || '')))) return;
+        function prefetch(e) {
+            var a = e.target.closest ? e.target.closest('a[href]') : null;
+            if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+            var url;
+            try { url = new URL(a.href, location.href); } catch (err) { return; }
+            if (url.origin !== location.origin || url.hash && url.pathname === location.pathname) return;
+            if (/\/(admin|api)(\/|$)/.test(url.pathname) || done[url.href]) return;
+            done[url.href] = true;
+            var link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = url.href;
+            document.head.appendChild(link);
+        }
+        document.addEventListener('mouseover', function (e) { clearTimeout(prefetch.t); prefetch.t = setTimeout(function () { prefetch(e); }, 65); }, { passive: true });
+        document.addEventListener('touchstart', prefetch, { passive: true });
+    })();
 
 });

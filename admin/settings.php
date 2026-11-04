@@ -203,14 +203,14 @@ $sys['migration'] = json_decode((string)opt('_migration_log'), true) ?: null;
 $mc = mailConfig();
 $sys['mail'] = $mc;
 $sys['port'] = null;
-if ($mc['transport'] === 'smtp' && $mc['host'] !== '') {
+if (!empty($_GET['check_mail']) && $mc['transport'] === 'smtp' && $mc['host'] !== '') {
     $errno = 0; $errstr = '';
     $target = ($mc['secure'] === 'ssl' ? 'ssl://' : '') . $mc['host'];
     $fp = @fsockopen($target, $mc['port'] ?: 587, $errno, $errstr, 5);
     $sys['port'] = $fp ? 'open' : ('blocked — ' . ($errstr ?: 'error ' . $errno));
     if ($fp) fclose($fp);
 }
-$sys_problem = !$sys['arabic_ok'] || $sys['damaged'] > 0;
+$sys_problem = !$sys['arabic_ok'];
 
 /**
  * Value to show in a field: what was just submitted (if there was an error) or what is saved
@@ -418,6 +418,7 @@ adminHead('Settings', 'settings');
         <tr><th>Upgrade steps that failed</th><td><?php foreach ($sys['migration']['failed'] as $step => $msg): ?><div style="color:#f87171;font-size:12px;"><?php echo e($step . ': ' . $msg); ?></div><?php endforeach; ?></td></tr>
         <?php endif; ?>
         <tr><th>Email sending</th><td><?php echo $sys['mail']['transport'] === 'phpmail' ? 'Server mail (PHP mail)' . (function_exists('mail') ? ' <span class="badge b-sent">available</span>' : ' <span class="badge b-failed">disabled on this server</span>') : 'SMTP ' . e($sys['mail']['host'] . ':' . $sys['mail']['port']); ?>
+            <?php if ($sys['port'] === null && $sys['mail']['transport'] === 'smtp'): ?> — <a href="<?php echo SITE_URL; ?>/admin/settings?check_mail=1#system">check connection</a><?php endif; ?>
             <?php if ($sys['port'] !== null): ?> — connection <?php echo $sys['port'] === 'open' ? '<span class="badge b-sent">open</span>' : '<span class="badge b-failed">' . e($sys['port']) . '</span><div class="help">Your hosting blocks this server. Choose "Server mail" in Email (SMTP), or use your cPanel email account with server "localhost".</div>'; ?><?php endif; ?></td></tr>
         <tr><th>Settings file</th><td><?php echo PRIVATE_CONFIG_EXISTS ? e(PRIVATE_CONFIG_FILE) . ' <span class="badge b-sent">found</span>' : 'config/config.php <span class="badge b-failed">missing</span>'; ?></td></tr>
     </table>

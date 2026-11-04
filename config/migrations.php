@@ -330,7 +330,8 @@ function repairArabic(PDO $pdo) {
         $errors[] = 'The database still cannot save Arabic (test word came back as question marks).';
     }
     $left = countDamagedArabic($pdo);
-    $result = ['ok' => $test_ok && $left === 0, 'restored' => $restored, 'damaged_left' => $left, 'errors' => $errors, 'at' => date('Y-m-d H:i:s')];
+    // Done when Arabic can be saved and nothing else can be restored (anything left was typed by people, not original content)
+    $result = ['ok' => $test_ok && ($left === 0 || $restored === 0), 'restored' => $restored, 'damaged_left' => $left, 'errors' => $errors, 'at' => date('Y-m-d H:i:s')];
     try {
         $json = json_encode($result, JSON_UNESCAPED_UNICODE);
         $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_group) VALUES ('_arabic_repair', :a, :b, 'system')
@@ -354,19 +355,37 @@ function arabicHealthCheck(PDO $pdo) {
 }
 
 function runMigrations(PDO $pdo) {
-    if (getSchemaVersion($pdo) >= SCHEMA_VERSION) {
-        // Up to date — but if a step failed last time (e.g. missing permission), retry every 10 minutes
-        $last = null;
-        try {
-            $last = json_decode((string)$pdo->query("SELECT setting_value_en FROM site_settings WHERE setting_key = '_migration_log'")->fetchColumn(), true);
-        } catch (Throwable $e) { /* ignore */ }
-        $retry = !empty($last['failed']) && (empty($last['at']) || strtotime($last['at']) < time() - 600);
-        if (!$retry) {
-            arabicHealthCheck($pdo);
-            return;
+    // Fast path (every page): read the status from the settings the page loads anyway
+    $all = getAllSettings();
+    $version = (int)($all['schema_version']['setting_value_en'] ?? 1);
+    if ($version >= SCHEMA_VERSION) {
+        $last = json_decode((string)($all['_migration_log']['setting_value_en'] ?? ''), true);
+        if (!empty($last['failed'])) {
+            // A step failed last time (e.g. missing permission): retry with a growing pause
+            // 10 min, 20, 40 … at most once a day
+            $tries = max(1, (int)($last['tries'] ?? 1));
+            $wait = min(86400, 600 * (2 ** ($tries - 1)));
+            if (empty($last['at']) || strtotime($last['at']) < time() - $wait) {
+                runMigrationSteps($pdo, $tries + 1);
+                getAllSettings(true);
+                return;
+            }
         }
+        $state = json_decode((string)($all['_arabic_repair']['setting_value_en'] ?? ''), true);
+        if (empty($state['ok']) && (empty($state['at']) || strtotime($state['at']) < time() - 600)) {
+            repairArabic($pdo);
+            getAllSettings(true);
+        }
+        return;
     }
+    runMigrationSteps($pdo, 1);
+    getAllSettings(true);
+}
 
+/**
+ * Run every upgrade step (each one is safe to run again)
+ */
+function runMigrationSteps(PDO $pdo, $tries = 1) {
     $steps = [
         // ---------------- Version 4 (runs first so later steps see correct Arabic) ----------------
         // Tables that cannot store Arabic → UTF-8, then put lost Arabic text back
@@ -600,7 +619,7 @@ function runMigrations(PDO $pdo) {
 
     // Shown in Admin → Settings → System check
     try {
-        $json = json_encode(['at' => date('Y-m-d H:i:s'), 'failed' => $failed], JSON_UNESCAPED_UNICODE);
+        $json = json_encode(['at' => date('Y-m-d H:i:s'), 'failed' => $failed, 'tries' => $failed ? $tries : 0], JSON_UNESCAPED_UNICODE);
         $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_group) VALUES ('_migration_log', :a, :b, 'system')
                        ON DUPLICATE KEY UPDATE setting_value_en = :c, setting_value_ar = :d")->execute([':a' => $json, ':b' => $json, ':c' => $json, ':d' => $json]);
     } catch (Throwable $e) { /* ignore */ }

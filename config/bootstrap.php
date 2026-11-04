@@ -57,7 +57,7 @@ fixora_define('DB_CHARSET', 'utf8mb4');
 
 define('SITE_ROOT', dirname(__DIR__));
 // Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.2.0');
+define('ASSETS_VERSION', '2.3.0');
 
 // ============================================
 // Who is asking? (host, https, local or live)
@@ -112,17 +112,33 @@ try {
 }
 
 // ============================================
-// Session Management (secure cookie settings)
+// Sessions — only where they are needed
+// Public pages don't start a session, so they stay fast and can be cached by the
+// hosting (LiteSpeed). Sessions are used by the admin panel, the contact form
+// (its security token) and form submissions.
 // ============================================
-if (session_status() === PHP_SESSION_NONE) {
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path'     => '/',
-        'secure'   => IS_HTTPS,
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-    session_start();
+$__route = trim($_GET['route'] ?? '', '/');
+define('NEEDS_SESSION', IS_ADMIN_REQUEST
+    || ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
+    || str_starts_with($__route, 'api/')
+    || (bool)preg_match('#^(en|ar)/(contact|اتصل-بنا)$#u', $__route));
+unset($__route);
+
+function startSession() {
+    if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path'     => '/',
+            'secure'   => IS_HTTPS,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        session_start();
+    }
+}
+
+if (NEEDS_SESSION) {
+    startSession();
 }
 
 // ============================================
@@ -131,11 +147,13 @@ if (session_status() === PHP_SESSION_NONE) {
 $supported_langs = ['en', 'ar'];
 $default_lang = 'en';
 
-// Check URL prefix first, then session, then browser
+// Check URL prefix first, then the language the visitor used last (cookie), then browser
 if (isset($url_lang) && in_array($url_lang, $supported_langs)) {
     $lang = $url_lang;
 } elseif (isset($_GET['lang']) && in_array($_GET['lang'], $supported_langs)) {
     $lang = $_GET['lang'];
+} elseif (isset($_COOKIE['site_lang']) && in_array($_COOKIE['site_lang'], $supported_langs, true)) {
+    $lang = $_COOKIE['site_lang'];
 } elseif (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $supported_langs)) {
     $lang = $_SESSION['lang'];
 } else {
@@ -144,7 +162,9 @@ if (isset($url_lang) && in_array($url_lang, $supported_langs)) {
     $lang = in_array($browser_lang, $supported_langs) ? $browser_lang : $default_lang;
 }
 
-$_SESSION['lang'] = $lang;
+if (session_status() === PHP_SESSION_ACTIVE) {
+    $_SESSION['lang'] = $lang;
+}
 $is_rtl = ($lang === 'ar');
 $dir = $is_rtl ? 'rtl' : 'ltr';
 
@@ -195,9 +215,12 @@ define('EMAIL', filter_var($__email, FILTER_VALIDATE_EMAIL) ? $__email : $__sche
 unset($__schema, $__email);
 
 // ============================================
-// CSRF Token
+// CSRF Token (only when a session is running)
 // ============================================
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+$csrf_token = '';
+if (session_status() === PHP_SESSION_ACTIVE) {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    $csrf_token = $_SESSION['csrf_token'];
 }
-$csrf_token = $_SESSION['csrf_token'];

@@ -63,8 +63,8 @@
     --shadow-xl: 0 16px 40px rgba(0,0,0,0.12);
 
     --transition-fast: 200ms ease;
-    --transition-base: 300ms ease;
-    --transition-slow: 500ms ease;
+    --transition-base: 200ms ease;
+    --transition-slow: 350ms ease;
 
     --container-width: 1140px;
     --header-height: 72px;
@@ -404,7 +404,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
     font-weight: 600;
     color: var(--primary-dark);
     margin-bottom: 20px;
-    animation: fadeInUp 0.5s ease;
+    animation: fadeInUp 0.35s ease;
 }
 .hero-badge svg { width: 14px; height: 14px; }
 .hero-title {
@@ -414,7 +414,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
     color: var(--dark);
     margin-bottom: 20px;
     letter-spacing: -0.03em;
-    animation: fadeInUp 0.5s ease 0.1s both;
+    animation: fadeInUp 0.35s ease 0.05s both;
 }
 .hero-title .highlight { color: var(--primary); }
 .hero-subtitle {
@@ -423,19 +423,19 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
     line-height: 1.7;
     margin-bottom: 28px;
     max-width: 480px;
-    animation: fadeInUp 0.5s ease 0.2s both;
+    animation: fadeInUp 0.35s ease 0.1s both;
 }
 .hero-buttons {
     display: flex;
     gap: 12px;
     margin-bottom: 36px;
-    animation: fadeInUp 0.5s ease 0.3s both;
+    animation: fadeInUp 0.35s ease 0.15s both;
     flex-wrap: wrap;
 }
 .hero-stats {
     display: flex;
     gap: 32px;
-    animation: fadeInUp 0.5s ease 0.4s both;
+    animation: fadeInUp 0.35s ease 0.2s both;
 }
 .hero-stat-number {
     font-size: var(--text-2xl);
@@ -452,7 +452,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 /* Hero Image */
 .hero-image {
     position: relative;
-    animation: fadeInRight 0.7s ease 0.2s both;
+    animation: fadeInRight 0.45s ease 0.1s both;
 }
 .hero-image-wrapper {
     border-radius: var(--radius-xl);

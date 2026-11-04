@@ -188,6 +188,9 @@ if ($route === 'api/contact-submit') {
 
         $_SESSION['contact_times'][] = $now;
 
+        // Answer the visitor right away, then send the emails in the background
+        respondAndContinue(json_encode(['success' => true, 'message' => __('contact_form_success')]));
+
         // Email: alert to you + "Thank you" to the customer (never blocks the form if email fails)
         try {
             $lead = $pdo->query("SELECT * FROM contact_submissions WHERE id = " . $lead_id)->fetch();
@@ -197,8 +200,7 @@ if ($route === 'api/contact-submit') {
         } catch (Throwable $mail_error) {
             error_log('Contact email error: ' . $mail_error->getMessage());
         }
-
-        echo json_encode(['success' => true, 'message' => __('contact_form_success')]);
+        exit;
     } catch (PDOException $e) {
         error_log("Contact form error: " . $e->getMessage());
         echo json_encode(['success' => false, 'message' => __('contact_form_error')]);
@@ -341,6 +343,18 @@ if (isset($static_pages[$page])) {
         'title_' . $lang => __('seo_title_404'),
         'description_' . $lang => '',
     ];
+}
+
+// ============================================
+// Speed: let the hosting (LiteSpeed Cache) keep a copy of normal pages for 5 minutes.
+// Not cached: the contact page (security token), 404s, admin, forms.
+// Saving anything in the admin panel clears this cache.
+// ============================================
+if (!NEEDS_SESSION && !$is_404 && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+    header('X-LiteSpeed-Cache-Control: public,max-age=300');
+    header('Cache-Control: public, max-age=0, must-revalidate');
+} else {
+    header('X-LiteSpeed-Cache-Control: no-cache');
 }
 
 // ============================================

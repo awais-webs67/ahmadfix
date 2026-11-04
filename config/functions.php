@@ -700,3 +700,36 @@ function getUnreadSubmissions() {
     $result = $stmt->fetch();
     return $result['count'] ?? 0;
 }
+
+/**
+ * Send this response to the visitor now and keep running in the background
+ * (used so the contact form doesn't wait for emails to be sent).
+ */
+function respondAndContinue($body) {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+    ignore_user_abort(true);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Length: ' . strlen($body));
+    header('Connection: close');
+    echo $body;
+    if (function_exists('litespeed_finish_request')) {
+        litespeed_finish_request();
+    } elseif (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        while (ob_get_level() > 0) { @ob_end_flush(); }
+        flush();
+    }
+}
+
+/**
+ * Tell LiteSpeed Cache to forget cached pages (after the admin changes something)
+ */
+function purgePageCache() {
+    if (!headers_sent()) {
+        header('X-LiteSpeed-Purge: *');
+    }
+}
+

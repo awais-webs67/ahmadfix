@@ -17,3 +17,8 @@ if (empty($_SESSION['admin_logged_in'])) {
     header('Location: ' . SITE_URL . '/admin/login');
     exit;
 }
+
+// Anything saved in the admin panel → clear the cached public pages so changes show at once
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    purgePageCache();
+}
