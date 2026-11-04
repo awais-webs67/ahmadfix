@@ -9,8 +9,9 @@ PHP 8 + MySQL, no framework. Every service (AC, fridge, washing machine, oven) i
 
 1. **Revoke the old Gmail app password.** It was saved in `config/config.php` in an earlier commit, and this repo is public.
    Google Account → Security → 2-Step Verification → App passwords → delete the old one.
-2. **Create `config/config.local.php`** on your server: copy `config/config.local.example.php`, rename the copy, and fill in
-   your **database name, user and password** (from your hosting panel). That is the only thing ever written in a file.
+2. **Create `config/config.php`** on your server: copy `config/config.example.php`, name the copy `config.php`, and fill in
+   your **database name, user and password** (and optionally the email/SMTP login). Git ignores this file, so you can edit it
+   on the server any time and "Update from Remote" never overwrites it or complains about it.
 3. Upload all the files. On the first page visit, the database **upgrades itself automatically**. You don't need to run any SQL.
 4. Open `/admin`. If you never set a password, log in with `admin` / `ahmadfix2024`. You'll be asked to choose a new password straight away.
 5. Go to **Admin → Settings** and fill in:
@@ -38,11 +39,11 @@ Nothing about the business is written in the code. The domain is not in `.htacce
 - **Customer:** if they entered an email, they automatically get "Thank you, we received your request" in their own language (English or Arabic),
   with a summary of their booking. You can edit the text in *Settings → Email Texts* (placeholders like `{name}`, `{service}`, `{date}`).
 - **From the admin panel:** send emails and replies with your logo and signature. When customers reply, the reply arrives in your normal inbox (the business email).
-- **Where to put the SMTP login:** either in `config/config.local.php` (see `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_EMAILS` in the example file)
-  or in Admin → Settings → Email. Values in `config.local.php` win and show as 🔒 locked in the admin panel. Never put them in `config.php`.
+- **Where to put the SMTP login:** either in `config/config.php` (see `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_EMAILS` in the example file)
+  or in Admin → Settings → Email. Values in `config/config.php` win and show as 🔒 locked in the admin panel. Never put them in `config.php`.
 - **Gmail:** SMTP server `smtp.gmail.com`, port `587`, security `TLS`, username = your Gmail address, password = a 16-letter **App password**
   (Google Account → Security → 2-Step Verification → App passwords). The password is stored encrypted.
-- **Locked out by a wrong website address?** Add `define('SITE_URL_OVERRIDE', 'https://yourdomain.com');` to `config/config.local.php`.
+- **Locked out by a wrong website address?** Add `define('SITE_URL_OVERRIDE', 'https://yourdomain.com');` to `config/config.php`.
 
 ---
 
@@ -105,7 +106,7 @@ These matter as much as the website itself for getting customers from Google.
 
 - [ ] Hosting runs **PHP 8.0+** and **MySQL 5.7+ / MariaDB 10.3+**, with Apache `mod_rewrite` turned on
 - [ ] **SSL certificate** installed for `ahmadfix.com` (the site forces `https://`). Most hosts offer free Let's Encrypt.
-- [ ] `config/config.local.php` created with the database login
+- [ ] `config/config.php` created with the database login
 - [ ] Admin → Settings: website address saved, SMTP filled in, **Send test email** works
 - [ ] Booking test: send a message from the Contact page with your own email → you get the alert, and the "thank you" email arrives
 - [ ] Database imported (`database/setup.sql`) or the existing one kept; it upgrades itself on the first visit
@@ -120,7 +121,7 @@ Best Practices 100, SEO 100 on the home, about, service, city and contact pages.
 ## Deploying with cPanel Git
 
 The repo has a `.cpanel.yml` and a `deploy.sh`, so **Deploy HEAD Commit** copies the website into your site folder (`~/public_html` by default).
-It never deletes files, so `config/config.local.php` stays safe. If your domain uses another folder, create the file `~/deploy_path.txt` (File Manager, in your home folder) containing that folder's full path, e.g. `/home/youruser/yourdomain.com`.
+It never deletes files, so `config/config.php` stays safe. If your domain uses another folder, create the file `~/deploy_path.txt` (File Manager, in your home folder) containing that folder's full path, e.g. `/home/youruser/yourdomain.com`.
 
 Each update:
 1. **Update from Remote** (downloads the latest commit from GitHub)
@@ -138,7 +139,7 @@ git pull                        # shows the real error, if any
 - Remote shows `git@github.com:...` → switch to the public address:
   `git remote set-url origin https://github.com/awais-webs67/ahmadfix.git`
 - `git status` lists changed files (usually `config/config.php` with your database password) → put the database login in
-  `config/config.local.php` first (see the example file), then throw away the server-side edits: `git checkout -- .`
+  `config/config.php` first (see the example file), then throw away the server-side edits: `git checkout -- .`
 - `git pull` says it cannot connect to github.com → your host blocks outgoing connections; ask hosting support to allow GitHub.
 
 ## Local development
