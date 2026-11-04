@@ -5,8 +5,9 @@
 #
 # Where does it copy to?
 #   1. The DEPLOYPATH environment variable, if set
-#   2. else the first line of the file ~/.deploy_path (create it if your
-#      domain does not use public_html, e.g. echo "$HOME/ahmadfix.com" > ~/.deploy_path)
+#   2. else the first line of ~/deploy_path.txt (or ~/.deploy_path) — create it in
+#      File Manager if your domain's folder is not public_html,
+#      e.g. containing:  /home/youruser/yourdomain.com
 #   3. else ~/public_html
 #
 # It never deletes files on the server, so config/config.local.php
@@ -17,9 +18,11 @@ set -euo pipefail
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
 DEST="${DEPLOYPATH:-}"
-if [ -z "$DEST" ] && [ -f "$HOME/.deploy_path" ]; then
-    DEST="$(head -n 1 "$HOME/.deploy_path" | tr -d '\r')"
-fi
+for f in "$HOME/deploy_path.txt" "$HOME/.deploy_path"; do
+    if [ -z "$DEST" ] && [ -f "$f" ]; then
+        DEST="$(head -n 1 "$f" | tr -d '\r' | sed 's/[[:space:]]*$//')"
+    fi
+done
 DEST="${DEST:-$HOME/public_html}"
 DEST="${DEST/#\~/$HOME}"
 

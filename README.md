@@ -118,7 +118,7 @@ Best Practices 100, SEO 100 on the home, about, service, city and contact pages.
 ## Deploying with cPanel Git
 
 The repo has a `.cpanel.yml` and a `deploy.sh`, so **Deploy HEAD Commit** copies the website into your site folder (`~/public_html` by default).
-It never deletes files, so `config/config.local.php` stays safe. If your domain uses another folder, create `~/.deploy_path` containing that folder's path.
+It never deletes files, so `config/config.local.php` stays safe. If your domain uses another folder, create the file `~/deploy_path.txt` (File Manager, in your home folder) containing that folder's full path, e.g. `/home/youruser/yourdomain.com`.
 
 Each update:
 1. **Update from Remote** (downloads the latest commit from GitHub)
