@@ -105,7 +105,7 @@ $type_labels = ['notification' => 'Alert to you', 'auto_reply' => 'Automatic tha
 
 adminHead('Lead #' . $id, 'index');
 ?>
-<p style="margin-bottom: 12px;"><a href="<?php echo SITE_URL; ?>/admin/index" style="text-decoration: none;">← All leads</a></p>
+<p style="margin-bottom: 12px;"><a href="<?php echo SITE_URL; ?>/admin/index" class="btn btn-gray btn-sm"><?php echo adminIcon('back', 14); ?> All leads</a></p>
 <h1 class="a-title"><?php echo e($plain($lead['customer_name'])); ?> <span class="badge b-<?php echo e($lead['status']); ?>"><?php echo e($lead['status']); ?></span></h1>
 <p class="a-sub">Lead #<?php echo $id; ?> · received <?php echo e(date('D, j M Y — g:i A', strtotime($lead['submitted_at']))); ?> · form language: <?php echo $lead_lang === 'ar' ? 'Arabic' : 'English'; ?></p>
 
@@ -201,7 +201,7 @@ adminHead('Lead #' . $id, 'index');
                 <div class="muted">To <?php echo e($h['to_email']); ?> · <?php echo e(date('j M, g:i A', strtotime($h['created_at']))); ?></div>
                 <div style="font-size: 13px; margin-top: 4px;"><?php echo e($h['subject']); ?></div>
                 <?php if ($h['type'] === 'reply' && $h['message']): ?><details><summary class="muted">Show message</summary><div class="hist-msg"><?php echo nl2br(e($h['message'])); ?></div></details><?php endif; ?>
-                <?php if ($h['error']): ?><div style="color: #f87171; font-size: 12px; margin-top: 4px;"><?php echo e($h['error']); ?></div><?php endif; ?>
+                <?php if ($h['error']): ?><div style="color: var(--red); font-size: 12px; margin-top: 4px;"><?php echo e($h['error']); ?></div><?php endif; ?>
             </div>
             <?php endforeach; ?>
         </div>
@@ -217,11 +217,11 @@ adminHead('Lead #' . $id, 'index');
 
 <style>
     .lead-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; align-items: start; }
-    .kv th { width: 34%; text-transform: none; font-size: 13px; letter-spacing: 0; color: #94a3b8; font-weight: 600; padding: 10px 12px 10px 0; vertical-align: top; }
+    .kv th { width: 34%; background: none; text-transform: none; font-size: 13px; letter-spacing: 0; color: var(--muted); font-weight: 600; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line-2); vertical-align: top; }
     .kv td { padding: 10px 0; }
-    .hist { border-top: 1px solid #233044; padding: 12px 0; }
+    .hist { border-top: 1px solid var(--line-2); padding: 12px 0; }
     .hist:first-of-type { border-top: 0; }
-    .hist-msg { background: #0b0f19; border-radius: 8px; padding: 10px; font-size: 13px; margin-top: 6px; color: #cbd5e1; }
+    .hist-msg { background: #F7F9FC; border-radius: 8px; padding: 10px; font-size: 13px; margin-top: 6px; color: var(--ink-2); }
     @media (max-width: 900px) { .lead-grid { grid-template-columns: 1fr; } }
 </style>
 <script>

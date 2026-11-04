@@ -59,7 +59,6 @@ $q = fn($extra) => '?' . http_build_query(array_filter(array_merge(['type' => $t
 
 adminHead('Emails', 'emails');
 ?>
-<h1 class="a-title">✉️ Emails</h1>
 <p class="a-sub">Write to any customer, and see every email the website has sent — lead alerts to you, automatic thank-you emails and your replies.
 Replies from customers arrive in your normal inbox (<strong><?php echo e(EMAIL); ?></strong>).</p>
 
@@ -99,7 +98,7 @@ Replies from customers arrive in your normal inbox (<strong><?php echo e(EMAIL);
             <a href="<?php echo e($q(['status' => $status === 'failed' ? null : 'failed', 'p' => null])); ?>" class="btn btn-sm <?php echo $status === 'failed' ? 'btn-red' : 'btn-gray'; ?>">Failed only</a>
         </div>
         <div class="table-wrap">
-        <table>
+        <table class="mail-log">
             <thead><tr><th>When</th><th>To</th><th>Subject</th><th>Type</th><th>Status</th></tr></thead>
             <tbody>
             <?php if (!$rows): ?><tr><td colspan="5" class="muted">Nothing here yet.</td></tr><?php endif; ?>
@@ -107,9 +106,9 @@ Replies from customers arrive in your normal inbox (<strong><?php echo e(EMAIL);
                 <tr>
                     <td class="muted" style="white-space: nowrap;"><?php echo e(date('j M, g:i A', strtotime($r['created_at']))); ?></td>
                     <td><?php echo e($r['to_email']); ?><?php if ($r['lead_id']): ?><br><a class="muted" href="<?php echo SITE_URL; ?>/admin/lead?id=<?php echo (int)$r['lead_id']; ?>">Lead #<?php echo (int)$r['lead_id']; ?></a><?php endif; ?></td>
-                    <td><?php echo e($r['subject']); ?>
-                        <?php if ($r['message'] && in_array($r['type'], ['reply', 'compose'], true)): ?><details><summary class="muted">Message</summary><div style="font-size: 13px; color: #cbd5e1; margin-top: 6px;"><?php echo nl2br(e($r['message'])); ?></div></details><?php endif; ?>
-                        <?php if ($r['error']): ?><div style="color: #f87171; font-size: 12px; margin-top: 4px;"><?php echo e($r['error']); ?></div><?php endif; ?></td>
+                    <td class="subj"><?php echo e($r['subject']); ?>
+                        <?php if ($r['message'] && in_array($r['type'], ['reply', 'compose'], true)): ?><details><summary class="muted">Message</summary><div style="font-size: 13px; color: var(--ink-2); margin-top: 6px;"><?php echo nl2br(e($r['message'])); ?></div></details><?php endif; ?>
+                        <?php if ($r['error']): ?><div class="err" title="<?php echo e($r['error']); ?>"><?php echo e(mb_strimwidth($r['error'], 0, 140, '…')); ?></div><?php endif; ?></td>
                     <td class="muted"><?php echo e($types[$r['type']] ?? $r['type']); ?></td>
                     <td><span class="badge b-<?php echo e($r['status']); ?>"><?php echo e($r['status']); ?></span></td>
                 </tr>
@@ -127,7 +126,9 @@ Replies from customers arrive in your normal inbox (<strong><?php echo e(EMAIL);
 </div>
 
 <style>
-    .mail-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; align-items: start; }
-    @media (max-width: 1000px) { .mail-grid { grid-template-columns: 1fr; } }
+    .mail-grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 18px; align-items: start; }
+    .mail-log td.subj { min-width: 260px; }
+    .mail-log .err { color: var(--red); font-size: 12px; margin-top: 4px; }
+    @media (max-width: 1100px) { .mail-grid { grid-template-columns: 1fr; } }
 </style>
 <?php adminFoot(); ?>

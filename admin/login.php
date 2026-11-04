@@ -98,59 +98,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Admin Login — Ahmad Fix</title>
-    <link rel="icon" type="image/png" href="<?php echo ASSETS_URL; ?>/images/favicon.png">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: #1e293b; width: 100%; max-width: 420px; border-radius: 16px; padding: 40px 30px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid #334155; }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header img { max-height: 50px; margin-bottom: 15px; }
-        .login-header h1 { font-size: 22px; font-weight: 700; color: #fff; }
-        .login-header p { font-size: 14px; color: #94a3b8; margin-top: 5px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 14px 16px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 15px; transition: border-color 0.2s; outline: none; }
-        input[type="text"]:focus, input[type="password"]:focus { border-color: #ff7a00; }
-        .btn-submit { width: 100%; padding: 14px; background: #ff7a00; border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-submit:hover { background: #e06c00; }
-        .alert-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; text-align: center; }
-        .hint { margin-top: 20px; font-size: 12px; color: #64748b; text-align: center; }
-    </style>
-</head>
-<body>
-
-<div class="login-card">
-    <div class="login-header">
-        <img src="<?php echo ASSETS_URL; ?>/images/logo.png" alt="Ahmad Fix">
-        <h1>Admin Control Panel</h1>
-        <p>Sign in to manage customer queries & leads</p>
-    </div>
+<?php
+require_once __DIR__ . '/_layout.php';
+adminHead('Sign in', '', ['bare' => true]);
+?>
+<div class="card" style="padding: 30px 28px;">
+    <h2 style="font-size: 22px; text-align: center;">Welcome back</h2>
+    <p class="hint" style="text-align: center;">Sign in to manage bookings, emails and your website.</p>
 
     <?php if ($error): ?>
-        <div class="alert-error"><?php echo htmlspecialchars($error); ?></div>
+        <div class="toast error"><?php echo e($error); ?></div>
     <?php endif; ?>
 
     <form method="POST" action="">
         <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
-        <div class="form-group">
+        <div class="fg">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" placeholder="admin" autocomplete="username" required autofocus>
         </div>
-        <div class="form-group">
+        <div class="fg">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
         </div>
-        <button type="submit" class="btn-submit">Sign In to Dashboard</button>
+        <button type="submit" class="btn btn-orange" style="width: 100%; padding: 13px; font-size: 14px;">Sign in</button>
     </form>
 </div>
-
-</body>
-</html>
+<p class="muted" style="text-align: center; margin-top: 14px;">🔒 Protected area · too many wrong tries locks sign-in for 15 minutes</p>
+<?php adminFoot(['bare' => true]); ?>

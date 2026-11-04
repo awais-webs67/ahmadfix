@@ -83,88 +83,42 @@ if ($edit === null && isset($_GET['edit'])) {
 $reviews = $pdo->query("SELECT * FROM testimonials ORDER BY sort_order ASC, id ASC")->fetchAll();
 $v = fn($k, $d = '') => e($edit[$k] ?? $d);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Customer Reviews — Ahmad Fix Admin</title>
-    <link rel="icon" type="image/png" href="<?php echo ASSETS_URL; ?>/images/favicon.png">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700&display=swap">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Tajawal', sans-serif; }
-        body { background: #0b0f19; color: #f8fafc; min-height: 100vh; padding-bottom: 50px; }
-        header { background: #151d2a; border-bottom: 1px solid #233044; padding: 16px 30px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
-        .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: #fff; }
-        .brand img { max-height: 44px; }
-        .brand h1 { font-size: 20px; font-weight: 800; color: #ff7a00; }
-        .nav { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; }
-        .btn-blue { background: #1e293b; color: #38bdf8; border: 1px solid #0284c7; }
-        .btn-orange { background: #ff7a00; color: #fff; }
-        .btn-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444; }
-        .btn-gray { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
-        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-        .toast { padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; background: rgba(16,185,129,0.12); border: 1px solid #10b981; color: #6ee7b7; }
-        .toast.warning { background: rgba(245,158,11,0.12); border-color: #f59e0b; color: #fcd34d; }
-        .note { background: #151d2a; border: 1px solid #233044; border-left: 4px solid #ff7a00; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; color: #cbd5e1; font-size: 14px; line-height: 1.6; }
-        .grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; align-items: start; }
-        .card { background: #151d2a; border: 1px solid #233044; border-radius: 16px; padding: 24px; }
-        .card h2 { font-size: 17px; margin-bottom: 18px; }
-        label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        input[type=text], input[type=number], textarea, select { width: 100%; padding: 11px 12px; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
-        textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
-        input:focus, textarea:focus, select:focus { border-color: #ff7a00; }
-        .fg { margin-bottom: 14px; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #cbd5e1; margin: 6px 0 18px; text-transform: none; letter-spacing: 0; font-weight: 500; }
-        .review { border: 1px solid #233044; border-radius: 12px; padding: 16px; margin-bottom: 12px; background: #0f1623; }
-        .review.hidden { opacity: 0.55; }
-        .review-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-        .review-name { font-weight: 800; }
-        .review-loc { color: #94a3b8; font-size: 13px; }
-        .stars { color: #fbbf24; letter-spacing: 2px; }
-        .review p { color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
-        .review p[dir=rtl] { text-align: right; }
-        .badge { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
-        .badge-on { background: rgba(16,185,129,0.15); color: #34d399; }
-        .badge-off { background: rgba(148,163,184,0.15); color: #94a3b8; }
-        .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        .actions form { display: inline; }
-        .actions .btn { padding: 6px 12px; font-size: 12px; }
-        @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } header { padding: 14px 16px; } }
-    </style>
-</head>
-<body>
+<?php
+require_once __DIR__ . '/_layout.php';
+adminHead('Reviews', 'reviews');
+?>
+<style>
+    .rv-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 18px; align-items: start; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); margin: 6px 0 18px; font-weight: 500; }
+    .check input { width: 18px; height: 18px; accent-color: var(--brand); }
+    .review { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; background: #fff; }
+    .review.hidden { opacity: .55; background: #FAFBFC; }
+    .review-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; align-items: center; }
+    .review-name { font-weight: 800; }
+    .review-loc { color: var(--muted); font-size: 13px; }
+    .stars { color: #F59E0B; letter-spacing: 2px; }
+    .review p { color: var(--ink-2); font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
+    .review p[dir=rtl] { text-align: right; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .actions form { display: inline; }
+    @media (max-width: 900px) { .rv-grid { grid-template-columns: 1fr; } .row { grid-template-columns: 1fr; } }
+</style>
 
-<header>
-    <a href="<?php echo SITE_URL; ?>" class="brand" target="_blank" rel="noopener">
-        <img src="<?php echo ASSETS_URL; ?>/images/logo-header.png" alt="Ahmad Fix">
-        <h1>Customer Reviews</h1>
-    </a>
-    <div class="nav">
-        <a href="<?php echo SITE_URL; ?>/admin/index" class="btn btn-blue">📋 Leads</a>
-        <a href="<?php echo SITE_URL; ?>/admin/emails" class="btn btn-blue">✉️ Emails</a>
-        <a href="<?php echo SITE_URL; ?>/admin/settings" class="btn btn-blue">⚙️ Settings</a>
-        <a href="<?php echo SITE_URL; ?>/admin/logout" class="btn btn-red">Sign Out</a>
-    </div>
-</header>
-
-<div class="container">
     <?php if ($msg): ?>
         <div class="toast <?php echo $msg_type === 'warning' ? 'warning' : ''; ?>">✓ <?php echo e($msg); ?></div>
     <?php endif; ?>
 
-    <div class="note">
+    <div class="toast info">
         These reviews appear on the homepage. Only publish <strong>real</strong> reviews from real customers
         (Google's guidelines require this). Tip: copy your best Google reviews here, with the customer's permission.
     </div>
 
-    <div class="grid">
+    <div class="rv-grid">
         <!-- Add / edit form -->
         <div class="card">
-            <h2><?php echo !empty($edit['id']) ? '✏️ Edit Review #' . (int)$edit['id'] : '➕ Add a Review'; ?></h2>
+            <h2><?php echo !empty($edit['id']) ? 'Edit review #' . (int)$edit['id'] : 'Add a review'; ?></h2>
+            <p class="hint">Shown on the homepage. Write it in English, Arabic or both.</p>
             <form method="POST" action="<?php echo SITE_URL; ?>/admin/reviews">
                 <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
                 <input type="hidden" name="action" value="save">
@@ -215,7 +169,7 @@ $v = fn($k, $d = '') => e($edit[$k] ?? $d);
         <div class="card">
             <h2>All Reviews (<?php echo count($reviews); ?>)</h2>
             <?php if (!$reviews): ?>
-                <p style="color:#94a3b8;">No reviews yet. When there are none, the reviews section is hidden on the homepage.</p>
+                <p class="muted">No reviews yet. When there are none, the reviews section is hidden on the homepage.</p>
             <?php endif; ?>
             <?php foreach ($reviews as $r): ?>
             <div class="review <?php echo $r['is_active'] ? '' : 'hidden'; ?>">
@@ -226,7 +180,7 @@ $v = fn($k, $d = '') => e($edit[$k] ?? $d);
                     </div>
                     <div>
                         <span class="stars"><?php echo str_repeat('★', (int)$r['rating']); ?></span>
-                        <span class="badge <?php echo $r['is_active'] ? 'badge-on' : 'badge-off'; ?>"><?php echo $r['is_active'] ? 'VISIBLE' : 'HIDDEN'; ?></span>
+                        <span class="badge <?php echo $r['is_active'] ? 'b-completed' : 'b-cancelled'; ?>"><?php echo $r['is_active'] ? 'Visible' : 'Hidden'; ?></span>
                     </div>
                 </div>
                 <p><?php echo e($r['review_text_en']); ?></p>
@@ -250,7 +204,4 @@ $v = fn($k, $d = '') => e($edit[$k] ?? $d);
             <?php endforeach; ?>
         </div>
     </div>
-</div>
-
-</body>
-</html>
+<?php adminFoot(); ?>

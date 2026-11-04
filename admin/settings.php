@@ -254,7 +254,6 @@ function fieldValue($key, $language = 'en') {
 
 adminHead('Settings', 'settings');
 ?>
-<h1 class="a-title">⚙️ Settings</h1>
 <p class="a-sub">Everything about your business lives here. Changes appear on the website immediately — no code editing needed.</p>
 
 <?php adminFlash(); ?>
@@ -295,11 +294,11 @@ adminHead('Settings', 'settings');
         </p>
         <?php $from_file = array_filter(array_keys(mailConfigConstants()), fn($k) => mailFromConfigFile($k) !== null); ?>
         <?php if (privateConfigWritable()): ?>
-        <div class="toast" style="background: rgba(56,189,248,.1); border-color: #0284c7; color: #7dd3fc;">
+        <div class="toast info">
             💾 Saving this section writes the email settings into <strong><?php echo e(PRIVATE_CONFIG_FILE); ?></strong> (a backup is kept as <?php echo e(PRIVATE_CONFIG_FILE); ?>.bak). You can also edit that file directly.
         </div>
         <?php elseif ($from_file): ?>
-        <div class="toast" style="background: rgba(56,189,248,.1); border-color: #0284c7; color: #7dd3fc;">
+        <div class="toast info">
             🔒 <?php echo count($from_file); ?> email setting(s) come from <strong><?php echo e(PRIVATE_CONFIG_FILE); ?></strong>, which this page cannot update (file permission). They are shown locked below —
             edit that file in cPanel → File Manager, or set its permission to 644.
         </div>
@@ -441,13 +440,13 @@ adminHead('Settings', 'settings');
         <tr><th>Arabic values with ????</th><td><?php echo (int)$sys['damaged']; ?> <?php echo $sys['damaged'] ? '<span class="badge b-failed">Problem</span>' : '<span class="badge b-sent">OK</span>'; ?></td></tr>
         <?php if ($sys['repair']): ?>
         <tr><th>Last Arabic repair</th><td><?php echo e($sys['repair']['at'] ?? ''); ?> — restored <?php echo (int)($sys['repair']['restored'] ?? 0); ?>
-            <?php foreach ($sys['repair']['errors'] ?? [] as $er): ?><div style="color:#f87171;font-size:12px;"><?php echo e($er); ?></div><?php endforeach; ?>
+            <?php foreach ($sys['repair']['errors'] ?? [] as $er): ?><div style="color:var(--red);font-size:12px;"><?php echo e($er); ?></div><?php endforeach; ?>
             <?php if (str_contains(implode(' ', $sys['repair']['errors'] ?? []), 'ALTER command denied')): ?>
-                <div class="help" style="color:#fcd34d;">Fix: cPanel → <strong>MySQL Databases</strong> → "Add User To Database" (or click your user under "Privileged Users") → tick <strong>ALL PRIVILEGES</strong> → Make Changes. Then press "Repair Arabic now".</div>
+                <div class="help" style="color:var(--amber);">Fix: cPanel → <strong>MySQL Databases</strong> → "Add User To Database" (or click your user under "Privileged Users") → tick <strong>ALL PRIVILEGES</strong> → Make Changes. Then press "Repair Arabic now".</div>
             <?php endif; ?></td></tr>
         <?php endif; ?>
         <?php if (!empty($sys['migration']['failed'])): ?>
-        <tr><th>Upgrade steps that failed</th><td><?php foreach ($sys['migration']['failed'] as $step => $msg): ?><div style="color:#f87171;font-size:12px;"><?php echo e($step . ': ' . $msg); ?></div><?php endforeach; ?></td></tr>
+        <tr><th>Upgrade steps that failed</th><td><?php foreach ($sys['migration']['failed'] as $step => $msg): ?><div style="color:var(--red);font-size:12px;"><?php echo e($step . ': ' . $msg); ?></div><?php endforeach; ?></td></tr>
         <?php endif; ?>
         <tr><th>Email sending</th><td><?php echo $sys['mail']['transport'] === 'phpmail' ? 'Server mail (PHP mail)' . (function_exists('mail') ? ' <span class="badge b-sent">available</span>' : ' <span class="badge b-failed">disabled on this server</span>') : 'SMTP ' . e($sys['mail']['host'] . ':' . $sys['mail']['port']); ?>
             <?php if ($sys['port'] === null && $sys['mail']['transport'] === 'smtp'): ?> — <a href="<?php echo SITE_URL; ?>/admin/settings?check_mail=1#system">check connection</a><?php endif; ?>
@@ -474,7 +473,7 @@ adminHead('Settings', 'settings');
     </div>
 </div>
 <style>
-    .kv-sys th { width: 34%; text-transform: none; letter-spacing: 0; font-size: 13px; color: #94a3b8; font-weight: 600; vertical-align: top; }
+    .kv-sys th { width: 34%; background: none; text-transform: none; white-space: normal; letter-spacing: 0; font-size: 13px; color: var(--muted); font-weight: 600; vertical-align: top; }
     .kv-sys td { font-size: 14px; }
 </style>
 
@@ -493,11 +492,11 @@ adminHead('Settings', 'settings');
 </form>
 
 <style>
-    .settings-nav { display: flex; flex-wrap: wrap; gap: 8px; position: sticky; top: 70px; z-index: 10; }
-    .seo-item { border: 1px solid #233044; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: #0f1623; }
+    .settings-nav { display: flex; flex-wrap: wrap; gap: 8px; position: sticky; top: 72px; z-index: 10; }
+    .seo-item { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; background: #FAFBFC; }
     .seo-item summary { cursor: pointer; font-weight: 700; font-size: 14px; }
-    .counter { font-size: 11px; margin-top: 4px; color: #64748b; }
-    .counter.over { color: #f87171; font-weight: 700; }
+    .counter { font-size: 11px; margin-top: 4px; color: var(--muted); }
+    .counter.over { color: var(--red); font-weight: 700; }
     @media (max-width: 760px) { .settings-nav { position: static; } }
 </style>
 <script>
