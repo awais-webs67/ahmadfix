@@ -76,6 +76,14 @@ function mailConfig() {
     $notify = array_values(array_filter(array_map('trim', preg_split('/[,;\s]+/', mailValue('notify_emails', EMAIL))), fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL)));
     $secure = strtolower(mailValue('smtp_secure', 'tls'));
     $host = mailValue('smtp_host', 'smtp.gmail.com');
+    $port = (int)mailValue('smtp_port', '587');
+    // A Gmail account can only send through Gmail's own server: if the server is set to
+    // "localhost" (or left empty) with a Gmail address, use smtp.gmail.com automatically
+    if (preg_match('/@(gmail|googlemail)\.com$/i', $user) && in_array(strtolower($host), ['localhost', '127.0.0.1', ''], true)) {
+        $host = 'smtp.gmail.com';
+        if (!in_array($port, [587, 465], true)) $port = 587;
+        $secure = $port === 465 ? 'ssl' : 'tls';
+    }
     // Gmail shows App passwords as "abcd efgh ijkl mnop" — the spaces are not part of it
     if (stripos($host, 'gmail') !== false || stripos($host, 'google') !== false) {
         $pass = str_replace(' ', '', $pass);
@@ -88,7 +96,7 @@ function mailConfig() {
     return [
         'transport'  => $transport,
         'host'       => $host,
-        'port'       => (int)mailValue('smtp_port', '587'),
+        'port'       => $port,
         'secure'     => in_array($secure, ['tls', 'ssl', 'none'], true) ? $secure : 'tls',
         'user'       => $user,
         'pass'       => $pass,
@@ -373,6 +381,62 @@ function sendEmail(array $o) {
         return ['ok' => false, 'error' => 'Email is not set up yet. Add your SMTP login in Admin → Settings → Email, or choose "Server mail".'];
     }
 
+    $note = '';
+    $block_key = $c['host'] . ':' . $c['port'];
+    $blocked = json_decode((string)opt('_smtp_blocked'), true);
+    $known_blocked = $c['transport'] === 'smtp' && PHP_OS_FAMILY !== 'Windows' && function_exists('mail')
+        && ($blocked['server'] ?? '') === $block_key && strtotime($blocked['at'] ?? '') > time() - 3600;
+
+    // Already know this server is blocked (checked within the last hour): don't wait for it again
+    $result = $known_blocked ? ['ok' => false, 'error' => 'Could not connect: ' . $block_key . ' is blocked by the hosting (remembered)'] : trySendEmail($c, $o);
+    if (!$known_blocked && !$result['ok'] && $c['transport'] === 'smtp' && isConnectionError($result['error'])) {
+        saveSetting('_smtp_blocked', json_encode(['server' => $block_key, 'at' => date('Y-m-d H:i:s')]), null, 'system');
+    }
+
+    // Hosting blocks the SMTP server (e.g. Gmail on cPanel): send through the server's own mail instead
+    if (!$result['ok'] && $c['transport'] === 'smtp' && isConnectionError($result['error'])
+        && PHP_OS_FAMILY !== 'Windows' && function_exists('mail')) {
+        $fallback = $c;
+        $fallback['transport'] = 'phpmail';
+        $own_domain = preg_replace('/^www\./', '', SITE_DOMAIN);
+        if (!str_ends_with(strtolower($c['from_email']), '@' . strtolower($own_domain)) && filter_var('no-reply@' . $own_domain, FILTER_VALIDATE_EMAIL)) {
+            // Server mail must come from your own domain, or Gmail/Outlook put it in spam
+            $fallback['from_email'] = 'no-reply@' . $own_domain;
+        }
+        $second = trySendEmail($fallback, $o);
+        if ($second['ok']) {
+            $note = 'SMTP server ' . $c['host'] . ' is blocked by the hosting — sent with server mail instead';
+            error_log('Email: ' . $note . ' (to ' . $o['to'] . ')');
+            $result = $second;
+        } else {
+            $result['error'] .= ' | Server mail also failed: ' . $second['error'];
+        }
+    }
+
+    if ($result['ok']) {
+        logEmail($log + ['status' => 'sent', 'error' => $note ?: null]);
+        return ['ok' => true, 'error' => '', 'note' => $note];
+    }
+    error_log('Email send failed to ' . $o['to'] . ': ' . $result['error']);
+    logEmail($log + ['status' => 'failed', 'error' => $result['error']]);
+    return ['ok' => false, 'error' => $result['error']];
+}
+
+/**
+ * True for "cannot reach the server" errors (refused, timed out, blocked port)
+ */
+function isConnectionError($error) {
+    $e = strtolower((string)$error);
+    foreach (['could not connect', 'connection refused', 'timed out', 'network is unreachable', 'did not properly respond', 'failed to connect'] as $needle) {
+        if (str_contains($e, $needle)) return true;
+    }
+    return false;
+}
+
+/**
+ * One sending attempt with the given settings. Returns ['ok' => bool, 'error' => string]
+ */
+function trySendEmail(array $c, array $o) {
     try {
         $m = new PHPMailer(true);
         if ($c['transport'] === 'phpmail') {
@@ -392,7 +456,7 @@ function sendEmail(array $o) {
             } else {
                 $m->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             }
-            $m->Timeout = 20;
+            $m->Timeout = 15;
             // The server's own mail service has a certificate for its hostname, not "localhost"
             if (in_array(strtolower($c['host']), ['localhost', '127.0.0.1'], true)) {
                 $m->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]];
@@ -417,13 +481,9 @@ function sendEmail(array $o) {
         $m->Body = $o['html'];
         $m->AltBody = $o['text'] ?? trim(html_entity_decode(strip_tags(str_replace(['<br>', '</p>', '</tr>'], "\n", $o['html'])), ENT_QUOTES, 'UTF-8'));
         $m->send();
-        logEmail($log + ['status' => 'sent']);
         return ['ok' => true, 'error' => ''];
     } catch (Throwable $e) {
-        $err = isset($m) && $m->ErrorInfo ? $m->ErrorInfo : $e->getMessage();
-        error_log('Email send failed to ' . $o['to'] . ': ' . $err);
-        logEmail($log + ['status' => 'failed', 'error' => $err]);
-        return ['ok' => false, 'error' => $err];
+        return ['ok' => false, 'error' => (isset($m) && $m->ErrorInfo) ? $m->ErrorInfo : $e->getMessage()];
     }
 }
 

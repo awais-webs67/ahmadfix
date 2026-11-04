@@ -101,6 +101,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($to_save as $k => [$en, $ar]) {
                 saveSetting($k, $en, $ar, $section);
             }
+            if ($section === 'email') {
+                saveSetting('_smtp_blocked', '', '', 'system');   // re-test the server with the new settings
+            }
             getAllSettings(true);
             flash($schema[$section]['title'] . ' saved.');
             header('Location: ' . SITE_URL . '/admin/settings#' . $section);
@@ -108,9 +111,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'test_email') {
         $to = trim($_POST['test_to'] ?? '');
+        saveSetting('_smtp_blocked', '', '', 'system');   // the test always tries the real server first
+        getAllSettings(true);
         $test_result = sendTestEmail($to);
         if ($test_result['ok']) {
-            flash('Test email sent to ' . $to . '. Check the inbox (and the spam folder).');
+            flash('Test email sent to ' . $to . '. Check the inbox (and the spam folder).'
+                . (!empty($test_result['note']) ? ' Note: ' . $test_result['note'] . '.' : ''));
             header('Location: ' . SITE_URL . '/admin/settings#email');
             exit;
         }
