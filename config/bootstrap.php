@@ -1,14 +1,14 @@
 <?php
 /**
- * Ahmad Fix — Core Setup
+ * Ahmad Fix — Core Setup (do not edit; updates replace this file)
  *
- * Nothing about the business is written here: name, website address, phone,
- * email, SMTP, Google codes, social links etc. are all edited in
+ * YOUR settings go in config/config.php — copy config/config.example.php
+ * to config/config.php and fill in the database (and optionally email) login.
+ * config/config.php is ignored by git: you can edit it on the server at any
+ * time and "Update from Remote" will never change it or complain about it.
+ *
+ * Everything else (name, website address, phone, Google codes …) is edited in
  * Admin → Settings and stored in the database.
- *
- * The ONLY thing this file needs is how to reach the database. Put your real
- * database login in config/config.local.php (copy config.local.example.php).
- * That file is ignored by git, so it never becomes public.
  */
 
 // Prevent direct access
@@ -17,14 +17,28 @@ if (!defined('FIXORA_APP')) {
 }
 
 // ============================================
-// Private settings (database login) — loaded first so they win
+// Your private settings: config/config.php (or the older name config.local.php)
 // ============================================
-if (file_exists(__DIR__ . '/config.local.php')) {
-    require_once __DIR__ . '/config.local.php';
+$__private = null;
+foreach (['config.php', 'config.local.php'] as $__name) {
+    $__file = __DIR__ . '/' . $__name;
+    if (!is_file($__file)) continue;
+    // Safety: an old copy of the core file left under this name must not be loaded
+    $__head = (string)@file_get_contents($__file, false, null, 0, 20000);
+    if (str_contains($__head, 'function fixora_define') || str_contains($__head, 'new PDO(')) {
+        error_log('Ahmad Fix: config/' . $__name . ' is an old core file, not a settings file — ignored. Copy config/config.example.php to config/config.php.');
+        continue;
+    }
+    require_once $__file;
+    $__private = 'config/' . $__name;
+    break;
 }
+define('PRIVATE_CONFIG_FILE', $__private ?? 'config/config.php');
+define('PRIVATE_CONFIG_EXISTS', $__private !== null);
+unset($__private, $__name, $__file, $__head);
 
 /**
- * Define a constant only if config.local.php did not already set it.
+ * Define a constant only if your config file did not already set it.
  */
 function fixora_define($name, $value) {
     if (!defined($name)) {
@@ -33,7 +47,7 @@ function fixora_define($name, $value) {
 }
 
 // ============================================
-// Database (defaults suit XAMPP/WAMP; override in config.local.php)
+// Database (defaults suit XAMPP/WAMP; set yours in config/config.php)
 // ============================================
 fixora_define('DB_HOST', 'localhost');
 fixora_define('DB_NAME', 'fixora');
@@ -89,10 +103,10 @@ try {
     error_log("Database Connection Error: " . $e->getMessage());
     http_response_code(503);
     header('Retry-After: 600');
-    if (!file_exists(__DIR__ . '/config.local.php')) {
+    if (!PRIVATE_CONFIG_EXISTS) {
         // First install: tell the owner what is missing (no secrets are shown)
-        die('<h1>Website setup needed</h1><p>The database login is missing. Create the file <code>config/config.local.php</code> '
-            . '(copy <code>config/config.local.example.php</code>) and enter your database name, user and password.</p>');
+        die('<h1>Website setup needed</h1><p>The database login is missing. Copy <code>config/config.example.php</code> '
+            . 'to <code>config/config.php</code> and enter your database name, user and password.</p>');
     }
     die('<h1>Service Temporarily Unavailable</h1><p>Please try again later.</p>');
 }
@@ -156,7 +170,7 @@ runMigrations($pdo);
 // ============================================
 $__site_url = rtrim(trim(setting('site_url', 'en')), '/');
 if (defined('SITE_URL_OVERRIDE')) {
-    $__site_url = rtrim(SITE_URL_OVERRIDE, '/');        // emergency override from config.local.php
+    $__site_url = rtrim(SITE_URL_OVERRIDE, '/');        // emergency override from config/config.php
 }
 $__valid = $__site_url !== '' && filter_var($__site_url, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $__site_url);
 

@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save' && isset($schema[$section])) {
         $to_save = [];
         foreach ($schema[$section]['fields'] as $key => $f) {
-            // Set in config/config.local.php → not editable here
+            // Set in your config file → not editable here
             if (mailFromConfigFile($key) !== null) {
                 continue;
             }
@@ -221,7 +221,7 @@ adminHead('Settings', 'settings');
         <?php $from_file = array_filter(array_keys(mailConfigConstants()), fn($k) => mailFromConfigFile($k) !== null); ?>
         <?php if ($from_file): ?>
         <div class="toast" style="background: rgba(56,189,248,.1); border-color: #0284c7; color: #7dd3fc;">
-            🔒 <?php echo count($from_file); ?> email setting(s) come from <strong>config/config.local.php</strong> on the server and are shown locked below.
+            🔒 <?php echo count($from_file); ?> email setting(s) come from <strong><?php echo e(PRIVATE_CONFIG_FILE); ?></strong> on the server and are shown locked below.
             To change them, edit that file in cPanel → File Manager.
         </div>
         <?php endif; ?>
@@ -238,10 +238,10 @@ adminHead('Settings', 'settings');
             <?php if (($locked_value = mailFromConfigFile($key)) !== null): ?>
                 <label><?php echo e($f['label']); ?> <span class="badge b-contacted">🔒 config file</span></label>
                 <input type="text" disabled value="<?php
-                    if ($f['type'] === 'password') echo '•••••••• (set in config.local.php)';
+                    if ($f['type'] === 'password') echo '•••••••• (set in ' . PRIVATE_CONFIG_FILE . ')';
                     elseif ($f['type'] === 'toggle') echo $locked_value === '1' ? 'On' : 'Off';
                     else echo e($locked_value); ?>">
-                <div class="help">Set by <code><?php echo e(mailConfigConstants()[$key]); ?></code> in config/config.local.php</div>
+                <div class="help">Set by <code><?php echo e(mailConfigConstants()[$key]); ?></code> in <?php echo e(PRIVATE_CONFIG_FILE); ?></div>
             </div>
             <?php continue; endif; ?>
             <?php if ($f['type'] === 'toggle'): ?>
@@ -310,7 +310,7 @@ adminHead('Settings', 'settings');
     <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
     <input type="hidden" name="action" value="page_seo">
     <h2>🔎 Google titles & descriptions</h2>
-    <p class="hint">This is the blue headline and the grey text people see in Google results. Best length: title up to <strong>60</strong> characters, description <strong>120–160</strong>. Put the service and city first.</p>
+    <p class="hint">This is the blue headline and the grey text people see in Google results. Best length: title up to <strong>60</strong> characters, description <strong>120–160</strong>. Put the service and city first. You can write <code>{phone}</code> and <code>{site_name}</code> — they are filled in from your settings.</p>
 
     <?php
     $page_names = ['home' => 'Home page', 'about' => 'About page', 'contact' => 'Contact page', 'privacy-policy' => 'Privacy Policy', 'terms' => 'Terms of Service'];

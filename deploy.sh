@@ -10,8 +10,8 @@
 #      e.g. containing:  /home/youruser/yourdomain.com
 #   3. else ~/public_html
 #
-# It never deletes files on the server, so config/config.local.php
-# (your database login) and config/app_key.php are always kept.
+# It never deletes files on the server, and your private config/config.php
+# is not in git, so it (and config/app_key.php) are never overwritten.
 # =====================================================================
 set -euo pipefail
 

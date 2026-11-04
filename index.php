@@ -24,7 +24,7 @@ if (!empty($segments[0]) && in_array($segments[0], $supported_langs, true)) {
 // ============================================
 // Load Configuration (sets $lang, $pdo, etc.)
 // ============================================
-require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/config/bootstrap.php';
 require_once __DIR__ . '/config/mail.php';
 
 // One official address (https / www) — set in Admin → Settings → Website address

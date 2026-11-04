@@ -7,7 +7,7 @@
  * - Admin     → send / reply to customers from the admin panel
  * Every email is saved in the email_log table (Admin → Emails).
  *
- * SMTP server, login and all texts are set in Admin → Settings (nothing is hard-coded here).
+ * SMTP login: config/config.php or Admin → Settings; texts: Admin → Settings (nothing is hard-coded here).
  */
 
 if (!defined('FIXORA_APP')) {
@@ -25,7 +25,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 // ============================================
 
 /**
- * Email settings that can be set in config/config.local.php.
+ * Email settings that can be set in config/config.php (your private settings file).
  * A value set there (not empty) wins over Admin → Settings → Email, and the
  * admin panel shows that field as locked.
  */
@@ -44,7 +44,7 @@ function mailConfigConstants() {
 }
 
 /**
- * Value of an email setting from config.local.php, or null if it is not set there
+ * Value of an email setting from config/config.php, or null if it is not set there
  */
 function mailFromConfigFile($key) {
     $const = mailConfigConstants()[$key] ?? null;
@@ -56,7 +56,7 @@ function mailFromConfigFile($key) {
 }
 
 /**
- * One email setting: config.local.php first, then Admin → Settings
+ * One email setting: config/config.php first, then Admin → Settings
  */
 function mailValue($key, $default = '') {
     $v = mailFromConfigFile($key);

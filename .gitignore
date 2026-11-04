@@ -1,4 +1,5 @@
-# Private settings (passwords) — never commit
+# Your private settings (database + email login) — never commit
+config/config.php
 config/config.local.php
 
 # OS / editor files

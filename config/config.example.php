@@ -1,15 +1,17 @@
 <?php
 /**
- * PRIVATE settings — database login and email (SMTP) login.
+ * YOUR PRIVATE SETTINGS — database login and (optionally) email login.
  *
- * 1. Copy this file and name the copy:  config.local.php
- * 2. Fill in the database login from your hosting control panel.
- * 3. Upload config.local.php to your server (config/ folder).
+ * 1. Copy this file and name the copy:  config.php   (same config/ folder)
+ * 2. Fill in your values below and save.
  *
- * Email (SMTP) can be set here OR in Admin → Settings → Email. Anything filled in
- * here wins and is shown locked in the admin panel. Leave a value '' to manage it
- * from the admin panel instead. Everything else is set in Admin → Settings.
- * config.local.php is listed in .gitignore, so it is never pushed to GitHub.
+ * config/config.php is ignored by git: it is never uploaded to GitHub, and
+ * cPanel "Update from Remote" never changes it or complains about it.
+ * Edit it on the server whenever you like (cPanel → File Manager → Edit).
+ *
+ * Email (SMTP): values filled in here win and show as locked in
+ * Admin → Settings → Email. Leave a value '' to manage it from the admin
+ * panel instead. Everything else is set in Admin → Settings.
  */
 
 if (!defined('FIXORA_APP')) {

@@ -7,7 +7,7 @@ if (!defined('FIXORA_APP')) {
     define('FIXORA_APP', true);
 }
 
-require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__) . '/config/bootstrap.php';
 require_once dirname(__DIR__) . '/config/mail.php';
 
 header('X-Robots-Tag: noindex, nofollow');

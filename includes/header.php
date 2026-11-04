@@ -15,6 +15,12 @@ if (isset($page_seo) && $page_seo) {
     $seo_keywords = localized($page_seo, 'keywords');
 }
 
+// {phone}, {site_name} … in titles/descriptions follow Admin → Settings
+$__seo_vars = ['site_name' => $lang === 'ar' ? SITE_NAME_AR : SITE_NAME];
+$seo_title = fillTemplate($seo_title, $__seo_vars);
+$seo_desc = fillTemplate($seo_desc, $__seo_vars);
+$seo_keywords = fillTemplate($seo_keywords, $__seo_vars);
+
 if (empty($seo_title)) {
     $seo_title = ($lang === 'ar' ? SITE_NAME_AR : SITE_NAME) . ' — ' . __('site_tagline');
 }
@@ -22,7 +28,7 @@ if (empty($seo_desc)) {
     $seo_desc = __('footer_about');
 }
 
-$ribbon_text = setting('ribbon_text', $lang);
+$ribbon_text = e(fillTemplate(setting('ribbon_text', $lang), ['site_name' => $lang === 'ar' ? SITE_NAME_AR : SITE_NAME]));
 $phone = setting('phone', $lang);
 $whatsapp = setting('whatsapp', $lang);
 
