@@ -7,7 +7,7 @@ PHP 8 + MySQL, no framework. Every service (AC, fridge, washing machine, oven) i
 
 ## ⚠️ Before you upload these files (do this first)
 
-1. **Revoke the old Gmail app password.** It was saved in `config/config.php` in an earlier commit, and this repo is public.
+1. **Revoke the old Gmail app password.** It was saved in the code in an earlier commit, and this repo is public.
    Google Account → Security → 2-Step Verification → App passwords → delete the old one.
 2. **Create `config/config.php`** on your server: copy `config/config.example.php`, name the copy `config.php`, and fill in
    your **database name, user and password** (and optionally the email/SMTP login). Git ignores this file, so you can edit it
@@ -40,7 +40,7 @@ Nothing about the business is written in the code. The domain is not in `.htacce
   with a summary of their booking. You can edit the text in *Settings → Email Texts* (placeholders like `{name}`, `{service}`, `{date}`).
 - **From the admin panel:** send emails and replies with your logo and signature. When customers reply, the reply arrives in your normal inbox (the business email).
 - **Where to put the SMTP login:** either in `config/config.php` (see `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_EMAILS` in the example file)
-  or in Admin → Settings → Email. Values in `config/config.php` win and show as 🔒 locked in the admin panel. Never put them in `config.php`.
+  or in Admin → Settings → Email. Values in `config/config.php` win and show as 🔒 locked in the admin panel.
 - **Gmail:** SMTP server `smtp.gmail.com`, port `587`, security `TLS`, username = your Gmail address, password = a 16-letter **App password**
   (Google Account → Security → 2-Step Verification → App passwords). The password is stored encrypted.
 - **Locked out by a wrong website address?** Add `define('SITE_URL_OVERRIDE', 'https://yourdomain.com');` to `config/config.php`.
@@ -97,7 +97,7 @@ These matter as much as the website itself for getting customers from Google.
 - **Phone, WhatsApp, email, hours, address, brands:** Admin → Settings.
 - **Google titles & descriptions:** Admin → Settings → Google Titles (with a live character counter).
 - **Images:** after replacing a photo, also replace the matching `-640.webp` and `-1024.webp` files, or delete them (the JPG is used as a fallback).
-  Then bump `ASSETS_VERSION` in `config/config.php` so visitors get the new files.
+  Then bump `ASSETS_VERSION` in `config/bootstrap.php` so visitors get the new files.
 - **Customer reviews (homepage):** Admin panel → **⭐ Reviews**. You can add, edit, hide or delete reviews there.
   The 5 reviews that come with the site are sample text, so replace them with real ones (Google's guidelines require reviews to be genuine).
   If you write a review in only one language, it is shown in both.
@@ -138,8 +138,8 @@ git pull                        # shows the real error, if any
 
 - Remote shows `git@github.com:...` → switch to the public address:
   `git remote set-url origin https://github.com/awais-webs67/ahmadfix.git`
-- `git status` lists changed files (usually `config/config.php` with your database password) → put the database login in
-  `config/config.php` first (see the example file), then throw away the server-side edits: `git checkout -- .`
+- `git status` lists changed files → don't edit code files on the server. Only `config/config.php` is yours (git ignores it);
+  throw away other edits with `git checkout -- .`
 - `git pull` says it cannot connect to github.com → your host blocks outgoing connections; ask hosting support to allow GitHub.
 
 ## Local development
