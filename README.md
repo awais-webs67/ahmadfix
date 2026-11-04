@@ -115,6 +115,30 @@ These matter as much as the website itself for getting customers from Google.
 Quality check before launch (Google Lighthouse, mobile): Performance 96–100, Accessibility 96–100,
 Best Practices 100, SEO 100 on the home, about, service, city and contact pages.
 
+## Deploying with cPanel Git
+
+The repo has a `.cpanel.yml` and a `deploy.sh`, so **Deploy HEAD Commit** copies the website into your site folder (`~/public_html` by default).
+It never deletes files, so `config/config.local.php` stays safe. If your domain uses another folder, create `~/.deploy_path` containing that folder's path.
+
+Each update:
+1. **Update from Remote** (downloads the latest commit from GitHub)
+2. **Deploy HEAD Commit** (copies it to the website)
+
+**"The system could not contact the remote repository"** — open cPanel → **Terminal** and run (use the Repository Path shown in cPanel):
+
+```bash
+cd ~/repositories/ahmadfix      # your Repository Path
+git remote -v                   # must show https://github.com/awais-webs67/ahmadfix.git
+git status                      # must say "nothing to commit, working tree clean"
+git pull                        # shows the real error, if any
+```
+
+- Remote shows `git@github.com:...` → switch to the public address:
+  `git remote set-url origin https://github.com/awais-webs67/ahmadfix.git`
+- `git status` lists changed files (usually `config/config.php` with your database password) → put the database login in
+  `config/config.local.php` first (see the example file), then throw away the server-side edits: `git checkout -- .`
+- `git pull` says it cannot connect to github.com → your host blocks outgoing connections; ask hosting support to allow GitHub.
+
 ## Local development
 
 XAMPP/WAMP: put the folder in `htdocs` (e.g. `htdocs/AhmadFix`), import `database/setup.sql`, and open `http://localhost/AhmadFix`.

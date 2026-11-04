@@ -1,0 +1,6 @@
+---
+# cPanel → Git Version Control → "Deploy HEAD Commit" runs these tasks.
+# All the work is in deploy.sh (no usernames or paths written here).
+deployment:
+  tasks:
+    - /bin/bash deploy.sh
