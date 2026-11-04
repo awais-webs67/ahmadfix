@@ -395,6 +395,7 @@ adminHead('Settings', 'settings');
     <h2>🩺 System check</h2>
     <p class="hint">If something doesn't work, take a screenshot of this box and send it to your developer.</p>
     <table class="kv-sys">
+        <tr><th>Running on</th><td><?php echo PHP_OS_FAMILY === 'Windows' ? 'Your Windows computer (XAMPP/WAMP) — "localhost" and Server mail cannot send email here; use Gmail SMTP to test' : (IS_LOCAL ? 'Local test server (' . e(PHP_OS_FAMILY) . ')' : 'Live server: ' . e(SITE_DOMAIN) . ' (' . e(PHP_OS_FAMILY) . ')'); ?></td></tr>
         <tr><th>PHP / Database</th><td><?php echo e($sys['php']); ?> / <?php echo e($sys['db']); ?></td></tr>
         <tr><th>Database connection charset</th><td><?php echo e($sys['conn']); ?> <?php echo str_contains($sys['conn'], 'utf8') ? '<span class="badge b-sent">OK</span>' : '<span class="badge b-failed">Problem</span>'; ?></td></tr>
         <tr><th>Tables that cannot hold Arabic</th><td><?php echo $sys['bad_tables'] ? e(implode(', ', $sys['bad_tables'])) . ' <span class="badge b-failed">Problem</span>' : 'None <span class="badge b-sent">OK</span>'; ?></td></tr>

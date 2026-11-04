@@ -112,6 +112,16 @@ function mailEnabled() {
  */
 function mailErrorHint($error) {
     $e = strtolower((string)$error);
+    $host = strtolower(mailConfig()['host']);
+    if (PHP_OS_FAMILY === 'Windows' && (in_array($host, ['localhost', '127.0.0.1'], true) || mailConfig()['transport'] === 'phpmail')) {
+        return 'This copy of the website runs on your Windows computer (XAMPP/WAMP). Here "localhost" is your own PC, which has no mail server, '
+             . 'and Server mail does not work either. To test on your PC use Gmail: server smtp.gmail.com, port 587, TLS, your Gmail and an App password. '
+             . 'On the live cPanel website use Server mail, or "localhost" with a cPanel email account.';
+    }
+    if (PHP_OS_FAMILY === 'Windows' && (str_contains($e, '10060') || str_contains($e, 'did not properly respond'))) {
+        return 'Your computer could not reach the email server (often antivirus/firewall or the internet provider blocks port 587). '
+             . 'Try port 465 with SSL, or test on the live website instead.';
+    }
     if (str_contains($e, 'connection refused') || str_contains($e, 'could not connect') || str_contains($e, 'timed out') || str_contains($e, 'network is unreachable')) {
         return 'Your hosting is blocking connections to this email server (common on cPanel with Gmail). Fix: in Settings → Email choose "Server mail", '
              . 'OR create an email account in cPanel → Email Accounts and use it with SMTP server "localhost", port 587, TLS, its full address and password.';
