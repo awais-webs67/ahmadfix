@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Admin Authentication Guard
+ * Mr Fix KSA — Admin Authentication Guard
  */
 
 if (!defined('FIXORA_APP')) {

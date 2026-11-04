@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Enterprise Admin Control Panel & Business Intelligence Dashboard
+ * Mr Fix KSA — Enterprise Admin Control Panel & Business Intelligence Dashboard
  */
 
 require_once __DIR__ . '/auth.php';
@@ -11,7 +11,7 @@ require_once __DIR__ . '/_layout.php';
 // ============================================
 if (isset($_GET['export']) && $_GET['export'] === 'csv' && empty($_SESSION['must_change_password'])) {
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=AhmadFix_Leads_' . date('Y-m-d') . '.csv');
+    header('Content-Disposition: attachment; filename=' . (preg_replace('/[^A-Za-z0-9]+/', '', SITE_NAME) ?: 'Leads') . '_Leads_' . date('Y-m-d') . '.csv');
     
     $output = fopen('php://output', 'w');
     // Output UTF-8 BOM for Excel Arabic support

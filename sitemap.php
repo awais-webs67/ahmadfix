@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — XML Sitemap (served at /sitemap.xml)
+ * Mr Fix KSA — XML Sitemap (served at /sitemap.xml)
  * Built from the database + city list, so it is always up to date.
  * Every page is listed in English and Arabic with hreflang links between them.
  */

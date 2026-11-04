@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Terms of Service
+ * Mr Fix KSA — Terms of Service
  * Plain-language terms. Review and adjust (warranty length, fees) to match your business.
  */
 $updated = '2026-10-26';
@@ -21,7 +21,7 @@ $updated = '2026-10-26';
 <section class="section">
     <div class="container legal-content service-main-content">
 <?php if ($lang === 'ar'): ?>
-        <p>باستخدامك لموقع أحمد فيكس أو حجزك لإحدى خدماتنا، فإنك توافق على الشروط التالية.</p>
+        <p>باستخدامك لموقع <?php echo e(SITE_NAME_AR); ?> أو حجزك لإحدى خدماتنا، فإنك توافق على الشروط التالية.</p>
         <h2>الخدمات</h2>
         <p>نقدم خدمات صيانة وإصلاح الأجهزة المنزلية (المكيفات، الثلاجات، الغسالات، الأفران) في الدمام والخبر والظهران بالمنطقة الشرقية.</p>
         <h2>الحجز والمواعيد</h2>
@@ -43,7 +43,7 @@ $updated = '2026-10-26';
         <h2>تواصل معنا</h2>
         <p>لأي استفسار: <a href="tel:<?php echo formatPhone(PHONE); ?>" dir="ltr"><?php echo e(PHONE); ?></a> — <a href="mailto:<?php echo e(EMAIL); ?>"><?php echo e(EMAIL); ?></a></p>
 <?php else: ?>
-        <p>By using the Ahmad Fix website or booking one of our services, you agree to the following terms.</p>
+        <p>By using the <?php echo e(SITE_NAME); ?> website or booking one of our services, you agree to the following terms.</p>
         <h2>Services</h2>
         <p>We provide home appliance repair and maintenance (air conditioners, refrigerators, washing machines and ovens) in Dammam, Al Khobar and Dhahran in the Eastern Province.</p>
         <h2>Bookings and Appointments</h2>

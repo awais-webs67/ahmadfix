@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — City (Service Area) Page
+ * Mr Fix KSA — City (Service Area) Page
  * One page per city, listing every service. Content lives in config/areas.php
  */
 

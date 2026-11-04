@@ -1,11 +1,11 @@
 <?php
 /**
- * English Language File — Ahmad Fix
+ * English Language File — Mr Fix KSA
  */
 
 return [
     // General
-    'site_name' => 'Ahmad Fix',
+    'site_name' => SITE_NAME,
     'site_tagline' => 'Professional Home Appliance Repair',
     'lang_code' => 'en',
     'lang_name' => 'English',
@@ -41,7 +41,7 @@ return [
     'service_oven' => 'Oven & Stove Repair',
     
     // Why Choose Us
-    'why_title' => 'Why Choose Ahmad Fix?',
+    'why_title' => 'Why Choose ' . SITE_NAME . '?',
     'why_subtitle' => 'We deliver excellence in every repair',
     'why_certified' => 'Certified Technicians',
     'why_certified_desc' => 'Our technicians are trained and certified to handle all brands and models with expertise.',
@@ -104,10 +104,10 @@ return [
     'contact_select_other' => 'Other Service',
     
     // About Page
-    'about_title' => 'About Ahmad Fix',
+    'about_title' => 'About ' . SITE_NAME,
     'about_subtitle' => 'Your Trusted Home Appliance Repair Partner',
     'about_story_title' => 'Our Story',
-    'about_story_text' => 'Ahmad Fix was founded with a simple mission: to provide reliable, professional, and affordable home appliance repair services to families and businesses across the Eastern Province of Saudi Arabia. Based in Dammam, Dhahran, and Al Khobar, we have built our reputation on trust, quality, and customer satisfaction.',
+    'about_story_text' => SITE_NAME . ' was founded with a simple mission: to provide reliable, professional, and affordable home appliance repair services to families and businesses across the Eastern Province of Saudi Arabia. Based in Dammam, Dhahran, and Al Khobar, we have built our reputation on trust, quality, and customer satisfaction.',
     'about_mission_title' => 'Our Mission',
     'about_mission_text' => 'To be the most trusted home appliance repair service provider in Saudi Arabia, delivering exceptional service with certified technicians, genuine spare parts, and a commitment to customer satisfaction.',
     'about_values_title' => 'Our Values',
@@ -121,7 +121,7 @@ return [
     'footer_services' => 'Our Services',
     'footer_quick_links' => 'Quick Links',
     'footer_contact' => 'Contact Us',
-    'footer_copyright' => '© ' . date('Y') . ' Ahmad Fix. All Rights Reserved.',
+    'footer_copyright' => '© ' . date('Y') . ' ' . SITE_NAME . '. All Rights Reserved.',
     'footer_privacy' => 'Privacy Policy',
     'footer_terms' => 'Terms of Service',
     
@@ -163,17 +163,17 @@ return [
     'area_service_link' => '%1$s in %2$s',
     'area_districts_title' => 'Areas We Cover in %s',
     'area_districts_note' => 'Don’t see your district? We cover all of %s — just call or WhatsApp us.',
-    'area_why_title' => 'Why Customers in %s Choose Ahmad Fix',
+    'area_why_title' => 'Why Customers in %s Choose ' . SITE_NAME,
     'area_other_cities' => 'Other Cities We Serve',
     'area_map_title' => 'Service area map: %s',
     'area_book_text' => 'Call or WhatsApp now — a technician can visit you in %s today.',
 
     // SEO for pages without a database row
-    'seo_title_privacy-policy' => 'Privacy Policy | Ahmad Fix',
-    'seo_desc_privacy-policy' => 'How Ahmad Fix collects, uses and protects the information you share when booking an appliance repair in Dammam, Al Khobar and Dhahran.',
-    'seo_title_terms' => 'Terms of Service | Ahmad Fix',
-    'seo_desc_terms' => 'The terms for booking home appliance repair and maintenance services with Ahmad Fix in the Eastern Province, Saudi Arabia.',
-    'seo_title_404' => 'Page Not Found | Ahmad Fix',
+    'seo_title_privacy-policy' => 'Privacy Policy | ' . SITE_NAME,
+    'seo_desc_privacy-policy' => 'How ' . SITE_NAME . ' collects, uses and protects the information you share when booking an appliance repair in Dammam, Al Khobar and Dhahran.',
+    'seo_title_terms' => 'Terms of Service | ' . SITE_NAME,
+    'seo_desc_terms' => 'The terms for booking home appliance repair and maintenance services with ' . SITE_NAME . ' in the Eastern Province, Saudi Arabia.',
+    'seo_title_404' => 'Page Not Found | ' . SITE_NAME,
 
     // 404
     'not_found_title' => 'Page Not Found',
@@ -190,7 +190,7 @@ return [
     'about_check_3' => 'Genuine, manufacturer-approved spare parts',
     'about_check_4' => 'Warranty on every repair',
     'about_years_badge' => 'Years of trusted service',
-    'about_stats_label' => 'Ahmad Fix in numbers',
+    'about_stats_label' => SITE_NAME . ' in numbers',
     'about_stat_cities' => 'Cities Covered',
     'about_stat_brands' => 'Brands Serviced',
     'about_values_subtitle' => 'The principles behind every repair we do',
@@ -210,7 +210,7 @@ return [
     'about_step4_desc' => 'Your repair is covered by our warranty, and we are one message away if you need us.',
     'about_areas_subtitle' => 'Every service is available in every district of these cities',
     'about_faq_q1' => 'Are your technicians certified?',
-    'about_faq_a1' => 'Yes. All Ahmad Fix technicians are trained and certified to repair all major brands of air conditioners, refrigerators, washing machines and ovens.',
+    'about_faq_a1' => 'Yes. All ' . SITE_NAME . ' technicians are trained and certified to repair all major brands of air conditioners, refrigerators, washing machines and ovens.',
     'about_faq_q2' => 'Which areas do you serve?',
     'about_faq_a2' => 'We serve all districts of Dammam, Al Khobar and Dhahran in the Eastern Province of Saudi Arabia, for homes, villas, apartments and offices.',
     'about_faq_q3' => 'Do you give a warranty on repairs?',
@@ -231,5 +231,15 @@ return [
     'time_evening' => 'Evening (4 – 10 PM)',
     'contact_form_heading' => 'Book a Technician or Send a Message',
     'contact_form_note' => 'We usually reply within 30 minutes during working hours. Add your email to get a confirmation.',
+    'cf_badge' => 'Book in under a minute',
+    'cf_step_service' => 'What needs fixing?',
+    'cf_step_details' => 'Your contact details',
+    'cf_step_visit' => 'Visit details (optional)',
+    'cf_svc_ac' => 'AC',
+    'cf_svc_fridge' => 'Fridge',
+    'cf_svc_washer' => 'Washer',
+    'cf_svc_oven' => 'Oven / Stove',
+    'cf_svc_other' => 'Other',
+    'cf_privacy' => 'We only use your details to arrange your repair.',
     'book_online' => 'Book Online',
 ];

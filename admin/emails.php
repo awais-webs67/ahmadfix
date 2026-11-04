@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Admin: Emails (write a new email + history of everything sent)
+ * Mr Fix KSA — Admin: Emails (write a new email + history of everything sent)
  */
 
 require_once __DIR__ . '/auth.php';

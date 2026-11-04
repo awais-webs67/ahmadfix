@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Admin: Customer Reviews (homepage testimonials)
+ * Mr Fix KSA — Admin: Customer Reviews (homepage testimonials)
  * Add, edit, show/hide and delete the reviews shown on the homepage.
  */
 

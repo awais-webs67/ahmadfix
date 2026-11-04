@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Helper Functions
+ * Mr Fix KSA — Helper Functions
  */
 
 if (!defined('FIXORA_APP')) {
@@ -398,7 +398,7 @@ function logoPicture($class = 'logo-img', $style = '') {
     $style_attr = $style ? ' style="' . e($style) . '"' : '';
     if (file_exists(SITE_ROOT . '/assets/images/logo-header.webp')) {
         return '<picture><source type="image/webp" srcset="' . ASSETS_URL . '/images/logo-header.webp?v=' . ASSETS_VERSION . '">'
-             . '<img src="' . ASSETS_URL . '/images/logo-header.png?v=' . ASSETS_VERSION . '" alt="' . e($alt) . '" class="' . e($class) . '" width="360" height="201"' . $style_attr . '></picture>';
+             . '<img src="' . ASSETS_URL . '/images/logo-header.png?v=' . ASSETS_VERSION . '" alt="' . e($alt) . '" class="' . e($class) . '" width="360" height="205"' . $style_attr . '></picture>';
     }
     return '<img src="' . ASSETS_URL . '/images/logo.png" alt="' . e($alt) . '" class="' . e($class) . '"' . $style_attr . '>';
 }
@@ -550,7 +550,7 @@ function getLocalBusinessSchema() {
         '@type' => ['HomeAndConstructionBusiness', 'HVACBusiness'],
         '@id' => SITE_URL . '/#business',
         'name' => $is_ar ? SITE_NAME_AR : SITE_NAME,
-        'alternateName' => $is_ar ? SITE_NAME : SITE_NAME_AR,
+        'alternateName' => brandAltNames($is_ar ? SITE_NAME_AR : SITE_NAME),
         'description' => trim(setting('business_description', $lang)),
         'url' => url(''),
         'logo' => ASSETS_URL . '/images/logo.png',
@@ -611,11 +611,31 @@ function getWebsiteSchema() {
         '@type' => 'WebSite',
         '@id' => SITE_URL . '/#website',
         'name' => $lang === 'ar' ? SITE_NAME_AR : SITE_NAME,
-        'alternateName' => array_values(array_unique([$lang === 'ar' ? SITE_NAME : SITE_NAME_AR, str_replace(' ', '', SITE_NAME)])),
+        'alternateName' => brandAltNames($lang === 'ar' ? SITE_NAME_AR : SITE_NAME),
         'url' => url(''),
         'inLanguage' => $lang === 'ar' ? 'ar-SA' : 'en-SA',
         'publisher' => ['@id' => SITE_URL . '/#business'],
     ]);
+}
+
+/**
+ * Every name of the business (for Google): both languages, without spaces, and Admin → Settings → Other names
+ */
+function brandAltNames($main) {
+    $names = [SITE_NAME, SITE_NAME_AR, str_replace(' ', '', SITE_NAME)];
+    foreach (preg_split('/[,،]/u', opt('brand_alt_names')) as $n) {
+        $n = trim($n);
+        if ($n !== '') $names[] = $n;
+    }
+    $seen = [];
+    $out = [];
+    foreach ($names as $n) {
+        $k = mb_strtolower($n);
+        if ($n === $main || isset($seen[$k])) continue;
+        $seen[$k] = true;
+        $out[] = $n;
+    }
+    return $out;
 }
 
 /**

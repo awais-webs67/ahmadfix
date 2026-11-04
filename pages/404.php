@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — 404 Page
+ * Mr Fix KSA — 404 Page
  * Real 404 status + noindex (set in the router/header), with helpful links.
  */
 ?>

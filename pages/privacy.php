@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Privacy Policy
+ * Mr Fix KSA — Privacy Policy
  * Plain-language policy. Review it and adjust to how you actually handle data.
  */
 $updated = '2026-10-26';
@@ -21,7 +21,7 @@ $updated = '2026-10-26';
 <section class="section">
     <div class="container legal-content service-main-content">
 <?php if ($lang === 'ar'): ?>
-        <p>يحترم أحمد فيكس خصوصيتك. توضح هذه السياسة المعلومات التي نجمعها عند تواصلك معنا عبر هذا الموقع، وكيف نستخدمها ونحميها، وفقاً لنظام حماية البيانات الشخصية في المملكة العربية السعودية.</p>
+        <p>يحترم <?php echo e(SITE_NAME_AR); ?> خصوصيتك. توضح هذه السياسة المعلومات التي نجمعها عند تواصلك معنا عبر هذا الموقع، وكيف نستخدمها ونحميها، وفقاً لنظام حماية البيانات الشخصية في المملكة العربية السعودية.</p>
         <h2>المعلومات التي نجمعها</h2>
         <ul>
             <li><strong>بيانات نموذج التواصل:</strong> الاسم، رقم الجوال، البريد الإلكتروني (اختياري)، الخدمة المطلوبة، ووصف المشكلة.</li>
@@ -44,7 +44,7 @@ $updated = '2026-10-26';
         <h2>تواصل معنا</h2>
         <p>الهاتف: <a href="tel:<?php echo formatPhone(PHONE); ?>" dir="ltr"><?php echo e(PHONE); ?></a> — البريد الإلكتروني: <a href="mailto:<?php echo e(EMAIL); ?>"><?php echo e(EMAIL); ?></a></p>
 <?php else: ?>
-        <p>Ahmad Fix respects your privacy. This policy explains what information we collect when you contact us through this website, and how we use and protect it, in line with Saudi Arabia’s Personal Data Protection Law (PDPL).</p>
+        <p><?php echo e(SITE_NAME); ?> respects your privacy. This policy explains what information we collect when you contact us through this website, and how we use and protect it, in line with Saudi Arabia’s Personal Data Protection Law (PDPL).</p>
         <h2>Information We Collect</h2>
         <ul>
             <li><strong>Contact form details:</strong> your name, phone number, email (optional), the service you need and a description of the problem.</li>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Header Template
+ * Mr Fix KSA — Header Template
  * <head> (SEO, social, structured data) + top ribbon + sticky navigation
  */
 
@@ -94,10 +94,12 @@ $fonts_url = $lang === 'ar'
     <meta property="og:image" content="<?php echo e($og_image); ?>">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="<?php echo e($lang === 'ar' ? 'أحمد فيكس — صيانة الأجهزة المنزلية' : 'Ahmad Fix — Home Appliance Repair'); ?>">
+    <meta property="og:image:alt" content="<?php echo e($lang === 'ar' ? SITE_NAME_AR . ' — صيانة الأجهزة المنزلية' : SITE_NAME . ' — Home Appliance Repair'); ?>">
     <meta property="og:locale" content="<?php echo $lang === 'ar' ? 'ar_SA' : 'en_US'; ?>">
     <meta property="og:locale:alternate" content="<?php echo $lang === 'ar' ? 'en_US' : 'ar_SA'; ?>">
     <meta property="og:site_name" content="<?php echo e($lang === 'ar' ? SITE_NAME_AR : SITE_NAME); ?>">
+    <meta name="application-name" content="<?php echo e(SITE_NAME); ?>">
+    <meta name="apple-mobile-web-app-title" content="<?php echo e(SITE_NAME); ?>">
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -106,7 +108,6 @@ $fonts_url = $lang === 'ar'
     <meta name="twitter:image" content="<?php echo e($og_image); ?>">
 
     <!-- Favicon & App Icons -->
-    <link rel="icon" type="image/svg+xml" href="<?php echo ASSETS_URL; ?>/images/favicon.svg">
     <link rel="icon" type="image/png" sizes="64x64" href="<?php echo ASSETS_URL; ?>/images/favicon.png">
     <link rel="shortcut icon" href="<?php echo ASSETS_URL; ?>/images/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="<?php echo ASSETS_URL; ?>/images/apple-touch-icon.png">
@@ -182,7 +183,7 @@ $fonts_url = $lang === 'ar'
 <header class="header" id="main-header">
     <div class="header-inner">
         <!-- Logo -->
-        <a href="<?php echo url(); ?>" class="logo" aria-label="Ahmad Fix Home">
+        <a href="<?php echo url(); ?>" class="logo" aria-label="<?php echo e(($lang === 'ar' ? SITE_NAME_AR : SITE_NAME) . ' — ' . __('nav_home', 'Home')); ?>">
             <?php echo logoPicture(); ?>
         </a>
 

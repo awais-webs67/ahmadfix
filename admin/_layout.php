@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Shared admin layout (sidebar, top bar, design system)
+ * Mr Fix KSA — Shared admin layout (sidebar, top bar, design system)
  * Not a page: included by the admin pages.
  */
 

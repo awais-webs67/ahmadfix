@@ -1,5 +1,5 @@
 /* ============================================
-   Ahmad Fix — Main Stylesheet
+   Mr Fix KSA — Main Stylesheet
    Theme: White + Black + #FF7A00
    Clean, Professional, Premium
    ============================================ */
@@ -1426,3 +1426,113 @@ main, footer { overflow-x: clip; }
 .contact-form-note { font-size: var(--text-sm); color: var(--gray-600); margin: -14px 0 20px; line-height: 1.6; }
 input[type="date"].form-control { min-height: 46px; }
 @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+/* ============================================
+   Contact form (booking card)
+   ============================================ */
+.contact-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.contact-form {
+    padding: 0;
+    border: 1px solid var(--gray-200);
+    border-radius: 20px;
+    box-shadow: 0 18px 48px -24px rgba(17, 24, 39, 0.25);
+    overflow: hidden;
+}
+.cf-head {
+    padding: 26px 28px 22px;
+    background: linear-gradient(135deg, #FFF6EE 0%, #FFFFFF 70%);
+    border-bottom: 1px solid var(--gray-100);
+}
+.cf-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: var(--text-xs); font-weight: 700; letter-spacing: .02em;
+    color: #B45000; background: var(--primary-glow);
+    padding: 6px 12px; border-radius: 999px; margin-bottom: 12px;
+}
+.cf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px rgba(16,185,129,.2); }
+.cf-title { font-size: clamp(1.3rem, 1.1rem + 0.9vw, 1.65rem); font-weight: 800; line-height: 1.25; color: var(--dark); margin: 0 0 8px; }
+.cf-note { font-size: var(--text-sm); color: var(--gray-600); line-height: 1.6; margin: 0; }
+.contact-form .form-message { margin: 18px 28px 0; }
+#contact-form { padding: 6px 28px 26px; }
+
+.cf-step { border: 0; margin: 0; padding: 20px 0 4px; min-width: 0; }
+.cf-step + .cf-step { border-top: 1px dashed var(--gray-200); }
+.cf-legend {
+    display: flex; align-items: center; gap: 10px; padding: 0;
+    font-size: var(--text-base); font-weight: 700; color: var(--dark); margin-bottom: 14px;
+    float: left; width: 100%;
+}
+.cf-legend + * { clear: both; }
+.cf-num {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--primary); color: #fff; font-size: 13px; font-weight: 800;
+}
+.cf-req { color: var(--error); }
+.cf-label { display: block; font-size: var(--text-sm); font-weight: 600; color: var(--dark); margin-bottom: 6px; }
+
+.contact-form .form-control { min-height: 48px; padding: 12px 14px; border-radius: 12px; background: #FCFCFD; font-size: 16px; }
+.contact-form .form-control:hover { border-color: var(--gray-300); }
+.contact-form .form-control:focus { background: var(--white); border-color: var(--primary); }
+.contact-form textarea.form-control { min-height: 110px; }
+
+/* Appliance picker */
+.cf-services { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.cf-service, .cf-time { position: relative; cursor: pointer; }
+.cf-service input, .cf-time input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.cf-service-box {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    min-height: 88px; padding: 12px 6px; text-align: center;
+    border: 1.5px solid var(--gray-200); border-radius: 14px; background: var(--white);
+    font-size: 13px; font-weight: 600; color: var(--gray-700); line-height: 1.25;
+    transition: border-color .15s, background .15s, color .15s, transform .15s, box-shadow .15s;
+}
+.cf-service-box svg { width: 28px; height: 28px; color: var(--gray-500); transition: color .15s; }
+.cf-service:hover .cf-service-box { border-color: var(--primary-light); transform: translateY(-1px); }
+.cf-service input:checked + .cf-service-box {
+    border-color: var(--primary); background: #FFF5EC; color: #B45000;
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.cf-service input:checked + .cf-service-box svg { color: var(--primary); }
+.cf-service input:focus-visible + .cf-service-box, .cf-time input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Time of day */
+.cf-times { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.cf-time span {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 54px; padding: 8px 6px; text-align: center;
+    border: 1.5px solid var(--gray-200); border-radius: 12px; background: var(--white);
+    transition: border-color .15s, background .15s, color .15s;
+}
+.cf-time strong { font-size: 13px; font-weight: 700; color: var(--dark); }
+.cf-time small { font-size: 11px; color: var(--gray-600); }
+.cf-time:hover span { border-color: var(--primary-light); }
+.cf-time input:checked + span { border-color: var(--primary); background: #FFF5EC; }
+.cf-time input:checked + span strong { color: #B45000; }
+
+.cf-submit { width: 100%; margin-top: 8px; min-height: 54px; border-radius: 14px; font-size: 1.2rem; font-weight: 700; background: #E06000; box-shadow: 0 10px 24px -10px rgba(255, 122, 0, .6); }
+.cf-privacy { margin: 12px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--gray-600); text-align: center; }
+.cf-privacy svg { display: inline-block; vertical-align: -2px; margin-inline-end: 4px; }
+.cf-privacy a { color: var(--gray-600); text-decoration: underline; text-underline-offset: 2px; }
+.cf-privacy a:hover { color: var(--primary); }
+.cf-submit:hover { background: #C25400; }
+
+@media (min-width: 1025px) {
+    .contact-aside { position: sticky; top: 96px; }
+}
+@media (max-width: 1024px) {
+    .contact-grid { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 640px) {
+    .cf-head { padding: 20px 18px 18px; }
+    #contact-form { padding: 2px 18px 20px; }
+    .contact-form .form-message { margin: 14px 18px 0; }
+    .contact-form { border-radius: 16px; }
+    .cf-services { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .cf-service-box { min-height: 78px; }
+    .cf-times { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .contact-form .form-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 360px) {
+    .cf-services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Admin: Settings
+ * Mr Fix KSA — Admin: Settings
  * Every business detail, Google code, social link, SMTP login and email text.
  */
 

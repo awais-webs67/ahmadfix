@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — About Page
+ * Mr Fix KSA — About Page
  */
 
 $services = getServices();
@@ -79,7 +79,7 @@ $icon = function ($name, $size = 24) {
         <div class="about-story">
             <div class="about-story-media reveal-left">
                 <?php echo picture('about/about-team.jpg', [
-                    'alt' => $is_ar ? 'فريق أحمد فيكس - فنيون معتمدون في الدمام والخبر والظهران' : 'Ahmad Fix team - certified appliance repair technicians in Dammam, Khobar and Dhahran',
+                    'alt' => $is_ar ? 'فريق ' . SITE_NAME_AR . ' - فنيون معتمدون في الدمام والخبر والظهران' : SITE_NAME . ' team - certified appliance repair technicians in Dammam, Khobar and Dhahran',
                     'width' => 1024, 'height' => 1024,
                     'loading' => 'lazy', 'decoding' => 'async',
                     'sizes' => '(max-width: 768px) 100vw, 560px',

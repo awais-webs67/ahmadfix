@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Floating WhatsApp & Call Buttons
+ * Mr Fix KSA — Floating WhatsApp & Call Buttons
  */
 ?>
 <!-- ====== Floating Action Buttons ====== -->

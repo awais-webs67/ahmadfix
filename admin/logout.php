@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Admin Logout
+ * Mr Fix KSA — Admin Logout
  */
 
 if (!defined('FIXORA_APP')) {

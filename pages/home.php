@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Homepage
+ * Mr Fix KSA — Homepage
  */
 
 $hero = getHeroContent();

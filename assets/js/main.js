@@ -1,5 +1,5 @@
 /**
- * Ahmad Fix — Main JavaScript
+ * Mr Fix KSA — Main JavaScript
  * Menu, Scroll, Animations, Form, Slider
  */
 
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.gtag('event', name, params || {});
         }
     }
-    window.ahmadFixTrack = trackEvent;
+    window.siteTrack = trackEvent;
 
     document.addEventListener('click', function(e) {
         const link = e.target.closest ? e.target.closest('a[href]') : null;

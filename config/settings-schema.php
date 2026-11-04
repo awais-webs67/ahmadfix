@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Every setting you can change from Admin → Settings
+ * Mr Fix KSA — Every setting you can change from Admin → Settings
  *
  * Each field is stored in the site_settings table. "bilingual" fields have an
  * English and an Arabic value. The defaults are only used the first time
@@ -16,9 +16,12 @@ return [
         'title' => 'Business Information',
         'icon'  => '🏢',
         'fields' => [
-            'site_name'     => ['label' => 'Business name', 'type' => 'text', 'bilingual' => true, 'default' => ['Ahmad Fix', 'أحمد فيكس']],
+            'site_name'     => ['label' => 'Business name', 'type' => 'text', 'bilingual' => true, 'default' => ['Mr Fix KSA', 'مستر فيكس']],
+            'brand_alt_names' => ['label' => 'Other names people search for', 'type' => 'text',
+                                'default' => 'MrFixKSA, Mr Fix, Mister Fix, Mr Fix Saudi Arabia, مستر فيكس السعودية, مستر فكس',
+                                'help' => 'Comma separated. Google learns these are also your business, so searches like "MrFixKSA" or "مستر فكس" find you.'],
             'site_url'      => ['label' => 'Website address', 'type' => 'url', 'default' => '',
-                                'help' => 'Your live address, e.g. https://ahmadfix.com — Google, the sitemap and emails use it. Visitors on http:// or www. are redirected to it. Leave empty to use whatever address the visitor typed.'],
+                                'help' => 'Your live address, e.g. https://mrfixksa.com — Google, the sitemap and emails use it. Visitors on http:// or www. are redirected to it. Leave empty to use whatever address the visitor typed.'],
             'default_language' => ['label' => 'Default website language', 'type' => 'select',
                                 'options' => ['ar' => 'Arabic (العربية)', 'en' => 'English', 'auto' => 'Automatic — the language of the visitor\'s phone/browser'],
                                 'default' => 'auto',
@@ -88,7 +91,7 @@ return [
             'smtp_pass'       => ['label' => 'Email password', 'type' => 'password', 'default' => '',
                                   'help' => 'Business email: the password of that mailbox (cPanel → Email Accounts). Gmail: an App password (Google Account → Security → 2-Step Verification → App passwords), with or without spaces.'],
             'smtp_from_email' => ['label' => 'Send emails from (address)', 'type' => 'email', 'default' => '', 'help' => 'Empty = same as SMTP username. Gmail only allows your own address.'],
-            'smtp_from_name'  => ['label' => 'Send emails from (name)', 'type' => 'text', 'default' => 'Ahmad Fix'],
+            'smtp_from_name'  => ['label' => 'Send emails from (name)', 'type' => 'text', 'default' => 'Mr Fix KSA', 'help' => 'Empty = your business name.'],
             'notify_emails'   => ['label' => 'Send new-lead alerts to', 'type' => 'text', 'default' => 'ahmadarian538@gmail.com', 'help' => 'One or more addresses, separated by commas.'],
             'auto_reply_enabled' => ['label' => 'Send automatic "Thank you" email to customers', 'type' => 'toggle', 'default' => '1'],
         ],

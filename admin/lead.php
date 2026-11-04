@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Admin: one lead (details, status, notes, email reply, history)
+ * Mr Fix KSA — Admin: one lead (details, status, notes, email reply, history)
  */
 
 require_once __DIR__ . '/auth.php';

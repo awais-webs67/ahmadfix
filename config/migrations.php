@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — One-time database upgrades
+ * Mr Fix KSA — One-time database upgrades
  *
  * Runs automatically on the first page load after new files are uploaded.
  * Each step is safe to run more than once and only changes old/default values,
@@ -11,7 +11,7 @@ if (!defined('FIXORA_APP')) {
     die('Direct access not allowed.');
 }
 
-define('SCHEMA_VERSION', 4);
+define('SCHEMA_VERSION', 5);
 
 /**
  * Old service URLs → new city-neutral URLs (every service is offered in every city).
@@ -90,7 +90,7 @@ function fixTableCharsets(PDO $pdo, array &$errors = []) {
                 continue;
             }
         }
-        error_log("Ahmad Fix: table {$t} converted to UTF-8 so Arabic text can be stored.");
+        error_log("Mr Fix KSA: table {$t} converted to UTF-8 so Arabic text can be stored.");
     }
     return $converted;
 }
@@ -203,7 +203,7 @@ function restoreArabicText(PDO $pdo) {
         foreach ([$seed_settings[$row['setting_key']] ?? null, $schema_ar[$row['setting_key']] ?? null] as $candidate) {
             if (is_string($candidate) && trim($candidate) !== '') { $good = $candidate; break; }
         }
-        if ($row['setting_key'] === 'site_name') $good = 'أحمد فيكس';
+        if ($row['setting_key'] === 'site_name') $good = 'مستر فيكس';
         if ($good !== null && $good !== '') {
             $set('site_settings', 'setting_value_ar', $good, 'setting_key = :k', [':k' => $row['setting_key']]);
         }
@@ -262,7 +262,7 @@ function restoreArabicText(PDO $pdo) {
         }
     }
 
-    if ($fixed) error_log("Ahmad Fix: restored {$fixed} Arabic text value(s) that had turned into question marks.");
+    if ($fixed) error_log("Mr Fix KSA: restored {$fixed} Arabic text value(s) that had turned into question marks.");
     return $fixed;
 }
 
@@ -557,7 +557,7 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
         // 10. Values the site displayed before (seed data differed)
         'settings_display_fixes' => function (PDO $pdo) {
             $fix = $pdo->prepare("UPDATE site_settings SET setting_value_ar = :new WHERE setting_key = 'site_name' AND setting_value_ar = :old");
-            $fix->execute([':new' => 'أحمد فيكس', ':old' => 'أحمد فيكس السعودية']);
+            $fix->execute([':new' => 'مستر فيكس', ':old' => 'أحمد فيكس السعودية']);
             // Map pin pointed at a hospital — use the Dammam city centre
             $coords = $pdo->prepare("UPDATE site_settings SET setting_value_en = :v1, setting_value_ar = :v2 WHERE setting_key = :k AND setting_value_en = :old");
             $coords->execute([':v1' => '26.4207', ':v2' => '26.4207', ':k' => 'maps_embed_lat', ':old' => '26.43311719']);
@@ -600,6 +600,53 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
                 $pdo->exec("UPDATE {$table} SET {$col} = REPLACE({$col}, '+966 58 245 3440', '{phone}') WHERE {$col} LIKE '%+966 58 245 3440%'");
             }
         },
+
+        // ---------------- Version 5 ----------------
+        // 12. New name: Ahmad Fix → Mr Fix KSA (Arabic: مستر فيكس) in everything the website shows.
+        //     Google titles/descriptions get {site_name}, so they follow Admin → Settings from now on.
+        //     Leads and the email history are records and stay as they were.
+        'rebrand_mr_fix_ksa' => function (PDO $pdo) {
+            $en_new = 'Mr Fix KSA';
+            $ar_new = 'مستر فيكس';
+            $old_en = ['Ahmad Fix', 'Ahmad fix', 'AHMAD FIX', 'ahmad fix', 'AhmadFix', 'Ahmadfix', 'ahmadfix'];
+            $old_ar = ['أحمد فيكس السعودية', 'احمد فيكس السعودية', 'أحمد فيكس', 'احمد فيكس'];
+            $seo_cols = ['pages_seo' => ['title_en', 'title_ar', 'description_en', 'description_ar', 'keywords_en', 'keywords_ar'],
+                         'services'  => ['meta_title_en', 'meta_title_ar', 'meta_desc_en', 'meta_desc_ar', 'meta_keywords_en', 'meta_keywords_ar']];
+            $skip = ['setting_key', 'setting_group', 'setting_type', 'slug_en', 'slug_ar', 'page_slug', 'image', 'icon', 'og_image',
+                     'username', 'password', 'email', 'category', 'customer_location'];
+            $tables = ['site_settings', 'services', 'pages_seo', 'testimonials', 'hero_content', 'service_areas', 'gallery', 'admins'];
+            $cols = $pdo->query("SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.COLUMNS
+                                 WHERE TABLE_SCHEMA = DATABASE() AND DATA_TYPE IN ('char','varchar','tinytext','text','mediumtext','longtext')")->fetchAll(PDO::FETCH_NUM);
+            foreach ($cols as [$table, $col]) {
+                if (!in_array($table, $tables, true) || in_array($col, $skip, true)) continue;
+                $is_seo = in_array($col, $seo_cols[$table] ?? [], true);
+                $is_ar = str_ends_with($col, '_ar');
+                $expr = "`{$col}`";
+                $params = [];
+                $i = 0;
+                foreach ($old_en as $o) {
+                    $expr = "REPLACE({$expr}, :o{$i}, :n{$i})";
+                    $params[":o{$i}"] = $o;
+                    $params[":n{$i}"] = $is_seo ? '{site_name}' : (($is_ar && $table !== 'site_settings') ? $ar_new : $en_new);
+                    $i++;
+                }
+                foreach ($old_ar as $o) {
+                    $expr = "REPLACE({$expr}, :o{$i}, :n{$i})";
+                    $params[":o{$i}"] = $o;
+                    $params[":n{$i}"] = $is_seo ? '{site_name}' : $ar_new;
+                    $i++;
+                }
+                $where = [];
+                foreach (array_merge($old_en, $old_ar) as $j => $o) {
+                    $where[] = "`{$col}` LIKE :w{$j}";
+                    $params[":w{$j}"] = '%' . $o . '%';
+                }
+                $pdo->prepare("UPDATE `{$table}` SET `{$col}` = {$expr} WHERE " . implode(' OR ', $where))->execute($params);
+            }
+            // Business name itself
+            $pdo->prepare("UPDATE site_settings SET setting_value_en = :en WHERE setting_key = 'site_name' AND (setting_value_en = '' OR setting_value_en IS NULL)")->execute([':en' => $en_new]);
+            $pdo->prepare("UPDATE site_settings SET setting_value_ar = :ar WHERE setting_key = 'site_name' AND (setting_value_ar = '' OR setting_value_ar IS NULL OR setting_value_ar = :en)")->execute([':ar' => $ar_new, ':en' => $en_new]);
+        },
     ];
 
     $failed = [];
@@ -612,7 +659,7 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
                 $GLOBALS['pdo'] = $result;
             }
         } catch (Throwable $e) {
-            error_log("Ahmad Fix migration '{$name}' failed: " . $e->getMessage());
+            error_log("Mr Fix KSA migration '{$name}' failed: " . $e->getMessage());
             $failed[$name] = $e->getMessage();
         }
     }
@@ -631,6 +678,6 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
         $v = (string)SCHEMA_VERSION;
         $stmt->execute([':v1' => $v, ':v2' => $v, ':v3' => $v, ':v4' => $v]);
     } catch (PDOException $e) {
-        error_log('Ahmad Fix: could not save schema_version: ' . $e->getMessage());
+        error_log('Mr Fix KSA: could not save schema_version: ' . $e->getMessage());
     }
 }

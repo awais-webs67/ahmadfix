@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Email system
+ * Mr Fix KSA — Email system
  *
  * - New lead  → branded alert to you (Admin → Settings → Email → "Send new-lead alerts to")
  * - New lead  → automatic "Thank you, we received your request" to the customer (if they gave an email)
@@ -100,7 +100,8 @@ function mailConfig() {
         'user'       => $user,
         'pass'       => $pass,
         'from_email' => filter_var($from, FILTER_VALIDATE_EMAIL) ? $from : ($user ?: EMAIL),
-        'from_name'  => mailValue('smtp_from_name', SITE_NAME),
+        // old business name saved in config.php → current name
+        'from_name'  => preg_replace('/ahmad\s*fix/i', SITE_NAME, mailValue('smtp_from_name', SITE_NAME)),
         'notify'     => $notify ?: [EMAIL],
         'auto_reply' => mailValue('auto_reply_enabled', '1') === '1',
         'own_domain' => $own_domain,

@@ -1,6 +1,6 @@
 #!/bin/bash
 # =====================================================================
-# Ahmad Fix — copy the website from the cPanel Git repository folder
+# Mr Fix KSA — copy the website from the cPanel Git repository folder
 # to the live website folder. Run by cPanel ("Deploy HEAD Commit").
 #
 # Where does it copy to?

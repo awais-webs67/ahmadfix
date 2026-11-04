@@ -1,6 +1,6 @@
-# Ahmad Fix — Website
+# Mr Fix KSA — Website
 
-Bilingual (English / Arabic) website for **Ahmad Fix**, home appliance repair in **Dammam, Al Khobar and Dhahran**.
+Bilingual (English / Arabic) website for **Mr Fix KSA**, home appliance repair in **Dammam, Al Khobar and Dhahran**.
 PHP 8 + MySQL, no framework. Every service (AC, fridge, washing machine, oven) is offered in every city.
 
 ---
@@ -15,7 +15,7 @@ PHP 8 + MySQL, no framework. Every service (AC, fridge, washing machine, oven) i
 3. Upload all the files. On the first page visit, the database **upgrades itself automatically**. You don't need to run any SQL.
 4. Open `/admin`. If you never set a password, log in with `admin` / `ahmadfix2024`. You'll be asked to choose a new password straight away.
 5. Go to **Admin → Settings** and fill in:
-   - **Business Information → Website address**: your live address, e.g. `https://ahmadfix.com`. Every page then redirects to it (https, with or without www).
+   - **Business Information → Website address**: your live address, e.g. `https://mrfixksa.com`. Every page then redirects to it (https, with or without www).
    - **Email (SMTP)**: your Gmail address and a **new** Gmail App password, then press **Send test email**.
 
 ---
@@ -105,7 +105,7 @@ These matter as much as the website itself for getting customers from Google.
 ## Launch checklist
 
 - [ ] Hosting runs **PHP 8.0+** and **MySQL 5.7+ / MariaDB 10.3+**, with Apache `mod_rewrite` turned on
-- [ ] **SSL certificate** installed for `ahmadfix.com` (the site forces `https://`). Most hosts offer free Let's Encrypt.
+- [ ] **SSL certificate** installed for `mrfixksa.com` (the site forces `https://`). Most hosts offer free Let's Encrypt.
 - [ ] `config/config.php` created with the database login
 - [ ] Admin → Settings: website address saved, SMTP filled in, **Send test email** works
 - [ ] Booking test: send a message from the Contact page with your own email → you get the alert, and the "thank you" email arrives
@@ -113,7 +113,7 @@ These matter as much as the website itself for getting customers from Google.
 - [ ] Admin password changed (first login forces this)
 - [ ] Sample reviews replaced in Admin → ⭐ Reviews
 - [ ] Google Business Profile, Search Console (submit the sitemap) and Analytics set up (see above)
-- [ ] Check `https://ahmadfix.com/sitemap.xml` and `https://ahmadfix.com/robots.txt` open in the browser
+- [ ] Check `https://mrfixksa.com/sitemap.xml` and `https://mrfixksa.com/robots.txt` open in the browser
 
 Quality check before launch (Google Lighthouse, mobile): Performance 96–100, Accessibility 96–100,
 Best Practices 100, SEO 100 on the home, about, service, city and contact pages.
@@ -144,5 +144,5 @@ git pull                        # shows the real error, if any
 
 ## Local development
 
-XAMPP/WAMP: put the folder in `htdocs` (e.g. `htdocs/AhmadFix`), import `database/setup.sql`, and open `http://localhost/AhmadFix`.
+XAMPP/WAMP: put the folder in `htdocs` (e.g. `htdocs/MrFixKSA`), import `database/setup.sql`, and open `http://localhost/MrFixKSA`.
 On localhost, HTTPS is not forced and URLs use the local folder automatically.

@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Footer Template
+ * Mr Fix KSA — Footer Template
  */
 
 $services = getServices();

@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Service Detail Page
+ * Mr Fix KSA — Service Detail Page
  * Displays individual service with full content, FAQ, and sidebar
  */
 

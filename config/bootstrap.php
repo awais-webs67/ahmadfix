@@ -1,6 +1,6 @@
 <?php
 /**
- * Ahmad Fix — Core Setup (do not edit; updates replace this file)
+ * Mr Fix KSA — Core Setup (do not edit; updates replace this file)
  *
  * YOUR settings go in config/config.php — copy config/config.example.php
  * to config/config.php and fill in the database (and optionally email) login.
@@ -26,7 +26,7 @@ foreach (['config.php', 'config.local.php'] as $__name) {
     // Safety: an old copy of the core file left under this name must not be loaded
     $__head = (string)@file_get_contents($__file, false, null, 0, 20000);
     if (str_contains($__head, 'function fixora_define') || str_contains($__head, 'new PDO(')) {
-        error_log('Ahmad Fix: config/' . $__name . ' is an old core file, not a settings file — ignored. Copy config/config.example.php to config/config.php.');
+        error_log('Mr Fix KSA: config/' . $__name . ' is an old core file, not a settings file — ignored. Copy config/config.example.php to config/config.php.');
         continue;
     }
     require_once $__file;
@@ -57,7 +57,7 @@ fixora_define('DB_CHARSET', 'utf8mb4');
 
 define('SITE_ROOT', dirname(__DIR__));
 // Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.3.0');
+define('ASSETS_VERSION', '2.4.0');
 
 // ============================================
 // Who is asking? (host, https, local or live)
