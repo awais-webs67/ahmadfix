@@ -751,7 +751,7 @@ return [
 <h2>نصلح جميع ماركات الأفران الإيطالية والأوروبية والأمريكية</h2>
 <p>نوفر قطع غيار أصلية وإيطالية لماركات <strong>جليم غاز (Glem Gas)، لاجيرمانيا (La Germania)، أريستون (Ariston)، إندست، إلبا (Elba)، تكنوغاز، بومباني، بوش (Bosch)، سيمنس، تيكا (Teka)، ويرلبول، جنرال إلكتريك (GE)، فريجيدير، مابي، سامسونج، إل جي، بيكو وهاير</strong>. كما يمكنك طلب خدمات <a href="/ar/صيانة-مكيفات">صيانة المكيفات</a> و<a href="/ar/صيانة-ثلاجات">صيانة الثلاجات</a> و<a href="/ar/صيانة-غسالات">صيانة الغسالات</a> في الدمام والخبر والظهران.</p>',
             'faq_en' => json_encode([
-                ['q' => 'Why does my gas oven burner go out as soon as I release the knob?', 'a' => 'This is caused by a faulty flame-failure thermocouple sensor or电磁 safety valve. Our technician replaces the thermocouple on-site in 30 minutes so the burner stays lit safely.'],
+                ['q' => 'Why does my gas oven burner go out as soon as I release the knob?', 'a' => 'This is caused by a faulty flame-failure thermocouple sensor or electromagnetic safety valve. Our technician replaces the thermocouple on-site in 30 minutes so the burner stays lit safely.'],
                 ['q' => 'How much does gas or electric oven repair cost in Dammam and Al Khobar?', 'a' => 'Our in-home safety inspection and diagnosis is 50 SAR (waived with repair). Burner jet cleaning and calibration costs 100–180 SAR, thermocouple or igniter repair is 120–220 SAR, and heating element or hinge replacements range from 150–280 SAR.'],
                 ['q' => 'Do you repair Italian gas ranges like Glem Gas, La Germania, and Elba?', 'a' => 'Yes. We specialize in Italian freestanding ranges and built-in ovens including Glem Gas, La Germania, Ariston, Elba, Tecnogas, and Bompani, using genuine Italian spare parts.'],
                 ['q' => 'Why is my electric built-in oven tripping the breaker?', 'a' => 'When an electric heating element ages, its internal insulation breaks down and leaks current to the metal frame, tripping the kitchen RCD breaker. Replacing the faulty bake or broil element resolves the issue immediately.'],
@@ -767,3 +767,4 @@ return [
         ],
     ],
 ];
+
