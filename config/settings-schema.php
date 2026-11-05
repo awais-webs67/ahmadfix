@@ -18,9 +18,9 @@ return [
         'fields' => [
             'site_name'     => ['label' => 'Business name', 'type' => 'text', 'bilingual' => true, 'default' => ['Mr Fix KSA', 'مستر فيكس']],
             'brand_alt_names' => ['label' => 'Other names people search for', 'type' => 'text',
-                                'default' => 'MrFixKSA, Mr Fix, Mister Fix, Mr Fix Saudi Arabia, مستر فيكس السعودية, مستر فكس',
+                                'default' => 'MrFixKSA, Mr Fix, Mister Fix, Mr Fix Saudi Arabia, مستر فيكس السعودية, مستر فكس, مركز مستر فيكس للصيانة',
                                 'help' => 'Comma separated. Google learns these are also your business, so searches like "MrFixKSA" or "مستر فكس" find you.'],
-            'site_url'      => ['label' => 'Website address', 'type' => 'url', 'default' => '',
+            'site_url'      => ['label' => 'Website address', 'type' => 'url', 'default' => 'https://mrfixksa.com',
                                 'help' => 'Your live address, e.g. https://mrfixksa.com — Google, the sitemap and emails use it. Visitors on http:// or www. are redirected to it. Leave empty to use whatever address the visitor typed.'],
             'default_language' => ['label' => 'Default website language', 'type' => 'select',
                                 'options' => ['ar' => 'Arabic (العربية)', 'en' => 'English', 'auto' => 'Automatic — the language of the visitor\'s phone/browser'],

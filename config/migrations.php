@@ -11,7 +11,7 @@ if (!defined('FIXORA_APP')) {
     die('Direct access not allowed.');
 }
 
-define('SCHEMA_VERSION', 5);
+define('SCHEMA_VERSION', 6);
 
 /**
  * Old service URLs → new city-neutral URLs (every service is offered in every city).
@@ -171,6 +171,23 @@ function seedRows() {
             while ($i < $len && ctype_space($sql[$i])) $i++;
             if ($i < $len && $sql[$i] === ',') { $i++; continue; }
             break;
+        }
+    }
+    $v6_file = SITE_ROOT . '/config/seo-v6-content.php';
+    if (is_file($v6_file)) {
+        $v6 = require $v6_file;
+        foreach ($rows['pages_seo'] ?? [] as $idx => $p) {
+            $slug = $p['page_slug'] ?? '';
+            if (isset($v6['pages_seo'][$slug])) {
+                $rows['pages_seo'][$idx] = array_merge($p, $v6['pages_seo'][$slug]);
+            }
+        }
+        $legacy = legacyServiceSlugs();
+        foreach ($rows['services'] ?? [] as $idx => $s) {
+            $slug = $legacy[$s['slug_en'] ?? ''] ?? ($s['slug_en'] ?? '');
+            if (isset($v6['services'][$slug])) {
+                $rows['services'][$idx] = array_merge($s, $v6['services'][$slug], ['slug_en' => $slug]);
+            }
         }
     }
     return $rows;
@@ -646,6 +663,63 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
             // Business name itself
             $pdo->prepare("UPDATE site_settings SET setting_value_en = :en WHERE setting_key = 'site_name' AND (setting_value_en = '' OR setting_value_en IS NULL)")->execute([':en' => $en_new]);
             $pdo->prepare("UPDATE site_settings SET setting_value_ar = :ar WHERE setting_key = 'site_name' AND (setting_value_ar = '' OR setting_value_ar IS NULL OR setting_value_ar = :en)")->execute([':ar' => $ar_new, ':en' => $en_new]);
+        },
+
+        // ---------------- Version 6 ----------------
+        // 13. Deep SEO, GEO & AEO upgrade:
+        //     - Set canonical site_url to https://mrfixksa.com when blank
+        //     - Optimize all pages_seo and services titles (45-59 chars) & meta descriptions (135-156 chars)
+        //     - Upgrade all 4 service pages to 800+ words (EN & AR) with SAR pricing tables, H2/H3 parity, and 6 FAQs
+        'seo_v6_deep_optimization' => function (PDO $pdo) {
+            $pdo->prepare("UPDATE site_settings SET setting_value_en = :u, setting_value_ar = :u2 WHERE setting_key = 'site_url' AND (setting_value_en = '' OR setting_value_en IS NULL)")
+                ->execute([':u' => 'https://mrfixksa.com', ':u2' => 'https://mrfixksa.com']);
+
+            $payload_file = SITE_ROOT . '/config/seo-v6-content.php';
+            if (!is_file($payload_file)) return;
+            $payload = require $payload_file;
+
+            // Update pages_seo (home, about, contact)
+            $upd_page = $pdo->prepare("UPDATE pages_seo
+                SET title_en = :t_en, title_ar = :t_ar, description_en = :d_en, description_ar = :d_ar
+                WHERE page_slug = :slug");
+            foreach ($payload['pages_seo'] ?? [] as $slug => $row) {
+                $upd_page->execute([
+                    ':t_en' => $row['title_en'],
+                    ':t_ar' => $row['title_ar'],
+                    ':d_en' => $row['description_en'],
+                    ':d_ar' => $row['description_ar'],
+                    ':slug' => $slug,
+                ]);
+            }
+
+            // Update services (ac-repair, refrigerator-repair, washing-machine-repair, oven-repair)
+            $upd_svc = $pdo->prepare("UPDATE services
+                SET meta_title_en = :mt_en,
+                    meta_title_ar = :mt_ar,
+                    meta_desc_en  = :md_en,
+                    meta_desc_ar  = :md_ar,
+                    short_desc_en = :sd_en,
+                    short_desc_ar = :sd_ar,
+                    full_desc_en  = :fd_en,
+                    full_desc_ar  = :fd_ar,
+                    faq_en        = :fq_en,
+                    faq_ar        = :fq_ar
+                WHERE slug_en = :slug");
+            foreach ($payload['services'] ?? [] as $slug_en => $svc) {
+                $upd_svc->execute([
+                    ':mt_en' => $svc['meta_title_en'],
+                    ':mt_ar' => $svc['meta_title_ar'],
+                    ':md_en' => $svc['meta_desc_en'],
+                    ':md_ar' => $svc['meta_desc_ar'],
+                    ':sd_en' => $svc['short_desc_en'],
+                    ':sd_ar' => $svc['short_desc_ar'],
+                    ':fd_en' => $svc['full_desc_en'],
+                    ':fd_ar' => $svc['full_desc_ar'],
+                    ':fq_en' => $svc['faq_en'],
+                    ':fq_ar' => $svc['faq_ar'],
+                    ':slug'  => $slug_en,
+                ]);
+            }
         },
     ];
 

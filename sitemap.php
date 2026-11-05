@@ -31,16 +31,16 @@ foreach ($static as $path => $file) {
     $entries[] = [
         'paths'   => ['en' => $path, 'ar' => $path],
         'lastmod' => $file_date($file),
-        'images'  => $path === '' ? [ASSETS_URL . '/images/hero/hero-main.jpg'] : ($path === 'about' ? [ASSETS_URL . '/images/about/about-team.jpg'] : []),
+        'images'  => $path === '' ? [ASSETS_URL . '/images/hero/hero-main-1024.webp'] : ($path === 'about' ? [ASSETS_URL . '/images/about/about-team-1024.webp'] : []),
     ];
 }
 
 // Service pages
 $service_images = [
-    'snowflake' => 'ac-repair.jpg',
-    'thermometer' => 'fridge-repair.jpg',
-    'rotate-cw' => 'washing-machine-repair.jpg',
-    'flame' => 'oven-repair.jpg',
+    'snowflake' => 'ac-repair-1024.webp',
+    'thermometer' => 'fridge-repair-1024.webp',
+    'rotate-cw' => 'washing-machine-repair-1024.webp',
+    'flame' => 'oven-repair-1024.webp',
 ];
 foreach (getServices() as $svc) {
     $updated = !empty($svc['updated_at']) ? strtotime($svc['updated_at']) : time();
@@ -48,7 +48,7 @@ foreach (getServices() as $svc) {
     $entries[] = [
         'paths'   => ['en' => $svc['slug_en'], 'ar' => $svc['slug_ar']],
         'lastmod' => date('Y-m-d', $updated),
-        'images'  => [ASSETS_URL . '/images/services/' . ($service_images[$svc['icon']] ?? 'ac-repair.jpg')],
+        'images'  => [ASSETS_URL . '/images/services/' . ($service_images[$svc['icon']] ?? 'ac-repair-1024.webp')],
     ];
 }
 

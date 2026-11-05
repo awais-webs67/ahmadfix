@@ -295,6 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isActive) {
                 item.classList.add('active');
                 this.setAttribute('aria-expanded', 'true');
+                trackEvent('faq_expand', { question: (this.textContent || '').trim().slice(0, 100), page_path: location.pathname });
             }
         });
     });
@@ -361,16 +362,65 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================================
-    // Conversion tracking (Google Analytics 4)
-    // Counts Call / WhatsApp clicks so you can see which pages bring customers.
-    // Does nothing until GA4_ID is set in config/config.php.
+    // Conversion tracking (Google Analytics 4 & GTM dataLayer)
+    // Counts Call / WhatsApp clicks, Lead submissions & FAQ engagement
     // ============================================
     function trackEvent(name, params) {
+        var payload = Object.assign({ event: name }, params || {});
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(payload);
         if (typeof window.gtag === 'function') {
             window.gtag('event', name, params || {});
         }
     }
     window.siteTrack = trackEvent;
+
+    // ============================================
+    // WebMCP Agentic Tool Registration (Chrome 146+ / AI Agents)
+    // Allows AI assistants to book an appliance repair or get instant contact info
+    // ============================================
+    if (typeof navigator !== 'undefined' && navigator.modelContext && typeof navigator.modelContext.registerTool === 'function') {
+        try {
+            navigator.modelContext.registerTool({
+                name: 'book_appliance_repair',
+                description: 'Book a same-day home appliance repair technician in Dammam, Al Khobar, or Dhahran with Mr Fix KSA (AC, refrigerator, washing machine, or oven).',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        service: { type: 'string', enum: ['ac', 'fridge', 'washer', 'oven', 'other'], description: 'Appliance needing repair' },
+                        city: { type: 'string', enum: ['dammam', 'khobar', 'dhahran'], description: 'City in Eastern Province, Saudi Arabia' },
+                        name: { type: 'string', description: 'Customer full name' },
+                        phone: { type: 'string', description: 'Saudi mobile number (05XXXXXXXX or +9665XXXXXXXX)' },
+                        address: { type: 'string', description: 'District or street address' },
+                        message: { type: 'string', description: 'Description of the appliance problem' }
+                    },
+                    required: ['service', 'city', 'name', 'phone']
+                },
+                execute: async function(input) {
+                    var form = document.getElementById('contact-form');
+                    if (form) {
+                        var svcRadio = form.querySelector('input[name="service"][value="' + (input.service || 'other') + '"]');
+                        if (svcRadio) svcRadio.checked = true;
+                        var nameEl = form.querySelector('[name="name"]');
+                        if (nameEl && input.name) nameEl.value = input.name;
+                        var phoneEl = form.querySelector('[name="phone"]');
+                        if (phoneEl && input.phone) phoneEl.value = input.phone;
+                        var cityEl = form.querySelector('[name="city"]');
+                        if (cityEl && input.city) cityEl.value = input.city;
+                        var addrEl = form.querySelector('[name="address"]');
+                        if (addrEl && input.address) addrEl.value = input.address;
+                        var msgEl = form.querySelector('[name="message"]');
+                        if (msgEl && input.message) msgEl.value = input.message;
+                        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return { status: 'prefilled_on_page', message: 'Booking form prefilled. Submit the form or call/WhatsApp +966582453440.' };
+                    }
+                    var q = new URLSearchParams({ service: input.service || 'ac', city: input.city || 'dammam' });
+                    location.href = (document.documentElement.lang.indexOf('ar') === 0 ? '/ar/contact?' : '/en/contact?') + q.toString() + '#contact-section';
+                    return { status: 'navigating_to_booking_form' };
+                }
+            });
+        } catch (err) {}
+    }
 
     document.addEventListener('click', function(e) {
         const link = e.target.closest ? e.target.closest('a[href]') : null;

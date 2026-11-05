@@ -60,7 +60,7 @@ $areas = getServiceAreas();
                 <div class="hero-image-wrapper">
                     <?php echo picture('hero/hero-main.jpg', [
                         'alt' => $lang === 'ar' ? 'فني صيانة أجهزة منزلية محترف في الدمام والخبر والظهران' : 'Professional home appliance repair technician in Dammam, Khobar and Dhahran',
-                        'width' => 600, 'height' => 500,
+                        'width' => 640, 'height' => 640,
                         'loading' => 'eager', 'fetchpriority' => 'high', 'decoding' => 'async',
                         'sizes' => '(max-width: 768px) 100vw, 600px',
                     ]); ?>
@@ -113,7 +113,7 @@ $areas = getServiceAreas();
                 <div class="service-card-image">
                     <?php echo picture('services/' . $img_file, [
                         'alt' => sprintf(__('service_card_alt'), localized($svc, 'name'), citiesList()),
-                        'width' => 300, 'height' => 180,
+                        'width' => 400, 'height' => 400,
                         'loading' => 'lazy', 'decoding' => 'async',
                         'sizes' => '(max-width: 768px) 100vw, 300px',
                     ]); ?>

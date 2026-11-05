@@ -57,7 +57,7 @@ fixora_define('DB_CHARSET', 'utf8mb4');
 
 define('SITE_ROOT', dirname(__DIR__));
 // Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.4.0');
+define('ASSETS_VERSION', '2.5.0');
 
 // ============================================
 // Who is asking? (host, https, local or live)

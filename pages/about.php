@@ -15,7 +15,7 @@ $service_images = [
 ];
 
 $about_faqs = [];
-for ($i = 1; $i <= 4; $i++) {
+for ($i = 1; $i <= 6; $i++) {
     $about_faqs[] = ['q' => __('about_faq_q' . $i), 'a' => __('about_faq_a' . $i)];
 }
 
@@ -208,7 +208,7 @@ $icon = function ($name, $size = 24) {
                 <div class="service-card-image">
                     <?php echo picture($img, [
                         'alt' => sprintf(__('service_card_alt'), localized($svc, 'name'), citiesList()),
-                        'width' => 300, 'height' => 180, 'loading' => 'lazy', 'decoding' => 'async',
+                        'width' => 400, 'height' => 400, 'loading' => 'lazy', 'decoding' => 'async',
                         'sizes' => '(max-width: 768px) 100vw, 300px',
                     ]); ?>
                 </div>
@@ -232,9 +232,9 @@ $icon = function ($name, $size = 24) {
             <h2><?php echo __('faq_title'); ?></h2>
         </div>
         <div class="faq-list">
-            <?php foreach ($about_faqs as $faq): ?>
-            <div class="faq-item">
-                <button class="faq-question" aria-expanded="false">
+            <?php foreach (array_values($about_faqs) as $i => $faq): ?>
+            <div class="faq-item<?php echo $i === 0 ? ' active' : ''; ?>">
+                <button class="faq-question" aria-expanded="<?php echo $i === 0 ? 'true' : 'false'; ?>">
                     <span><?php echo e($faq['q']); ?></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>

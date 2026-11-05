@@ -56,17 +56,20 @@ $fonts_url = $lang === 'ar'
     <!-- SEO Meta Tags -->
     <title><?php echo e($seo_title); ?></title>
     <meta name="description" content="<?php echo e($seo_desc); ?>">
-<?php if ($seo_keywords): ?>
-    <meta name="keywords" content="<?php echo e($seo_keywords); ?>">
-<?php endif; ?>
     <meta name="robots" content="<?php echo $is_404 ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'; ?>">
     <meta name="author" content="<?php echo e($lang === 'ar' ? SITE_NAME_AR : SITE_NAME); ?>">
     <meta name="theme-color" content="#FF7A00">
     <meta name="format-detection" content="telephone=yes">
     <meta name="geo.region" content="SA-04">
-    <meta name="geo.placename" content="<?php echo e(implode($lang === 'ar' ? '، ' : ', ', array_map(fn($a) => $a['name_' . $lang], array_values(getAreas())))); ?>">
-    <meta name="geo.position" content="<?php echo geoLat() . ';' . geoLng(); ?>">
-    <meta name="ICBM" content="<?php echo geoLat() . ', ' . geoLng(); ?>">
+<?php
+    $__geo_place = isset($current_area) ? $current_area['name_' . $lang] : implode($lang === 'ar' ? '، ' : ', ', array_map(fn($a) => $a['name_' . $lang], array_values(getAreas())));
+    $__geo_lat   = isset($current_area['lat']) ? $current_area['lat'] : geoLat();
+    $__geo_lng   = isset($current_area['lng']) ? $current_area['lng'] : geoLng();
+?>
+    <meta name="geo.placename" content="<?php echo e($__geo_place); ?>">
+    <meta name="geo.position" content="<?php echo $__geo_lat . ';' . $__geo_lng; ?>">
+    <meta name="ICBM" content="<?php echo $__geo_lat . ', ' . $__geo_lng; ?>">
+    <link rel="alternate" type="text/markdown" href="<?php echo SITE_URL; ?>/llms.txt" title="<?php echo e(SITE_NAME); ?> AI &amp; LLM Documentation">
 <?php if (opt('google_site_verification')): ?>
     <meta name="google-site-verification" content="<?php echo e(opt('google_site_verification')); ?>">
 <?php endif; ?>

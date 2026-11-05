@@ -26,7 +26,8 @@ $service_images = [
 $why_keys = ['why_certified', 'why_sameday', 'why_parts', 'why_warranty', 'why_price'];
 ?>
 
-<!-- Structured data: city FAQ -->
+<!-- Structured data: city Service + city FAQ -->
+<?php echo getAreaServiceSchema($area); ?>
 <?php if (!empty($faqs)): ?>
     <?php echo getFAQSchema($faqs); ?>
 <?php endif; ?>
@@ -67,7 +68,7 @@ $why_keys = ['why_certified', 'why_sameday', 'why_parts', 'why_warranty', 'why_p
                     <a class="area-service-card" href="<?php echo url(localized($svc, 'slug')); ?>">
                         <?php echo picture($img, [
                             'alt' => sprintf(__('service_card_alt'), $svc_name, $city),
-                            'width' => 300, 'height' => 180, 'loading' => 'lazy', 'decoding' => 'async',
+                            'width' => 400, 'height' => 400, 'loading' => 'lazy', 'decoding' => 'async',
                             'sizes' => '(max-width: 768px) 100vw, 340px',
                         ]); ?>
                         <span class="area-service-body">
@@ -91,6 +92,9 @@ $why_keys = ['why_certified', 'why_sameday', 'why_parts', 'why_warranty', 'why_p
                 <!-- Why us -->
                 <h2><?php echo e(sprintf(__('area_why_title'), $city)); ?></h2>
                 <ul>
+                    <?php foreach (($area['benefits_' . $lang] ?? []) as $b): ?>
+                    <li><strong><?php echo e($b['title']); ?></strong> — <?php echo e($b['desc']); ?></li>
+                    <?php endforeach; ?>
                     <?php foreach ($why_keys as $k): ?>
                     <li><strong><?php echo __($k); ?></strong> — <?php echo __($k . '_desc'); ?></li>
                     <?php endforeach; ?>
@@ -114,9 +118,9 @@ $why_keys = ['why_certified', 'why_sameday', 'why_parts', 'why_warranty', 'why_p
                 <?php if (!empty($faqs)): ?>
                 <h2><?php echo __('faq_title'); ?></h2>
                 <div class="faq-list">
-                    <?php foreach ($faqs as $faq): ?>
-                    <div class="faq-item">
-                        <button class="faq-question" aria-expanded="false">
+                    <?php foreach (array_values($faqs) as $i => $faq): ?>
+                    <div class="faq-item<?php echo $i === 0 ? ' active' : ''; ?>">
+                        <button class="faq-question" aria-expanded="<?php echo $i === 0 ? 'true' : 'false'; ?>">
                             <span><?php echo e($faq['q']); ?></span>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>

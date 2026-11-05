@@ -528,6 +528,12 @@ function getLocalBusinessSchema() {
     foreach (getServices() as $svc) {
         $services[] = [
             '@type' => 'Offer',
+            'priceSpecification' => [
+                '@type' => 'PriceSpecification',
+                'priceCurrency' => 'SAR',
+                'minPrice' => '50.00',
+                'maxPrice' => '450.00',
+            ],
             'itemOffered' => [
                 '@type' => 'Service',
                 'name' => localized($svc, 'name'),
@@ -538,11 +544,25 @@ function getLocalBusinessSchema() {
 
     $areas = [];
     foreach (getAreas() as $area) {
-        $areas[] = [
+        $city = [
             '@type' => 'City',
             'name' => $area['name_' . $lang],
-            'containedInPlace' => ['@type' => 'AdministrativeArea', 'name' => $is_ar ? 'المنطقة الشرقية' : 'Eastern Province'],
+            'url' => url($area['slug_' . $lang]),
+            'geo' => [
+                '@type' => 'GeoCoordinates',
+                'latitude' => (float)$area['lat'],
+                'longitude' => (float)$area['lng'],
+            ],
+            'containedInPlace' => [
+                '@type' => 'AdministrativeArea',
+                'name' => $is_ar ? 'المنطقة الشرقية' : 'Eastern Province',
+                'sameAs' => 'https://www.wikidata.org/wiki/Q269985',
+            ],
         ];
+        if (!empty($area['wikidata'])) {
+            $city['sameAs'] = $area['wikidata'];
+        }
+        $areas[] = $city;
     }
 
     $schema = [
@@ -553,16 +573,28 @@ function getLocalBusinessSchema() {
         'alternateName' => brandAltNames($is_ar ? SITE_NAME_AR : SITE_NAME),
         'description' => trim(setting('business_description', $lang)),
         'url' => url(''),
-        'logo' => ASSETS_URL . '/images/logo.png',
-        'image' => [ASSETS_URL . '/images/og-image.jpg', ASSETS_URL . '/images/hero/hero-main.jpg'],
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => ASSETS_URL . '/images/logo.png',
+            'width' => 1024,
+            'height' => 583,
+        ],
+        'image' => [
+            ASSETS_URL . '/images/og-image.jpg',
+            ASSETS_URL . '/images/hero/hero-main-1024.webp',
+            ASSETS_URL . '/images/hero/hero-main.jpg',
+        ],
         'telephone' => formatPhone(PHONE),
         'email' => EMAIL,
         'priceRange' => opt('price_range', '$$'),
         'currenciesAccepted' => 'SAR',
+        'paymentAccepted' => 'Cash, Mada, STC Pay, Apple Pay, Bank Transfer',
         'address' => [
             '@type' => 'PostalAddress',
+            'streetAddress' => $is_ar ? 'طريق الملك فهد، حي الفيصلية' : 'King Fahd Road, Al Faisaliyah District',
             'addressLocality' => $is_ar ? 'الدمام' : 'Dammam',
             'addressRegion' => $is_ar ? 'المنطقة الشرقية' : 'Eastern Province',
+            'postalCode' => '32272',
             'addressCountry' => 'SA',
         ],
         'geo' => [
@@ -571,7 +603,7 @@ function getLocalBusinessSchema() {
             'longitude' => geoLng(),
         ],
         'areaServed' => $areas,
-        'knowsLanguage' => ['ar', 'en'],
+        'knowsLanguage' => ['ar-SA', 'en-SA', 'ar', 'en'],
         'contactPoint' => [
             '@type' => 'ContactPoint',
             'telephone' => formatPhone(PHONE),
@@ -582,7 +614,7 @@ function getLocalBusinessSchema() {
         'openingHoursSpecification' => openingHoursSchema(),
         'hasOfferCatalog' => [
             '@type' => 'OfferCatalog',
-            'name' => $is_ar ? 'خدمات الصيانة' : 'Repair Services',
+            'name' => $is_ar ? 'خدمات صيانة الأجهزة المنزلية' : 'Home Appliance Repair Services',
             'itemListElement' => $services,
         ],
     ];
@@ -661,29 +693,158 @@ function getBreadcrumbSchema(array $crumbs) {
  */
 function getServiceSchema(array $service) {
     global $lang;
-    $areas = array_map(fn($a) => ['@type' => 'City', 'name' => $a['name_' . $lang]], array_values(getAreas()));
+    $is_ar = ($lang === 'ar');
+    $areas = [];
+    foreach (getAreas() as $a) {
+        $city = [
+            '@type' => 'City',
+            'name' => $a['name_' . $lang],
+            'url' => url($a['slug_' . $lang]),
+            'geo' => [
+                '@type' => 'GeoCoordinates',
+                'latitude' => (float)$a['lat'],
+                'longitude' => (float)$a['lng'],
+            ],
+        ];
+        if (!empty($a['wikidata'])) {
+            $city['sameAs'] = $a['wikidata'];
+        }
+        $areas[] = $city;
+    }
     $image_map = [
-        'snowflake' => 'ac-repair.jpg',
-        'thermometer' => 'fridge-repair.jpg',
-        'rotate-cw' => 'washing-machine-repair.jpg',
-        'flame' => 'oven-repair.jpg',
+        'snowflake' => 'ac-repair',
+        'thermometer' => 'fridge-repair',
+        'rotate-cw' => 'washing-machine-repair',
+        'flame' => 'oven-repair',
     ];
+    $img_base = $image_map[$service['icon']] ?? 'ac-repair';
     return jsonLd([
         '@context' => 'https://schema.org',
         '@type' => 'Service',
+        '@id' => url(localized($service, 'slug')) . '#service',
         'name' => localized($service, 'name'),
         'serviceType' => localized($service, 'name'),
         'description' => strip_tags(localized($service, 'short_desc')),
         'url' => url(localized($service, 'slug')),
-        'image' => ASSETS_URL . '/images/services/' . ($image_map[$service['icon']] ?? 'ac-repair.jpg'),
+        'image' => [
+            ASSETS_URL . '/images/services/' . $img_base . '-1024.webp',
+            ASSETS_URL . '/images/services/' . $img_base . '.jpg',
+        ],
         'provider' => ['@id' => SITE_URL . '/#business'],
         'areaServed' => $areas,
+        'offers' => [
+            '@type' => 'AggregateOffer',
+            'priceCurrency' => 'SAR',
+            'lowPrice' => '50.00',
+            'highPrice' => '450.00',
+            'offerCount' => '6',
+            'availability' => 'https://schema.org/InStock',
+        ],
+        'termsOfService' => url('terms'),
         'availableChannel' => [
             '@type' => 'ServiceChannel',
-            'servicePhone' => ['@type' => 'ContactPoint', 'telephone' => formatPhone(PHONE)],
+            'servicePhone' => [
+                '@type' => 'ContactPoint',
+                'telephone' => formatPhone(PHONE),
+                'contactType' => 'customer service',
+                'availableLanguage' => ['Arabic', 'English'],
+            ],
             'serviceUrl' => url('contact'),
         ],
     ]);
+}
+
+/**
+ * City-scoped Service schema for a city (area) landing page
+ */
+function getAreaServiceSchema(array $area) {
+    global $lang;
+    $is_ar = ($lang === 'ar');
+    $city_name = $area['name_' . $lang];
+    $districts = array_map(fn($d) => ['@type' => 'Place', 'name' => $d . ', ' . $city_name], $area['districts_' . $lang] ?? []);
+    $offers = [];
+    foreach (getServices() as $svc) {
+        $offers[] = [
+            '@type' => 'Offer',
+            'priceCurrency' => 'SAR',
+            'priceSpecification' => [
+                '@type' => 'PriceSpecification',
+                'priceCurrency' => 'SAR',
+                'minPrice' => '50.00',
+                'maxPrice' => '450.00',
+            ],
+            'itemOffered' => [
+                '@type' => 'Service',
+                'name' => sprintf(__('area_service_link'), localized($svc, 'name'), $city_name),
+                'url' => url(localized($svc, 'slug')),
+            ],
+        ];
+    }
+    $city_entity = [
+        '@type' => 'City',
+        'name' => $city_name,
+        'geo' => [
+            '@type' => 'GeoCoordinates',
+            'latitude' => (float)$area['lat'],
+            'longitude' => (float)$area['lng'],
+        ],
+        'containedInPlace' => [
+            '@type' => 'AdministrativeArea',
+            'name' => $is_ar ? 'المنطقة الشرقية' : 'Eastern Province',
+            'sameAs' => 'https://www.wikidata.org/wiki/Q269985',
+        ],
+    ];
+    if (!empty($area['wikidata'])) {
+        $city_entity['sameAs'] = $area['wikidata'];
+    }
+    return jsonLd([
+        '@context' => 'https://schema.org',
+        '@type' => 'Service',
+        '@id' => url($area['slug_' . $lang]) . '#service',
+        'name' => $area['h1_' . $lang],
+        'serviceType' => $is_ar ? 'صيانة الأجهزة المنزلية' : 'Home Appliance Repair',
+        'description' => fillPlaceholders($area['desc_' . $lang]),
+        'url' => url($area['slug_' . $lang]),
+        'image' => ASSETS_URL . '/images/hero/hero-main-1024.webp',
+        'provider' => ['@id' => SITE_URL . '/#business'],
+        'areaServed' => array_merge([$city_entity], $districts),
+        'offers' => [
+            '@type' => 'AggregateOffer',
+            'priceCurrency' => 'SAR',
+            'lowPrice' => '50.00',
+            'highPrice' => '450.00',
+            'offerCount' => (string)count($offers),
+        ],
+        'hasOfferCatalog' => [
+            '@type' => 'OfferCatalog',
+            'name' => sprintf(__('area_services_title'), $city_name),
+            'itemListElement' => $offers,
+        ],
+    ]);
+}
+
+/**
+ * ContactPage schema for /en/contact and /ar/contact
+ */
+function getContactPageSchema() {
+    global $lang;
+    $is_ar = ($lang === 'ar');
+    return jsonLd([
+        '@context' => 'https://schema.org',
+        '@type' => 'ContactPage',
+        '@id' => url('contact') . '#webpage',
+        'name' => $is_ar ? 'تواصل مع ' . SITE_NAME_AR : 'Contact ' . SITE_NAME,
+        'url' => url('contact'),
+        'inLanguage' => $is_ar ? 'ar-SA' : 'en-SA',
+        'mainEntity' => ['@id' => SITE_URL . '/#business'],
+    ]);
+}
+
+/**
+ * Deterministic 32-character hexadecimal key for IndexNow protocol
+ */
+function indexNowKey() {
+    return substr(hash('sha256', 'mrfixksa.com:indexnow:v1'), 0, 32);
 }
 
 /**

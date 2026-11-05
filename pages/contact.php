@@ -8,6 +8,7 @@ $pre_city = isset(getAreas()[$_GET['city'] ?? '']) ? $_GET['city'] : '';
 $min_date = date('Y-m-d');
 $max_date = date('Y-m-d', strtotime('+3 months'));
 ?>
+<?php echo getContactPageSchema(); ?>
 
 <!-- ====== Page Header ====== -->
 <section class="page-header">
@@ -36,7 +37,7 @@ $max_date = date('Y-m-d', strtotime('+3 months'));
 
                 <div class="form-message" id="form-message" role="status" aria-live="polite"></div>
 
-                <form id="contact-form" data-msg-required="<?php echo e(__('contact_form_required')); ?>" data-msg-network="<?php echo e(__('contact_form_network')); ?>" method="POST" action="<?php echo SITE_URL; ?>/api/contact-submit" novalidate>
+                <form id="contact-form" toolname="book_appliance_repair" tooldescription="Book a certified technician for same-day AC, refrigerator, washing machine, or oven repair in Dammam, Al Khobar, or Dhahran" data-msg-required="<?php echo e(__('contact_form_required')); ?>" data-msg-network="<?php echo e(__('contact_form_network')); ?>" method="POST" action="<?php echo SITE_URL; ?>/api/contact-submit" novalidate>
                     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                     <input type="hidden" name="lang" value="<?php echo $lang; ?>">
                     <!-- Spam trap: hidden from people, bots fill it in -->

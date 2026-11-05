@@ -169,9 +169,9 @@ return [
     'area_book_text' => 'Call or WhatsApp now — a technician can visit you in %s today.',
 
     // SEO for pages without a database row
-    'seo_title_privacy-policy' => 'Privacy Policy | ' . SITE_NAME,
+    'seo_title_privacy-policy' => 'Privacy Policy – Home Appliance Repair | ' . SITE_NAME,
     'seo_desc_privacy-policy' => 'How ' . SITE_NAME . ' collects, uses and protects the information you share when booking an appliance repair in Dammam, Al Khobar and Dhahran.',
-    'seo_title_terms' => 'Terms of Service | ' . SITE_NAME,
+    'seo_title_terms' => 'Terms of Service – Appliance Repair | ' . SITE_NAME,
     'seo_desc_terms' => 'The terms for booking home appliance repair and maintenance services with ' . SITE_NAME . ' in the Eastern Province, Saudi Arabia.',
     'seo_title_404' => 'Page Not Found | ' . SITE_NAME,
 
@@ -217,6 +217,10 @@ return [
     'about_faq_a3' => 'Yes. Every repair comes with a service warranty on the work and the parts we install.',
     'about_faq_q4' => 'What are your working hours?',
     'about_faq_a4' => 'Saturday to Thursday from 8:00 AM to 10:00 PM, and Friday from 2:00 PM to 10:00 PM. You can send us a WhatsApp message at any time.',
+    'about_faq_q5' => 'How does your pricing and inspection fee work?',
+    'about_faq_a5' => 'Our on-site inspection and fault diagnosis starts from 50 SAR and is waived when you proceed with the repair. You always receive a clear, fixed quote before any work begins.',
+    'about_faq_q6' => 'Do you use genuine spare parts for repairs?',
+    'about_faq_a6' => 'Yes. We stock original manufacturer-approved parts for Samsung, LG, Carrier, Gree, Daikin, Midea, Bosch, Siemens, Whirlpool and General Electric so your appliance runs reliably in the Eastern Province climate.',
 
     // Booking fields (contact form)
     'contact_form_city' => 'City',

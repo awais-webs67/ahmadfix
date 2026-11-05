@@ -102,9 +102,9 @@ $other_services = array_filter($all_services, function($s) use ($service) {
                 <?php if (!empty($faqs)): ?>
                 <h2><?php echo __('faq_title'); ?></h2>
                 <div class="faq-list">
-                    <?php foreach ($faqs as $faq): ?>
-                    <div class="faq-item">
-                        <button class="faq-question" aria-expanded="false">
+                    <?php foreach (array_values($faqs) as $i => $faq): ?>
+                    <div class="faq-item<?php echo $i === 0 ? ' active' : ''; ?>">
+                        <button class="faq-question" aria-expanded="<?php echo $i === 0 ? 'true' : 'false'; ?>">
                             <span><?php echo sanitize($faq['q']); ?></span>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>

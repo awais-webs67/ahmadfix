@@ -1536,3 +1536,48 @@ input[type="date"].form-control { min-height: 46px; }
 @media (max-width: 360px) {
     .cf-services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ====== Service Pricing & Diagnostic Tables (SEO / GEO) ====== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    margin: 1.5rem 0 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    background: var(--white);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+.seo-pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    text-align: start;
+}
+.seo-pricing-table th,
+.seo-pricing-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-200);
+    line-height: 1.5;
+}
+.seo-pricing-table thead th {
+    background: var(--dark);
+    color: var(--white);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.seo-pricing-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.seo-pricing-table tbody tr:nth-child(even) {
+    background: var(--gray-50);
+}
+.seo-pricing-table td strong {
+    color: var(--dark);
+}
+@media (max-width: 640px) {
+    .seo-pricing-table th,
+    .seo-pricing-table td {
+        padding: 10px 12px;
+        font-size: 0.875rem;
+    }
+}

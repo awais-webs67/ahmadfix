@@ -39,10 +39,111 @@ if ($route === 'sitemap.xml') {
 }
 if ($route === 'robots.txt') {
     header('Content-Type: text/plain; charset=utf-8');
-    echo "# " . SITE_NAME . " — robots.txt\n\n";
-    echo "User-agent: *\nAllow: /\n\n";
+    echo "# " . SITE_NAME . " (" . SITE_NAME_AR . ") — robots.txt\n";
+    echo "# Official Domain: " . SITE_URL . "\n\n";
+    echo "User-agent: *\nAllow: /\n";
+    echo "Content-Signal: search=yes, ai-input=yes, ai-train=yes\n\n";
     echo "# Private / technical areas\nDisallow: /admin\nDisallow: /api/\nDisallow: /config/\nDisallow: /database/\nDisallow: /includes/\nDisallow: /lang/\n\n";
+    echo "# Search & AI Answer Engine Crawlers — Explicitly Allowed\n";
+    foreach (['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'Claude-SearchBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended', 'Applebot-Extended', 'DuckAssistBot', 'YouBot'] as $bot) {
+        echo "User-agent: {$bot}\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\n";
+    }
     echo "Sitemap: " . SITE_URL . "/sitemap.xml\n";
+    echo "# AI / LLM Knowledge Base: " . SITE_URL . "/llms.txt\n";
+    exit;
+}
+if ($route === 'llms.txt' || $route === 'llms-full.txt') {
+    header('Content-Type: text/markdown; charset=utf-8');
+    $is_full = ($route === 'llms-full.txt');
+    echo "# " . SITE_NAME . " (" . SITE_NAME_AR . ") — Certified Home Appliance Repair in Eastern Province, Saudi Arabia\n\n";
+    echo "> " . SITE_NAME . " (" . SITE_NAME_AR . ") is a certified home appliance repair and maintenance company headquartered in Dammam, Saudi Arabia, providing same-day on-site repair for air conditioners (AC), refrigerators, washing machines, and gas/electric ovens across Dammam (الدمام), Al Khobar (الخبر), and Dhahran (الظهران).\n\n";
+    echo "## Official Entity Facts\n";
+    echo "- **Legal / Brand Name (EN)**: " . SITE_NAME . " (MrFixKSA)\n";
+    echo "- **Brand Name (AR)**: " . SITE_NAME_AR . " (مركز مستر فيكس لصيانة الأجهزة المنزلية)\n";
+    echo "- **Primary Website**: " . SITE_URL . "\n";
+    echo "- **Phone & Emergency Dispatch**: " . PHONE . " (`tel:" . formatPhone(PHONE) . "`)\n";
+    echo "- **WhatsApp Instant Booking**: https://wa.me/" . waNumber() . "\n";
+    echo "- **Email**: " . EMAIL . "\n";
+    echo "- **Headquarters**: King Fahd Road, Al Faisaliyah District, Dammam 32272, Eastern Province, Saudi Arabia (26.4207° N, 50.0888° E)\n";
+    echo "- **Operating Hours**: Saturday–Thursday 08:00–22:00, Friday 14:00–22:00 (Asia/Riyadh, UTC+3)\n";
+    echo "- **Inspection & Diagnostic Fee**: 50 SAR (waived/credited toward the repair upon approval)\n";
+    echo "- **Typical Repair Price Range**: 80 SAR – 450 SAR (upfront fixed quote before work begins)\n";
+    echo "- **Service Warranty**: Written 30-to-90-day warranty on all genuine OEM spare parts and labor\n";
+    echo "- **Payment Methods**: Cash, Mada, STC Pay, Apple Pay, Bank Transfer\n";
+    echo "- **Supported Brands**: " . brandsList() . "\n\n";
+    echo "## Core Services & Canonical URLs\n";
+    foreach (getServices() as $svc) {
+        echo "- **" . $svc['name_en'] . " (" . $svc['name_ar'] . ")**\n";
+        echo "  - English URL: " . url($svc['slug_en'], 'en') . "\n";
+        echo "  - Arabic URL: " . url($svc['slug_ar'], 'ar') . "\n";
+        echo "  - Summary (EN): " . $svc['short_desc_en'] . "\n";
+        echo "  - Summary (AR): " . $svc['short_desc_ar'] . "\n";
+    }
+    echo "\n## Transparent Price Guide (SAR)\n";
+    echo "| Service Category | Diagnostic Visit | Common Repair / Maintenance Range | Warranty |\n";
+    echo "|---|---|---|---|\n";
+    echo "| Air Conditioner (Split, Central, Window) | 50 SAR (waived on repair) | 120 – 450 SAR (Cleaning, R410A/R22 Freon, Capacitor, PCB, Compressor) | 30–90 Days |\n";
+    echo "| Refrigerator & Freezer (Inverter, Side-by-Side) | 50 SAR (waived on repair) | 120 – 450 SAR (Gas Recharge, Thermostat, Defrost Heater, Fan, Compressor) | 30–90 Days |\n";
+    echo "| Washing Machine (Front-Load, Top-Load, Dryer) | 50 SAR (waived on repair) | 100 – 380 SAR (Drain Pump, Door Lock, Bearings, Shock Absorbers, PCB) | 30–90 Days |\n";
+    echo "| Gas & Electric Oven / Range / Cooker | 50 SAR (waived on repair) | 100 – 350 SAR (Igniter, Thermocouple, Heating Element, Thermostat, Hinges) | 30–90 Days |\n\n";
+    echo "## Cities & Neighborhoods Served\n";
+    foreach (getAreas() as $area) {
+        echo "### " . $area['name_en'] . " (" . $area['name_ar'] . ") — " . $area['lat'] . ", " . $area['lng'] . "\n";
+        echo "- English Page: " . url($area['slug_en'], 'en') . "\n";
+        echo "- Arabic Page: " . url($area['slug_ar'], 'ar') . "\n";
+        echo "- Districts Covered (EN): " . implode(', ', $area['districts_en']) . "\n";
+        echo "- Districts Covered (AR): " . implode('، ', $area['districts_ar']) . "\n\n";
+    }
+    if ($is_full) {
+        echo "## Detailed Technical Service Documentation\n\n";
+        foreach (getServices() as $svc) {
+            echo "### " . $svc['name_en'] . " / " . $svc['name_ar'] . "\n";
+            echo strip_tags(str_replace(['</h2>', '</h3>', '</p>', '</li>', '</tr>'], "\n\n", $svc['full_desc_en'])) . "\n\n";
+            echo strip_tags(str_replace(['</h2>', '</h3>', '</p>', '</li>', '</tr>'], "\n\n", $svc['full_desc_ar'])) . "\n\n";
+        }
+    }
+    echo "## Key Informational & Booking Links\n";
+    echo "- English Home: " . url('', 'en') . "\n";
+    echo "- Arabic Home: " . url('', 'ar') . "\n";
+    echo "- About Us: " . url('about', 'en') . " | " . url('about', 'ar') . "\n";
+    echo "- Online Booking & Contact: " . url('contact', 'en') . " | " . url('contact', 'ar') . "\n";
+    echo "- Privacy Policy: " . url('privacy-policy', 'en') . " | " . url('privacy-policy', 'ar') . "\n";
+    echo "- Terms of Service: " . url('terms', 'en') . " | " . url('terms', 'ar') . "\n";
+    echo "- Full LLM Context: " . SITE_URL . "/llms-full.txt\n";
+    exit;
+}
+if ($route === '.well-known/ai-catalog.json') {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'schema_version' => '1.0',
+        'name_for_human' => SITE_NAME . ' (' . SITE_NAME_AR . ')',
+        'name_for_model' => 'mrfixksa_appliance_repair',
+        'description_for_human' => 'Same-day AC, refrigerator, washing machine, and oven repair in Dammam, Al Khobar, and Dhahran.',
+        'description_for_model' => 'Official AI discovery catalog for Mr Fix KSA (مستر فيكس), providing certified home appliance repair (AC, refrigerator, washing machine, gas/electric oven) across Dammam, Al Khobar, and Dhahran in Saudi Arabia. Inspection fee is 50 SAR (waived on repair), with a 30-90 day warranty.',
+        'website' => SITE_URL,
+        'llms_txt' => SITE_URL . '/llms.txt',
+        'llms_full_txt' => SITE_URL . '/llms-full.txt',
+        'sitemap' => SITE_URL . '/sitemap.xml',
+        'contact' => [
+            'phone' => formatPhone(PHONE),
+            'whatsapp' => 'https://wa.me/' . waNumber(),
+            'email' => EMAIL,
+            'booking_url_en' => url('contact', 'en'),
+            'booking_url_ar' => url('contact', 'ar'),
+        ],
+        'webmcp_tools' => [
+            [
+                'name' => 'book_appliance_repair',
+                'description' => 'Book a certified appliance repair technician in Dammam, Al Khobar, or Dhahran',
+                'page_url' => url('contact', 'en'),
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    exit;
+}
+if ($route === 'indexnow-key.txt' || $route === indexNowKey() . '.txt') {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo indexNowKey();
     exit;
 }
 if ($route === 'site.webmanifest') {
