@@ -39,13 +39,14 @@ if ($route === 'sitemap.xml') {
 }
 if ($route === 'robots.txt') {
     header('Content-Type: text/plain; charset=utf-8');
+    header('X-LiteSpeed-Cache-Control: no-cache');
     echo "# " . SITE_NAME . " (" . SITE_NAME_AR . ") — robots.txt\n";
     echo "# Official Domain: " . SITE_URL . "\n\n";
     echo "User-agent: *\nAllow: /\n";
     echo "Content-Signal: search=yes, ai-input=yes, ai-train=yes\n\n";
     echo "# Private / technical areas\nDisallow: /admin\nDisallow: /api/\nDisallow: /config/\nDisallow: /database/\nDisallow: /includes/\nDisallow: /lang/\n\n";
     echo "# Search & AI Answer Engine Crawlers — Explicitly Allowed\n";
-    foreach (['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'Claude-SearchBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended', 'Applebot-Extended', 'DuckAssistBot', 'YouBot'] as $bot) {
+    foreach (['Googlebot', 'Bingbot', 'Applebot', 'OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Applebot-Extended', 'DuckAssistBot', 'YouBot'] as $bot) {
         echo "User-agent: {$bot}\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\n";
     }
     echo "Sitemap: " . SITE_URL . "/sitemap.xml\n";
