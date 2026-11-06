@@ -3,10 +3,9 @@
  * Menu, Scroll, Animations, Form, Slider
  */
 
-// Remember the visitor's language (used when they open the homepage address without /en or /ar)
+// Clean up legacy automatic language cookie so device/admin language rules work properly
 try {
-    var pageLang = (document.documentElement.lang || 'en').slice(0, 2);
-    document.cookie = 'site_lang=' + pageLang + ';path=/;max-age=31536000;SameSite=Lax';
+    document.cookie = 'site_lang=;path=/;max-age=0;SameSite=Lax';
 } catch (e) {}
 
 document.addEventListener('DOMContentLoaded', function() {

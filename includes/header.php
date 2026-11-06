@@ -89,6 +89,49 @@ $fonts_url = $lang === 'ar'
     <link rel="alternate" hreflang="en" href="<?php echo e($alt_en); ?>">
     <link rel="alternate" hreflang="ar" href="<?php echo e($alt_ar); ?>">
     <link rel="alternate" hreflang="x-default" href="<?php echo e(DEFAULT_LANG === 'ar' ? $alt_ar : $alt_en); ?>">
+    <script>
+    (function(){
+        try {
+            document.cookie = 'site_lang=;path=/;max-age=0;SameSite=Lax';
+            var ua = navigator.userAgent || '';
+            if (/bot|crawl|spider|slurp|lighthouse|ptst|headless|inspect|facebookexternalhit|whatsapp|telegram|twitterbot|applebot|chatgpt|oai-searchbot|claudebot|perplexity/i.test(ua)) return;
+            var cur = <?php echo json_encode($lang); ?>;
+            var mode = <?php echo json_encode(defined('LANG_SETTING') ? LANG_SETTING : 'auto'); ?>;
+            var ver = <?php echo json_encode(defined('LANG_POLICY_VER') ? LANG_POLICY_VER : '1'); ?>;
+            var altEn = <?php echo json_encode($alt_en); ?>;
+            var altAr = <?php echo json_encode($alt_ar); ?>;
+            var m = document.cookie.match(/(?:^|;\s*)user_lang_choice=([^;]+)/);
+            if (m) {
+                var parts = decodeURIComponent(m[1]).split(':');
+                if (parts.length === 2 && parts[1] === ver && (parts[0] === 'en' || parts[0] === 'ar')) {
+                    return;
+                }
+            }
+            if (sessionStorage.getItem('lang_synced') === ver + ':' + mode) return;
+            var target = cur;
+            if (mode === 'ar' || mode === 'en') {
+                target = mode;
+            } else {
+                var navLangs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || navigator.userLanguage || 'en'];
+                target = 'en';
+                for (var i = 0; i < navLangs.length; i++) {
+                    var code = String(navLangs[i] || '').toLowerCase().slice(0, 2);
+                    if (code === 'ar' || code === 'en') {
+                        target = code;
+                        break;
+                    }
+                }
+            }
+            sessionStorage.setItem('lang_synced', ver + ':' + mode);
+            if (target !== cur) {
+                var dest = target === 'ar' ? altAr : altEn;
+                if (dest && dest !== window.location.href) {
+                    window.location.replace(dest + (window.location.hash || ''));
+                }
+            }
+        } catch (e) {}
+    })();
+    </script>
 <?php endif; ?>
 
     <!-- Open Graph (WhatsApp, Facebook, Snapchat link previews) -->
@@ -206,8 +249,8 @@ $fonts_url = $lang === 'ar'
         <div class="header-actions">
             <!-- Language Switcher -->
             <div class="lang-switch">
-                <a href="<?php echo e($alt_en); ?>" hreflang="en" lang="en" class="lang-btn <?php echo $lang === 'en' ? 'active' : ''; ?>">EN</a>
-                <a href="<?php echo e($alt_ar); ?>" hreflang="ar" lang="ar" class="lang-btn <?php echo $lang === 'ar' ? 'active' : ''; ?>">عربي</a>
+                <a href="<?php echo e($alt_en); ?>" hreflang="en" lang="en" data-lang-switch="en" data-policy-ver="<?php echo e(defined('LANG_POLICY_VER') ? LANG_POLICY_VER : '1'); ?>" onclick="try{var v=this.getAttribute('data-policy-ver')||'1';document.cookie='user_lang_choice=en:'+v+';path=/;max-age=2592000;SameSite=Lax';sessionStorage.setItem('lang_synced',v+':<?php echo e(defined('LANG_SETTING') ? LANG_SETTING : 'auto'); ?>');}catch(e){}" class="lang-btn <?php echo $lang === 'en' ? 'active' : ''; ?>">EN</a>
+                <a href="<?php echo e($alt_ar); ?>" hreflang="ar" lang="ar" data-lang-switch="ar" data-policy-ver="<?php echo e(defined('LANG_POLICY_VER') ? LANG_POLICY_VER : '1'); ?>" onclick="try{var v=this.getAttribute('data-policy-ver')||'1';document.cookie='user_lang_choice=ar:'+v+';path=/;max-age=2592000;SameSite=Lax';sessionStorage.setItem('lang_synced',v+':<?php echo e(defined('LANG_SETTING') ? LANG_SETTING : 'auto'); ?>');}catch(e){}" class="lang-btn <?php echo $lang === 'ar' ? 'active' : ''; ?>">عربي</a>
             </div>
 
             <!-- CTA Button -->

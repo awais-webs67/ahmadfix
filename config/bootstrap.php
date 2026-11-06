@@ -57,7 +57,7 @@ fixora_define('DB_CHARSET', 'utf8mb4');
 
 define('SITE_ROOT', dirname(__DIR__));
 // Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.5.0');
+define('ASSETS_VERSION', '2.6.0');
 
 // ============================================
 // Who is asking? (host, https, local or live)
@@ -184,24 +184,67 @@ $supported_langs = ['en', 'ar'];
 // Admin → Settings → Business → Default website language: 'ar', 'en' or 'auto' (visitor's phone/browser)
 $__lang_setting = opt('default_language', 'auto');
 if (!in_array($__lang_setting, ['ar', 'en', 'auto'], true)) $__lang_setting = 'auto';
+$__lang_policy_ver = opt('lang_policy_ver', '1');
+define('LANG_SETTING', $__lang_setting);
+define('LANG_POLICY_VER', $__lang_policy_ver);
 $default_lang = $__lang_setting === 'ar' ? 'ar' : 'en';
 define('DEFAULT_LANG', $default_lang);   // also the version Google shows by default (x-default)
 
-// Check URL prefix first, then the language the visitor used last (cookie), then the admin's choice / browser
-if (isset($url_lang) && in_array($url_lang, $supported_langs)) {
+// Clear legacy automatic site_lang cookie that locked visitors into a language they never clicked
+if (isset($_COOKIE['site_lang']) && !headers_sent()) {
+    setcookie('site_lang', '', time() - 3600, '/');
+    unset($_COOKIE['site_lang']);
+}
+
+// Parse explicit user language switch cookie (only valid if set under current admin policy version)
+$__user_cookie_lang = null;
+if (!empty($_COOKIE['user_lang_choice']) && is_string($_COOKIE['user_lang_choice'])) {
+    $__parts = explode(':', $_COOKIE['user_lang_choice'], 2);
+    if (count($__parts) === 2 && in_array($__parts[0], $supported_langs, true) && $__parts[1] === $__lang_policy_ver) {
+        $__user_cookie_lang = $__parts[0];
+    }
+}
+
+// Helper to parse mobile/browser Accept-Language header by quality weight
+$__detect_browser_lang = static function (array $supported, string $fallback): string {
+    $header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+    if ($header === '') return $fallback;
+    $langs = [];
+    foreach (explode(',', $header) as $part) {
+        $part = trim($part);
+        if ($part === '') continue;
+        $q = 1.0;
+        if (str_contains($part, ';')) {
+            [$tag, $params] = explode(';', $part, 2);
+            if (preg_match('/q\s*=\s*([0-9.]+)/i', $params, $m)) {
+                $q = (float)$m[1];
+            }
+        } else {
+            $tag = $part;
+        }
+        $code = strtolower(substr(trim($tag), 0, 2));
+        if (in_array($code, $supported, true) && (!isset($langs[$code]) || $q > $langs[$code])) {
+            $langs[$code] = $q;
+        }
+    }
+    if (!empty($langs)) {
+        arsort($langs);
+        return (string)array_key_first($langs);
+    }
+    return $fallback;
+};
+
+// Check URL prefix first, then explicit user switcher choice, then admin setting / mobile Accept-Language
+if (isset($url_lang) && in_array($url_lang, $supported_langs, true)) {
     $lang = $url_lang;
-} elseif (isset($_GET['lang']) && in_array($_GET['lang'], $supported_langs)) {
+} elseif (isset($_GET['lang']) && in_array($_GET['lang'], $supported_langs, true)) {
     $lang = $_GET['lang'];
-} elseif (isset($_COOKIE['site_lang']) && in_array($_COOKIE['site_lang'], $supported_langs, true)) {
-    $lang = $_COOKIE['site_lang'];
-} elseif (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $supported_langs)) {
-    $lang = $_SESSION['lang'];
+} elseif ($__user_cookie_lang !== null) {
+    $lang = $__user_cookie_lang;
 } elseif ($__lang_setting !== 'auto') {
     $lang = $__lang_setting;
 } else {
-    // Detect from browser Accept-Language
-    $browser_lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'en', 0, 2);
-    $lang = in_array($browser_lang, $supported_langs) ? $browser_lang : $default_lang;
+    $lang = $__detect_browser_lang($supported_langs, 'en');
 }
 
 if (session_status() === PHP_SESSION_ACTIVE) {
@@ -209,7 +252,7 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 }
 $is_rtl = ($lang === 'ar');
 $dir = $is_rtl ? 'rtl' : 'ltr';
-unset($__lang_setting);
+unset($__lang_setting, $__lang_policy_ver, $__user_cookie_lang, $__detect_browser_lang);
 
 // ============================================
 // Load Language File

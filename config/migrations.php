@@ -11,7 +11,7 @@ if (!defined('FIXORA_APP')) {
     die('Direct access not allowed.');
 }
 
-define('SCHEMA_VERSION', 6);
+define('SCHEMA_VERSION', 7);
 
 /**
  * Old service URLs → new city-neutral URLs (every service is offered in every city).
@@ -720,6 +720,20 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
                     ':slug'  => $slug_en,
                 ]);
             }
+        },
+
+        // ---------------- Version 7 ----------------
+        // 14. Reset default_language to 'auto' (visitor's phone/browser language) and bump lang_policy_ver
+        //     so mobile devices are not stuck in Arabic from legacy cookies or old defaults.
+        'fix_language_detection_v7' => function (PDO $pdo) {
+            $ver = (string)time();
+            $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
+                           VALUES ('default_language', 'auto', 'auto', 'text', 'business')
+                           ON DUPLICATE KEY UPDATE setting_value_en = 'auto', setting_value_ar = 'auto'")->execute();
+            $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
+                           VALUES ('lang_policy_ver', :v1, :v2, 'text', 'system')
+                           ON DUPLICATE KEY UPDATE setting_value_en = :v3, setting_value_ar = :v4")
+                ->execute([':v1' => $ver, ':v2' => $ver, ':v3' => $ver, ':v4' => $ver]);
         },
     ];
 

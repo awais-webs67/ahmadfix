@@ -341,7 +341,10 @@ if ($route === 'admin' || str_starts_with($route, 'admin/')) {
 if ($url_lang === null) {
     if ($route === '') {
         // Homepage: send visitors to their language (Admin → Settings → Default website language)
-        header('Vary: Accept-Language');
+        header('X-LiteSpeed-Cache-Control: no-cache');
+        header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Vary: Accept-Language, Cookie');
         header('Location: ' . SITE_URL . '/' . $lang, true, 302);
         exit;
     }

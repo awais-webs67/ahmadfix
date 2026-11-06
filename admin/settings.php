@@ -106,6 +106,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($to_save as $k => [$en, $ar]) {
                 saveSetting($k, $en, $ar, $section);
             }
+            if ($section === 'business') {
+                // Bump language policy version so changing Default website language immediately resets old visitor cookies
+                $new_ver = (string)time();
+                saveSetting('lang_policy_ver', $new_ver, $new_ver, 'system');
+            }
+            if (!headers_sent()) {
+                header('X-LiteSpeed-Purge: *');
+            }
             $saved_where = '';
             if ($write_config) {
                 // Same values into config/config.php
