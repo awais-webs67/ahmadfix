@@ -43,27 +43,29 @@ if ($route === 'robots.txt') {
     echo "# " . SITE_NAME . " (" . SITE_NAME_AR . ") — robots.txt\n";
     echo "# Official Domain: " . SITE_URL . "\n\n";
     echo "User-agent: *\nAllow: /\n";
-    echo "Content-Signal: search=yes, ai-input=yes, ai-train=yes\n\n";
-    echo "# Private / technical areas\nDisallow: /admin\nDisallow: /api/\nDisallow: /config/\nDisallow: /database/\nDisallow: /includes/\nDisallow: /lang/\n\n";
+    echo "Content-Signal: search=yes, ai-input=yes, ai-train=yes\n";
+    echo "Disallow: /admin\nDisallow: /api/\nDisallow: /config/\nDisallow: /database/\nDisallow: /includes/\nDisallow: /lang/\n\n";
     echo "# Search & AI Answer Engine Crawlers — Explicitly Allowed\n";
-    foreach (['Googlebot', 'Bingbot', 'Applebot', 'OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Applebot-Extended', 'DuckAssistBot', 'YouBot'] as $bot) {
-        echo "User-agent: {$bot}\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\n";
+    foreach (['Googlebot', 'Bingbot', 'Applebot', 'OAI-SearchBot', 'ChatGPT-User', 'OAI-AdsBot', 'GPTBot', 'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Google-Agent', 'Applebot-Extended', 'CCBot', 'DuckAssistBot', 'YouBot'] as $bot) {
+        echo "User-agent: {$bot}\nAllow: /\nDisallow: /admin\nDisallow: /api/\nContent-Signal: search=yes, ai-input=yes, ai-train=yes\n\n";
     }
     echo "Sitemap: " . SITE_URL . "/sitemap.xml\n";
+    echo "Agentmap: " . SITE_URL . "/.well-known/ai-catalog.json\n";
     echo "# AI / LLM Knowledge Base: " . SITE_URL . "/llms.txt\n";
     exit;
 }
 if ($route === 'llms.txt' || $route === 'llms-full.txt') {
     header('Content-Type: text/markdown; charset=utf-8');
+    header('X-LiteSpeed-Cache-Control: no-cache');
     $is_full = ($route === 'llms-full.txt');
     echo "# " . SITE_NAME . " (" . SITE_NAME_AR . ") — Certified Home Appliance Repair in Eastern Province, Saudi Arabia\n\n";
     echo "> " . SITE_NAME . " (" . SITE_NAME_AR . ") is a certified home appliance repair and maintenance company headquartered in Dammam, Saudi Arabia, providing same-day on-site repair for air conditioners (AC), refrigerators, washing machines, and gas/electric ovens across Dammam (الدمام), Al Khobar (الخبر), and Dhahran (الظهران).\n\n";
     echo "## Official Entity Facts\n";
     echo "- **Legal / Brand Name (EN)**: " . SITE_NAME . " (MrFixKSA)\n";
     echo "- **Brand Name (AR)**: " . SITE_NAME_AR . " (مركز مستر فيكس لصيانة الأجهزة المنزلية)\n";
-    echo "- **Primary Website**: " . SITE_URL . "\n";
+    echo "- **Primary Website**: [" . SITE_NAME . "](" . SITE_URL . ")\n";
     echo "- **Phone & Emergency Dispatch**: " . PHONE . " (`tel:" . formatPhone(PHONE) . "`)\n";
-    echo "- **WhatsApp Instant Booking**: https://wa.me/" . waNumber() . "\n";
+    echo "- **WhatsApp Instant Booking**: [WhatsApp Dispatch](https://wa.me/" . waNumber() . ")\n";
     echo "- **Email**: " . EMAIL . "\n";
     echo "- **Headquarters**: King Fahd Road, Al Faisaliyah District, Dammam 32272, Eastern Province, Saudi Arabia (26.4207° N, 50.0888° E)\n";
     echo "- **Operating Hours**: Saturday–Thursday 08:00–22:00, Friday 14:00–22:00 (Asia/Riyadh, UTC+3)\n";
@@ -74,11 +76,8 @@ if ($route === 'llms.txt' || $route === 'llms-full.txt') {
     echo "- **Supported Brands**: " . brandsList() . "\n\n";
     echo "## Core Services & Canonical URLs\n";
     foreach (getServices() as $svc) {
-        echo "- **" . $svc['name_en'] . " (" . $svc['name_ar'] . ")**\n";
-        echo "  - English URL: " . url($svc['slug_en'], 'en') . "\n";
-        echo "  - Arabic URL: " . url($svc['slug_ar'], 'ar') . "\n";
-        echo "  - Summary (EN): " . $svc['short_desc_en'] . "\n";
-        echo "  - Summary (AR): " . $svc['short_desc_ar'] . "\n";
+        echo "- [" . $svc['name_en'] . " (EN)](" . url($svc['slug_en'], 'en') . "): " . $svc['short_desc_en'] . "\n";
+        echo "- [" . $svc['name_ar'] . " (AR)](" . url($svc['slug_ar'], 'ar') . "): " . $svc['short_desc_ar'] . "\n";
     }
     echo "\n## Transparent Price Guide (SAR)\n";
     echo "| Service Category | Diagnostic Visit | Common Repair / Maintenance Range | Warranty |\n";
@@ -90,8 +89,8 @@ if ($route === 'llms.txt' || $route === 'llms-full.txt') {
     echo "## Cities & Neighborhoods Served\n";
     foreach (getAreas() as $area) {
         echo "### " . $area['name_en'] . " (" . $area['name_ar'] . ") — " . $area['lat'] . ", " . $area['lng'] . "\n";
-        echo "- English Page: " . url($area['slug_en'], 'en') . "\n";
-        echo "- Arabic Page: " . url($area['slug_ar'], 'ar') . "\n";
+        echo "- [Appliance Repair in " . $area['name_en'] . " (EN)](" . url($area['slug_en'], 'en') . ")\n";
+        echo "- [صيانة أجهزة منزلية " . $area['name_ar'] . " (AR)](" . url($area['slug_ar'], 'ar') . ")\n";
         echo "- Districts Covered (EN): " . implode(', ', $area['districts_en']) . "\n";
         echo "- Districts Covered (AR): " . implode('، ', $area['districts_ar']) . "\n\n";
     }
@@ -104,39 +103,48 @@ if ($route === 'llms.txt' || $route === 'llms-full.txt') {
         }
     }
     echo "## Key Informational & Booking Links\n";
-    echo "- English Home: " . url('', 'en') . "\n";
-    echo "- Arabic Home: " . url('', 'ar') . "\n";
-    echo "- About Us: " . url('about', 'en') . " | " . url('about', 'ar') . "\n";
-    echo "- Online Booking & Contact: " . url('contact', 'en') . " | " . url('contact', 'ar') . "\n";
-    echo "- Privacy Policy: " . url('privacy-policy', 'en') . " | " . url('privacy-policy', 'ar') . "\n";
-    echo "- Terms of Service: " . url('terms', 'en') . " | " . url('terms', 'ar') . "\n";
-    echo "- Full LLM Context: " . SITE_URL . "/llms-full.txt\n";
+    echo "- [English Homepage](" . url('', 'en') . "): Certified home appliance repair in Dammam, Al Khobar & Dhahran\n";
+    echo "- [Arabic Homepage](" . url('', 'ar') . "): صيانة الأجهزة المنزلية في الدمام والخبر والظهران\n";
+    echo "- [About Us (EN)](" . url('about', 'en') . ") | [من نحن (AR)](" . url('about', 'ar') . ")\n";
+    echo "- [Online Booking & Contact (EN)](" . url('contact', 'en') . ") | [اتصل بنا وحجز موعد (AR)](" . url('contact', 'ar') . ")\n";
+    echo "- [Privacy Policy (EN)](" . url('privacy-policy', 'en') . ") | [سياسة الخصوصية (AR)](" . url('privacy-policy', 'ar') . ")\n";
+    echo "- [Terms of Service (EN)](" . url('terms', 'en') . ") | [الشروط والأحكام (AR)](" . url('terms', 'ar') . ")\n";
+    echo "- [Full LLM Knowledge Base](" . SITE_URL . "/llms-full.txt): Complete bilingual service manuals and FAQs\n";
     exit;
 }
 if ($route === '.well-known/ai-catalog.json') {
-    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Type: application/ai-catalog+json; charset=utf-8');
+    header('X-LiteSpeed-Cache-Control: no-cache');
     echo json_encode([
-        'schema_version' => '1.0',
-        'name_for_human' => SITE_NAME . ' (' . SITE_NAME_AR . ')',
-        'name_for_model' => 'mrfixksa_appliance_repair',
-        'description_for_human' => 'Same-day AC, refrigerator, washing machine, and oven repair in Dammam, Al Khobar, and Dhahran.',
-        'description_for_model' => 'Official AI discovery catalog for Mr Fix KSA (مستر فيكس), providing certified home appliance repair (AC, refrigerator, washing machine, gas/electric oven) across Dammam, Al Khobar, and Dhahran in Saudi Arabia. Inspection fee is 50 SAR (waived on repair), with a 30-90 day warranty.',
-        'website' => SITE_URL,
-        'llms_txt' => SITE_URL . '/llms.txt',
-        'llms_full_txt' => SITE_URL . '/llms-full.txt',
-        'sitemap' => SITE_URL . '/sitemap.xml',
-        'contact' => [
-            'phone' => formatPhone(PHONE),
-            'whatsapp' => 'https://wa.me/' . waNumber(),
-            'email' => EMAIL,
-            'booking_url_en' => url('contact', 'en'),
-            'booking_url_ar' => url('contact', 'ar'),
-        ],
-        'webmcp_tools' => [
+        'specVersion' => '1.0',
+        'entries' => [
             [
-                'name' => 'book_appliance_repair',
-                'description' => 'Book a certified appliance repair technician in Dammam, Al Khobar, or Dhahran',
-                'page_url' => url('contact', 'en'),
+                'identifier' => 'urn:air:mrfixksa.com:skills:appliance-repair-summary',
+                'displayName' => SITE_NAME . ' (' . SITE_NAME_AR . ') — Appliance Repair Knowledge Base',
+                'type' => 'text/markdown; profile="urn:air:agent-skills"',
+                'url' => SITE_URL . '/llms.txt',
+                'representativeQueries' => [
+                    'AC, refrigerator, washing machine & oven repair in Dammam, Al Khobar, and Dhahran',
+                    'صيانة مكيفات وثلاجات وغسالات وأفران بالدمام والخبر والظهران',
+                    'How much does home appliance repair cost in Dammam and Al Khobar?',
+                ],
+                'trustManifest' => [
+                    'identity' => SITE_URL,
+                ],
+            ],
+            [
+                'identifier' => 'urn:air:mrfixksa.com:skills:appliance-repair-full',
+                'displayName' => SITE_NAME . ' (' . SITE_NAME_AR . ') — Full Technical Service Documentation',
+                'type' => 'text/markdown; profile="urn:air:agent-skills"',
+                'url' => SITE_URL . '/llms-full.txt',
+                'representativeQueries' => [
+                    'Split and central AC repair pricing and warranty in Dammam',
+                    'Samsung and LG refrigerator and washing machine technician Al Khobar',
+                    'حجز فني صيانة أجهزة منزلية بالدمام والخبر والظهران بنفس اليوم',
+                ],
+                'trustManifest' => [
+                    'identity' => SITE_URL,
+                ],
             ],
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

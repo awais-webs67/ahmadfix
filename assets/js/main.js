@@ -379,9 +379,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // WebMCP Agentic Tool Registration (Chrome 146+ / AI Agents)
     // Allows AI assistants to book an appliance repair or get instant contact info
     // ============================================
-    if (typeof navigator !== 'undefined' && navigator.modelContext && typeof navigator.modelContext.registerTool === 'function') {
+    var mc = (typeof document !== 'undefined' && document.modelContext) || (typeof navigator !== 'undefined' && navigator.modelContext);
+    if (mc && typeof mc.registerTool === 'function') {
         try {
-            navigator.modelContext.registerTool({
+            mc.registerTool({
                 name: 'book_appliance_repair',
                 description: 'Book a same-day home appliance repair technician in Dammam, Al Khobar, or Dhahran with Mr Fix KSA (AC, refrigerator, washing machine, or oven).',
                 inputSchema: {

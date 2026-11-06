@@ -70,6 +70,10 @@ $fonts_url = $lang === 'ar'
     <meta name="geo.position" content="<?php echo $__geo_lat . ';' . $__geo_lng; ?>">
     <meta name="ICBM" content="<?php echo $__geo_lat . ', ' . $__geo_lng; ?>">
     <link rel="alternate" type="text/markdown" href="<?php echo SITE_URL; ?>/llms.txt" title="<?php echo e(SITE_NAME); ?> AI &amp; LLM Documentation">
+    <link rel="ai-catalog" href="<?php echo SITE_URL; ?>/.well-known/ai-catalog.json">
+    <script type="speculationrules">
+    {"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/admin*"}},{"not":{"href_matches":"/api/*"}}]},"eagerness":"moderate"}],"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/admin*"}},{"not":{"href_matches":"/api/*"}}]},"eagerness":"conservative"}]}
+    </script>
 <?php if (opt('google_site_verification')): ?>
     <meta name="google-site-verification" content="<?php echo e(opt('google_site_verification')); ?>">
 <?php endif; ?>
