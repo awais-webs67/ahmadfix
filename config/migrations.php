@@ -11,7 +11,7 @@ if (!defined('FIXORA_APP')) {
     die('Direct access not allowed.');
 }
 
-define('SCHEMA_VERSION', 7);
+define('SCHEMA_VERSION', 8);
 
 /**
  * Old service URLs → new city-neutral URLs (every service is offered in every city).
@@ -99,7 +99,8 @@ function fixTableCharsets(PDO $pdo, array &$errors = []) {
  * A new database connection with the same settings as config/bootstrap.php
  */
 function freshConnection() {
-    return new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET, DB_USER, DB_PASS, [
+    $dsn = function_exists('fixoraMysqlDsn') ? fixoraMysqlDsn() : ("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET);
+    return new PDO($dsn, DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
@@ -723,17 +724,26 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
         },
 
         // ---------------- Version 7 ----------------
-        // 14. Reset default_language to 'auto' (visitor's phone/browser language) and bump lang_policy_ver
-        //     so mobile devices are not stuck in Arabic from legacy cookies or old defaults.
+        // 14. Seed default_language ('auto') if missing without overwriting any choice already saved in Admin.
         'fix_language_detection_v7' => function (PDO $pdo) {
             $ver = (string)time();
-            $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
-                           VALUES ('default_language', 'auto', 'auto', 'text', 'business')
-                           ON DUPLICATE KEY UPDATE setting_value_en = 'auto', setting_value_ar = 'auto'")->execute();
-            $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
-                           VALUES ('lang_policy_ver', :v1, :v2, 'text', 'system')
-                           ON DUPLICATE KEY UPDATE setting_value_en = :v3, setting_value_ar = :v4")
-                ->execute([':v1' => $ver, ':v2' => $ver, ':v3' => $ver, ':v4' => $ver]);
+            $pdo->prepare("INSERT IGNORE INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
+                           VALUES ('default_language', 'auto', 'auto', 'text', 'business')")->execute();
+            $pdo->prepare("INSERT IGNORE INTO site_settings (setting_key, setting_value_en, setting_value_ar, setting_type, setting_group)
+                           VALUES ('lang_policy_ver', :v1, :v2, 'text', 'system')")
+                ->execute([':v1' => $ver, ':v2' => $ver]);
+        },
+
+        // ---------------- Version 8 ----------------
+        // 15. Hosting portability: mirror app_key into site_settings so moving to any new hosting
+        //     with only repo + database + config/config.php keeps encrypted SMTP passwords working.
+        'sync_app_key_v8' => function (PDO $pdo) {
+            if (function_exists('appSecretKey')) {
+                appSecretKey();
+            }
+            if (!headers_sent()) {
+                header('X-LiteSpeed-Purge: *');
+            }
         },
     ];
 

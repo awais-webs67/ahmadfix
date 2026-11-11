@@ -1,0 +1,272 @@
+{
+  "metadata": {
+    "domain": "mrfixksa.com",
+    "url": "https://mrfixksa.com/",
+    "audit_date": "2026-11-11",
+    "previous_audit_date": "2026-11-06",
+    "business_name_en": "Mr Fix KSA",
+    "business_name_ar": "مستر فيكس",
+    "business_type": "Local Service Business — Home Appliance & HVAC Repair (SAB / Hybrid)",
+    "service_area": [
+      "Dammam",
+      "Al Khobar",
+      "Dhahran"
+    ],
+    "languages": [
+      "en",
+      "ar-SA"
+    ],
+    "total_indexable_pages": 24,
+    "overall_score": 97,
+    "previous_score": 96,
+    "baseline_score": 76,
+    "grade": "A+ (Enterprise / AI-Ready)"
+  },
+  "summary": {
+    "health_score": 97,
+    "business_type": "Local Service Business — Home Appliance & HVAC Repair (Dammam, Al Khobar & Dhahran)",
+    "top_findings": [
+      "NEW SINCE NOV 6: Google Search Console verification (<meta name=\"google-site-verification\">) is now live across all 24 URLs, Speculation Rules (prefetch + prerender) score 100/100, and Agentic Readiness passes 11/11 checks (ARD 1.0 + WebMCP).",
+      "ZERO SEO DRIFT: Automated drift comparison (2026-11-06 vs 2026-11-11) passed all 17 rules with 0 criticals and 0 warnings across HTTP status, titles (48–59 chars), descriptions (123–158 chars), canonicals, headings, and 104 JSON-LD blocks.",
+      "HIGH PRIORITY UX/SEO ISSUE DETECTED: Admin 'Default website language' is currently set to forced Arabic (mode = 'ar'), causing human visitors who click deep English Google SERP links (e.g., /en/ac-repair) to be client-side redirected to /ar/* on first tab load.",
+      "MEDIUM PERFORMANCE FINDING: Uncached HTML TTFB ranges from 574ms to 6,052ms (median 1,279ms) on Hostinger shared origin because max-age=0 is applied to all HTML routes rather than only the root / dispatcher.",
+      "EXTERNAL ENTITY COMPLETION: Populate GA4 Measurement ID (G-XXXXXXXXXX), Bing verification (msvalidate.01), verified Google Business Profile URL (replacing generic Maps search fallback), and social sameAs URLs in Admin -> Settings -> Google & Social."
+    ],
+    "quick_wins": [
+      "Switch 'Default website language' in Admin -> Settings to 'Automatic (match visitor's browser)' (or scope forced Arabic redirect strictly to root /) so English Google searchers stay on /en/* landing pages.",
+      "Paste GA4 ID (G-XXXXXXXXXX) in Admin -> Settings -> Google & Social to activate the already-wired phone_call_click, whatsapp_click, and generate_lead conversion events.",
+      "Replace generic Google Maps query fallback with verified Google Business Profile URL and add @mrfixksa social links in Admin -> Settings -> Google & Social to populate LocalBusiness.sameAs.",
+      "Re-enable short CDN edge caching (s-maxage=300) on deterministic /en/* and /ar/* routes while keeping root / at max-age=0, Vary: Accept-Language."
+    ]
+  },
+  "scores": {
+    "overall": 97,
+    "weights": {
+      "technical_seo": {
+        "weight": 0.22,
+        "score": 96,
+        "weighted": 21.12
+      },
+      "content_quality": {
+        "weight": 0.23,
+        "score": 97,
+        "weighted": 22.31
+      },
+      "on_page_seo": {
+        "weight": 0.2,
+        "score": 99,
+        "weighted": 19.8
+      },
+      "schema_structured_data": {
+        "weight": 0.1,
+        "score": 96,
+        "weighted": 9.6
+      },
+      "performance_cwv": {
+        "weight": 0.1,
+        "score": 94,
+        "weighted": 9.4
+      },
+      "ai_search_readiness": {
+        "weight": 0.1,
+        "score": 99,
+        "weighted": 9.9
+      },
+      "images": {
+        "weight": 0.05,
+        "score": 99,
+        "weighted": 4.95
+      }
+    },
+    "specialist_scores": {
+      "technical": 96,
+      "content": 97,
+      "on_page": 99,
+      "schema": 96,
+      "sitemap": 100,
+      "performance": 94,
+      "preload_speculation": 100,
+      "visual_images": 99,
+      "geo": 98,
+      "agentic": 100,
+      "local": 93,
+      "backlinks": 75,
+      "sxo": 95
+    }
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 96,
+      "what_works": [
+        "24/24 sitemap URLs return HTTP 200 OK with self-referencing canonical tags and reciprocal hreflang (en, ar, x-default synced to /ar in both HTML <head> and /sitemap.xml)",
+        "Google Search Console verification (<meta name=\"google-site-verification\" content=\"tFf9DDYVcf26...\">) is now live across 100% of pages",
+        "Dynamic /robots.txt allows Googlebot, Bingbot, OAI-SearchBot, ChatGPT-User, GPTBot, Claude-SearchBot, PerplexityBot, Google-Extended & Applebot-Extended + Content-Signal: search=yes, ai-input=yes, ai-train=yes",
+        "IndexNow verification key live at /indexnow-key.txt (a778886876f83689598d73d658a4ef8f) with all 24 URLs submitted",
+        "Strict security headers active (HSTS, X-Frame-Options: SAMEORIGIN, X-Content-Type-Options: nosniff, Referrer-Policy, Permissions-Policy)"
+      ],
+      "findings": [
+        {
+          "title": "Forced Arabic Client-Side Redirect Bounces Human Visitors Off /en/* Deep Links",
+          "severity": "High",
+          "description": "Because Admin 'Default website language' is set to Arabic (mode = 'ar'), includes/header.php redirects first-time human visitors landing on /en/* URLs (e.g., from an English Google SERP result) to /ar/*.",
+          "recommendation": "Set Default website language to 'Automatic' in /admin, or update includes/header.php so forced language only applies on root entry and never overrides explicit /en/* or /ar/* deep links."
+        },
+        {
+          "title": "Add Bing Webmaster Verification Token (msvalidate.01)",
+          "severity": "Low",
+          "description": "Google Search Console verification is active, while msvalidate.01 is still empty ( affects Bing & Microsoft Copilot reporting).",
+          "recommendation": "Import your verified GSC property into Bing Webmaster Tools or paste msvalidate.01 in Admin -> Settings -> Google & Social."
+        }
+      ]
+    },
+    {
+      "name": "Content Quality",
+      "score": 97,
+      "what_works": [
+        "All 8 service pages render 1,348–1,548 total words (993–1,198 body words) with Answer-First leads tailored to Eastern Province heat/humidity, HTML SAR pricing tables, and 6 FAQs",
+        "All 6 city pages (Dammam, Al Khobar, Dhahran in EN & AR) render 1,059–1,224 total words with 37 neighborhood chips and 5 local FAQs per city",
+        "About pages (/en/about: 1,156 words, /ar/about: 1,023 words) demonstrate strong local operational E-E-A-T",
+        "Zero thin content, zero AI watermark characters, and natural bilingual terminology"
+      ],
+      "findings": [
+        {
+          "title": "Supplement Service Pages with Authentic Field Photography",
+          "severity": "Low",
+          "description": "Textual E-E-A-T is 97/100; adding real photos of Mr Fix KSA technicians, branded tools, and repair vans in Dammam/Khobar will elevate visual E-E-A-T.",
+          "recommendation": "Upload real WebP job photos (<150 KB) via Admin -> Gallery and Google Business Profile."
+        }
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 99,
+      "what_works": [
+        "100% of all 24 URLs have SERP-optimal <title> tags strictly between 48 and 59 characters",
+        "100% of all 24 URLs have <meta name=\"description\"> tags strictly between 123 and 158 characters with +966 58 245 3440 CTA",
+        "Exact H1:1 / H2 / H3 structural parity across EN & AR (1/8/7 on services, 1/5/7 on cities, 1/6/19 on home)",
+        "26 to 40 contextual internal links per page connecting every service hub and city hub within 1–2 clicks",
+        "First FAQ item expanded by default (aria-expanded=\"true\") across all Service, City, and About pages"
+      ],
+      "findings": [
+        {
+          "title": "Monitor Early Impressions & Query CTR in Google Search Console",
+          "severity": "Info",
+          "description": "Now that GSC verification is live, monitor Performance -> Search Results over the next 14–30 days.",
+          "recommendation": "Submit https://mrfixksa.com/sitemap.xml in GSC if not already submitted."
+        }
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 96,
+      "what_works": [
+        "104 JSON-LD blocks validated across all 24 live URLs with 0 syntax or schema errors",
+        "Dual-typed HomeAndConstructionBusiness + HVACBusiness schema with postalCode 32272, GeoCoordinates, PriceSpecification (50–450 SAR), and knowsLanguage (en, ar)",
+        "Service pages emit Service + AggregateOffer (50–450 SAR, 6 offers) + FAQPage schemas",
+        "City pages emit city-scoped Service + GeoCoordinates + Wikidata sameAs + OfferCatalog + FAQPage schemas"
+      ],
+      "findings": [
+        {
+          "title": "Replace Generic hasMap Fallback & Populate LocalBusiness sameAs",
+          "severity": "Medium",
+          "description": "LocalBusiness.hasMap currently uses the generic Google Maps query fallback (query=Dammam,+Al+Khobar,+Dhahran) and LocalBusiness.sameAs is empty because GBP and social URLs are not yet saved in /admin.",
+          "recommendation": "Paste your verified Google Business Profile URL and Instagram/TikTok/Snapchat URLs in Admin -> Settings -> Google & Social."
+        }
+      ]
+    },
+    {
+      "name": "Performance (CWV & Preload)",
+      "score": 94,
+      "what_works": [
+        "100/100 score on preload_check.py: Speculation Rules (prefetch + prerender) active, LCP hero responsive WebP preloaded with fetchpriority=\"high\"",
+        "Zero render-blocking web fonts and lightweight 14 KB vanilla main.js",
+        "Conversion dataLayer events wired for phone calls, WhatsApp clicks, lead form submissions, and FAQ interactions"
+      ],
+      "findings": [
+        {
+          "title": "Uncached Origin TTFB Variance on Shared Hosting (574ms–6,052ms)",
+          "severity": "Medium",
+          "description": "Setting Cache-Control: public, max-age=0, must-revalidate fixed CDN language caching bugs on /, but causes occasional 2.5s–6.0s TTFB spikes on cold PHP hits for /en/* and /ar/*.",
+          "recommendation": "Keep max-age=0 on root /, while allowing s-maxage=300 CDN caching on deterministic /en/* and /ar/* URLs once client-side forced redirect is scoped to root."
+        },
+        {
+          "title": "Add GA4 Measurement ID (G-XXXXXXXXXX)",
+          "severity": "Low",
+          "description": "gtag.js is not yet loaded because ga4_id is blank in Admin Settings.",
+          "recommendation": "Save your GA4 Measurement ID in Admin -> Settings -> Google & Social."
+        }
+      ]
+    },
+    {
+      "name": "AI Search Readiness (GEO & Agentic)",
+      "score": 99,
+      "what_works": [
+        "11/11 PASS (100%) on agentic_check.py with 0 failures and 0 warnings",
+        "Upgraded /.well-known/ai-catalog.json to Lighthouse 13.5 ARD 1.0 (specVersion: 1.0, urn:air:* entries)",
+        "Live /llms.txt (with Markdown links) and /llms-full.txt serving bilingual entity facts, SAR pricing tables, and all 37 districts",
+        "WebMCP imperative + declarative registration (book_appliance_repair + document.modelContext entry point)"
+      ],
+      "findings": [
+        {
+          "title": "Grow Third-Party Saudi Directory & Map Citations for LLM Grounding",
+          "severity": "Low",
+          "description": "On-site GEO & Agentic readiness is 99/100; external citations on Google Maps, Bing Places, Haraj, and Maroof strengthen off-site LLM retrieval.",
+          "recommendation": "Complete GBP verification and top 6 Saudi business directory listings."
+        }
+      ]
+    },
+    {
+      "name": "Images & Visual",
+      "score": 99,
+      "what_works": [
+        "126 live <img> tags crawled across 24 URLs: 0 missing alt attributes, 0 missing width/height dimensions",
+        "logo-header.webp compressed to 4,514 B (76% smaller) and all hero/service visuals served via responsive WebP <picture> srcsets",
+        "/sitemap.xml includes valid -1024.webp <image:image> entries"
+      ],
+      "findings": [
+        {
+          "title": "All On-Site Image & CLS Checks Passing",
+          "severity": "Info",
+          "description": "Zero image optimization regressions detected between 2026-11-06 and 2026-11-11.",
+          "recommendation": "Maintain WebP (<150 KB) and descriptive bilingual alt text on future gallery uploads."
+        }
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {
+        "name": "Phase 1: Immediate Admin & Language Routing Fix (Today — 5 Minutes)",
+        "timeframe": "Immediate",
+        "items": [
+          "HIGH: In Admin -> Settings, change 'Default website language' to 'Automatic (match visitor's browser)' (or ask us to scope forced Arabic to root / only) so English Google searchers clicking /en/* results are not redirected to /ar/*",
+          "MEDIUM: Paste GA4 Measurement ID (G-XXXXXXXXXX) and Bing verification token in Admin -> Settings -> Google & Social",
+          "HIGH: Confirm https://mrfixksa.com/sitemap.xml is submitted in your newly verified Google Search Console property"
+        ]
+      },
+      {
+        "name": "Phase 2: Google Business Profile & Entity Graph (Week 1)",
+        "timeframe": "This Week",
+        "items": [
+          "Launch & verify Google Business Profile using GOOGLE-BUSINESS-PROFILE-MUSE-AI-BRIEF.md",
+          "Paste verified GBP Maps URL & Review URL in Admin -> Settings -> Google & Social to replace the generic Maps query fallback in LocalBusiness.hasMap",
+          "Create @mrfixksa profiles on Instagram, TikTok, Snapchat, X, and Facebook and paste URLs in /admin to populate LocalBusiness.sameAs"
+        ]
+      },
+      {
+        "name": "Phase 3: Edge TTFB Optimization & Local Citations (Weeks 2–4)",
+        "timeframe": "Weeks 2–4",
+        "items": [
+          "Optional code refinement: enable 5-minute CDN edge caching (s-maxage=300) on /en/* and /ar/* while keeping root / uncached to eliminate 2s–6s cold PHP TTFB spikes",
+          "Submit consistent NAP (+966 58 245 3440) to Haraj, Maroof, Saudi Yellow Pages, Daleeli, Apple Business Connect, and Bing Places",
+          "Collect first 10–15 customer reviews on Google Maps across Dammam, Al Khobar, and Dhahran"
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "findings_dir": "findings/",
+    "screenshots_dir": "screenshots/"
+  }
+}

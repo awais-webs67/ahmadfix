@@ -152,6 +152,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: ' . SITE_URL . '/admin/settings#email');
             exit;
         }
+    } elseif ($action === 'export_sql') {
+        // Portable UTF-8 SQL backup (no hardcoded CREATE DATABASE / USE statement)
+        appSecretKey(); // ensure app_key is synced into site_settings before export
+        $filename = preg_replace('/[^a-z0-9.\-]/i', '-', SITE_DOMAIN) . '-backup-' . date('Y-m-d-His') . '.sql';
+        header('Content-Type: application/sql; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+
+        echo "-- ============================================================\n";
+        echo "-- Mr Fix KSA — Portable Database Backup\n";
+        echo "-- Domain: " . SITE_DOMAIN . " | Exported: " . date('Y-m-d H:i:s T') . "\n";
+        echo "-- Import into ANY MySQL/MariaDB database via phpMyAdmin or CLI\n";
+        echo "-- ============================================================\n\n";
+        echo "SET NAMES utf8mb4;\n";
+        echo "SET CHARACTER SET utf8mb4;\n";
+        echo "SET FOREIGN_KEY_CHECKS = 0;\n";
+        echo "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n";
+
+        $tables = $pdo->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_COLUMN, 0);
+        foreach ($tables as $tbl) {
+            $q_tbl = '`' . str_replace('`', '``', $tbl) . '`';
+            $create_row = $pdo->query("SHOW CREATE TABLE {$q_tbl}")->fetch(PDO::FETCH_NUM);
+            $create_sql = $create_row[1] ?? '';
+            echo "-- ------------------------------------------------------------\n";
+            echo "-- Table: {$tbl}\n";
+            echo "-- ------------------------------------------------------------\n";
+            echo "DROP TABLE IF EXISTS {$q_tbl};\n";
+            echo $create_sql . ";\n\n";
+
+            $stmt_rows = $pdo->query("SELECT * FROM {$q_tbl}");
+            $batch = [];
+            $cols_header = null;
+            while ($r = $stmt_rows->fetch(PDO::FETCH_ASSOC)) {
+                if ($cols_header === null) {
+                    $cols_header = implode(', ', array_map(fn($c) => '`' . str_replace('`', '``', $c) . '`', array_keys($r)));
+                }
+                $vals = [];
+                foreach ($r as $v) {
+                    $vals[] = ($v === null) ? 'NULL' : $pdo->quote((string)$v);
+                }
+                $batch[] = '(' . implode(', ', $vals) . ')';
+                if (count($batch) >= 100) {
+                    echo "INSERT INTO {$q_tbl} ({$cols_header}) VALUES\n" . implode(",\n", $batch) . ";\n";
+                    $batch = [];
+                }
+            }
+            if ($batch && $cols_header !== null) {
+                echo "INSERT INTO {$q_tbl} ({$cols_header}) VALUES\n" . implode(",\n", $batch) . ";\n";
+            }
+            echo "\n";
+        }
+        echo "SET FOREIGN_KEY_CHECKS = 1;\n";
+        exit;
     } elseif ($action === 'repair_arabic') {
         $r = repairArabic($pdo);
         $pdo = $GLOBALS['pdo'];
@@ -471,11 +524,16 @@ adminHead('Settings', 'settings');
         </td></tr>
         <tr><th>Settings file</th><td><?php echo PRIVATE_CONFIG_EXISTS ? e(PRIVATE_CONFIG_FILE) . ' <span class="badge b-sent">found</span>' : 'config/config.php <span class="badge b-failed">missing</span>'; ?></td></tr>
     </table>
-    <div class="row-actions" style="margin-top: 14px;">
+    <div class="row-actions" style="margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+        <form method="POST" action="<?php echo SITE_URL; ?>/admin/settings" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
+            <input type="hidden" name="action" value="export_sql">
+            <button type="submit" class="btn btn-orange">⬇ Download Database Backup (.sql)</button>
+        </form>
         <form method="POST" action="<?php echo SITE_URL; ?>/admin/settings#system" style="display:inline;">
             <input type="hidden" name="csrf_token" value="<?php echo e($csrf_token); ?>">
             <input type="hidden" name="action" value="repair_arabic">
-            <button type="submit" class="btn btn-orange">Repair Arabic now</button>
+            <button type="submit" class="btn btn-gray">Repair Arabic now</button>
         </form>
         <a href="<?php echo SITE_URL; ?>/admin/settings#system" class="btn btn-gray">Check again</a>
     </div>

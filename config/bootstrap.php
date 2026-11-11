@@ -50,14 +50,35 @@ function fixora_define($name, $value) {
 // Database (defaults suit XAMPP/WAMP; set yours in config/config.php)
 // ============================================
 fixora_define('DB_HOST', 'localhost');
+fixora_define('DB_PORT', '');
+fixora_define('DB_SOCKET', '');
 fixora_define('DB_NAME', 'fixora');
 fixora_define('DB_USER', 'root');
 fixora_define('DB_PASS', '');
 fixora_define('DB_CHARSET', 'utf8mb4');
 
+/**
+ * Build a portable PDO MySQL DSN supporting host, host:port, DB_PORT, or DB_SOCKET
+ */
+function fixoraMysqlDsn() {
+    if (defined('DB_SOCKET') && DB_SOCKET !== '') {
+        return 'mysql:unix_socket=' . DB_SOCKET . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+    }
+    $db_host = DB_HOST;
+    $db_port = defined('DB_PORT') ? trim((string)DB_PORT) : '';
+    if ($db_port === '' && substr_count($db_host, ':') === 1) {
+        [$h_part, $p_part] = explode(':', $db_host, 2);
+        if (ctype_digit($p_part)) {
+            $db_host = $h_part;
+            $db_port = $p_part;
+        }
+    }
+    return 'mysql:host=' . $db_host . ($db_port !== '' ? ';port=' . $db_port : '') . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+}
+
 define('SITE_ROOT', dirname(__DIR__));
 // Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.6.0');
+define('ASSETS_VERSION', '2.7.0');
 
 // ============================================
 // Who is asking? (host, https, local or live)
@@ -89,7 +110,7 @@ define('REQUEST_BASE_URL', ($is_https ? 'https://' : 'http://') . $host . ($fold
 // Database Connection (PDO)
 // ============================================
 try {
-    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+    $dsn = fixoraMysqlDsn();
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

@@ -1,13 +1,13 @@
 -- ============================================
--- Mr Fix KSA Database Setup
--- Database: fixora
+-- Mr Fix KSA — Portable Database Setup (Fresh Install)
+-- Select your target database in phpMyAdmin (or mysql CLI) first, then import this file.
+-- Works on any hosting database name (e.g. u123456_fixora, cpanel_mrfix, fixora).
+-- Note: When moving an existing live site to a new host, export your live database
+-- (via Admin → Settings → Download Database Backup, or phpMyAdmin Export) instead!
 -- ============================================
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
-
-CREATE DATABASE IF NOT EXISTS fixora CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE fixora;
 
 -- ============================================
 -- 1. Admin Users
@@ -106,9 +106,16 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
     phone VARCHAR(20) NOT NULL,
     email VARCHAR(100),
     service_requested VARCHAR(100),
+    city VARCHAR(60) NULL,
+    address VARCHAR(255) NULL,
+    preferred_date DATE NULL,
+    preferred_time VARCHAR(30) NULL,
     message TEXT,
+    lang CHAR(2) NOT NULL DEFAULT 'en',
     is_read TINYINT(1) DEFAULT 0,
     status VARCHAR(20) NOT NULL DEFAULT 'new',
+    notes TEXT NULL,
+    ip_address VARCHAR(45) NULL,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -165,6 +172,25 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     ip_address VARCHAR(45) NOT NULL,
     attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_ip_time (ip_address, attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- 11. Email Log (sent notifications & auto-replies)
+-- ============================================
+CREATE TABLE IF NOT EXISTS email_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lead_id INT NULL,
+    type VARCHAR(30) NOT NULL DEFAULT 'compose',
+    to_email VARCHAR(190) NOT NULL,
+    to_name VARCHAR(100) NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NULL,
+    status VARCHAR(10) NOT NULL DEFAULT 'sent',
+    error VARCHAR(500) NULL,
+    sent_by VARCHAR(100) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_lead (lead_id),
+    INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================

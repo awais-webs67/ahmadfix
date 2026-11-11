@@ -4,18 +4,15 @@ config/config.local.php
 config/*.bak
 config/*.tmp*
 
-# OS / editor files
+# Auto-generated secret key (also mirrored safely inside database site_settings)
+config/app_key.php
+
+# OS / editor / local runtime files
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-
-# Logs
 *.log
 error_log
-
-# Auto-generated secret key (encrypts saved passwords)
-config/app_key.php
-
-# Local SEO audit workspace reports
-mrfixksa.com-audit/
+*.db
+*.sqlite

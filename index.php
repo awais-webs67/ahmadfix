@@ -119,7 +119,7 @@ if ($route === '.well-known/ai-catalog.json') {
         'specVersion' => '1.0',
         'entries' => [
             [
-                'identifier' => 'urn:air:mrfixksa.com:skills:appliance-repair-summary',
+                'identifier' => 'urn:air:' . SITE_DOMAIN . ':skills:appliance-repair-summary',
                 'displayName' => SITE_NAME . ' (' . SITE_NAME_AR . ') — Appliance Repair Knowledge Base',
                 'type' => 'text/markdown; profile="urn:air:agent-skills"',
                 'url' => SITE_URL . '/llms.txt',
@@ -133,7 +133,7 @@ if ($route === '.well-known/ai-catalog.json') {
                 ],
             ],
             [
-                'identifier' => 'urn:air:mrfixksa.com:skills:appliance-repair-full',
+                'identifier' => 'urn:air:' . SITE_DOMAIN . ':skills:appliance-repair-full',
                 'displayName' => SITE_NAME . ' (' . SITE_NAME_AR . ') — Full Technical Service Documentation',
                 'type' => 'text/markdown; profile="urn:air:agent-skills"',
                 'url' => SITE_URL . '/llms-full.txt',
@@ -465,7 +465,7 @@ if (isset($static_pages[$page])) {
 // ============================================
 if (!NEEDS_SESSION && !$is_404 && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
     header('X-LiteSpeed-Cache-Control: public,max-age=300');
-    header('Cache-Control: public, max-age=0, must-revalidate');
+    header('Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=600');
 } else {
     header('X-LiteSpeed-Cache-Control: no-cache');
 }

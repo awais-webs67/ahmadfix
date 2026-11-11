@@ -2,36 +2,34 @@
 /**
  * YOUR PRIVATE SETTINGS — database login and (optionally) email login.
  *
- * 1. Copy this file and name the copy:  config.php   (same config/ folder)
- * 2. Fill in your values below and save.
+ * HOW TO DEPLOY OR MOVE TO ANY NEW HOSTING (3 STEPS ONLY):
+ * 1. Deploy/clone this repository to your new hosting folder (e.g. public_html).
+ * 2. Import your old database backup (.sql) into your new MySQL database.
+ * 3. Copy your old config/config.php (or copy this file to config/config.php)
+ *    and update DB_HOST, DB_NAME, DB_USER, DB_PASS for the new server.
  *
  * config/config.php is ignored by git: it is never uploaded to GitHub, and
- * cPanel "Update from Remote" never changes it or complains about it.
- * Edit it on the server whenever you like (cPanel → File Manager → Edit).
- *
- * Email (SMTP): values filled in here win and show as locked in
- * Admin → Settings → Email. Leave a value '' to manage it from the admin
- * panel instead. Everything else is set in Admin → Settings.
+ * Git pull / cPanel "Update from Remote" never overwrites it.
  */
 
 if (!defined('FIXORA_APP')) {
     die('Direct access not allowed.');
 }
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'fixora');
+// ---- Database Login (Update these 4 lines when moving to a new host) ----
+define('DB_HOST', 'localhost');        // Usually 'localhost' or '127.0.0.1' (supports 'host:port' too)
+define('DB_PORT', '');                 // Leave '' for default 3306, or set e.g. '3307' / '25060' if required
+define('DB_NAME', 'fixora');           // Your hosting MySQL database name (e.g. 'u123456789_fixora')
 define('DB_USER', 'your_database_user');
 define('DB_PASS', 'your_database_password');
 
-// ---- Email ----
+// ---- Email (SMTP) ----
 // If your hosting blocks Gmail ("Connection refused" in the test email), uncomment the next line:
 // it sends through the hosting server's own mail system and needs no password.
 // define('MAIL_TRANSPORT', 'phpmail');
 //
 // Otherwise just fill SMTP_USER and SMTP_PASS — the server is found automatically
 // (or edit everything in Admin → Settings → Email, which writes into this file).
-// Gmail: create an App password at myaccount.google.com → Security →
-// 2-Step Verification → App passwords (16 letters, spaces are fine).
 define('SMTP_HOST', '');               // '' = automatic (from your email address)
 define('SMTP_PORT', 587);              // 587 with 'tls', or 465 with 'ssl'
 define('SMTP_SECURE', 'tls');          // 'tls', 'ssl' or 'none'
@@ -39,9 +37,9 @@ define('SMTP_USER', '');               // Gmail or business email, e.g. 'contact
 define('SMTP_PASS', '');               // mailbox password (Gmail: 16-letter App password)
 define('SMTP_FROM_EMAIL', '');         // '' = same as SMTP_USER
 define('SMTP_FROM_NAME', '');          // '' = business name from Settings
-define('NOTIFY_EMAILS', '');           // where new-lead alerts go, e.g. 'you@gmail.com, partner@gmail.com' ('' = Settings)
+define('NOTIFY_EMAILS', '');           // where new-lead alerts go ('' = Settings)
 // define('AUTO_REPLY_ENABLED', true); // uncomment to force the customer "Thank you" email on (true) or off (false)
 
-// Emergency only: if a wrong "Website address" was saved in Settings and the
-// site keeps redirecting, uncomment this line with the right address.
+// Emergency / Staging Override: if moving to a temporary staging URL or new domain before
+// updating Admin → Settings → Website address, uncomment this line:
 // define('SITE_URL_OVERRIDE', 'https://yourdomain.com');

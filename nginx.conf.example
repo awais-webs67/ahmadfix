@@ -1,0 +1,43 @@
+# ============================================================================
+# Mr Fix KSA — Nginx Server Block Template (Optional — for Nginx VPS / CloudPanel)
+# Note: Apache & LiteSpeed (Hostinger, cPanel, Plesk) use .htaccess automatically
+# and do NOT need this file.
+# ============================================================================
+
+# Block private folders and internal files
+location ~ ^/(?:\.(?!well-known/)|config/|database/|includes/|lang/|mrfixksa\.com-audit/) {
+    deny all;
+    return 403;
+}
+
+location ~* \.(sql|md|log|ini|sh|bak|example\.php|conf\.example)$ {
+    deny all;
+    return 403;
+}
+
+location ~ ^/admin/(auth|_[a-z_]+)\.php$ {
+    deny all;
+    return 403;
+}
+
+# Dynamic SEO, Sitemap, Robots & AI Discovery endpoints
+location ~ ^/(sitemap\.xml|robots\.txt|site\.webmanifest|llms\.txt|llms-full\.txt|\.well-known/ai-catalog\.json|indexnow-key\.txt|[a-f0-9]{32}\.txt)$ {
+    try_files /index.php?route=$1&$args =404;
+}
+
+# Remove trailing slash on non-directory URLs
+if (!-d $request_filename) {
+    rewrite ^/(.+)/$ /$1 permanent;
+}
+
+# Static assets with 1-year immutable caching
+location ~* ^/assets/.*\.(css|js|jpg|jpeg|png|gif|svg|webp|avif|ico|woff|woff2|ttf|eot|mp4)$ {
+    expires 1y;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+    try_files $uri =404;
+}
+
+# Main PHP Front Controller
+location / {
+    try_files $uri $uri/ /index.php?route=$uri&$args;
+}

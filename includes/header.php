@@ -96,6 +96,7 @@ $fonts_url = $lang === 'ar'
             var ua = navigator.userAgent || '';
             if (/bot|crawl|spider|slurp|lighthouse|ptst|headless|inspect|facebookexternalhit|whatsapp|telegram|twitterbot|applebot|chatgpt|oai-searchbot|claudebot|perplexity/i.test(ua)) return;
             var cur = <?php echo json_encode($lang); ?>;
+            var isHome = <?php echo json_encode(($current_page ?? '') === 'home'); ?>;
             var mode = <?php echo json_encode(defined('LANG_SETTING') ? LANG_SETTING : 'auto'); ?>;
             var ver = <?php echo json_encode(defined('LANG_POLICY_VER') ? LANG_POLICY_VER : '1'); ?>;
             var altEn = <?php echo json_encode($alt_en); ?>;
@@ -108,6 +109,11 @@ $fonts_url = $lang === 'ar'
                 }
             }
             if (sessionStorage.getItem('lang_synced') === ver + ':' + mode) return;
+            var ref = document.referrer || '';
+            if (!isHome || /google\.|bing\.|yahoo\.|duckduckgo\.|yandex\.|baidu\.|chatgpt\.com|perplexity\.ai|claude\.ai|gemini\.google/i.test(ref)) {
+                sessionStorage.setItem('lang_synced', ver + ':' + mode);
+                return;
+            }
             var target = cur;
             if (mode === 'ar' || mode === 'en') {
                 target = mode;

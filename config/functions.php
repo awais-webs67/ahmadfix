@@ -93,21 +93,30 @@ function appSecretKey() {
         return $key = hash('sha256', APP_KEY, true);
     }
     $file = SITE_ROOT . '/config/app_key.php';
+    $db_key = opt('app_key');
     if (is_file($file)) {
         $stored = include $file;
-        if (is_string($stored) && strlen($stored) >= 32) return $key = hash('sha256', $stored, true);
+        if (is_string($stored) && strlen($stored) >= 32) {
+            // Mirror into DB so moving to a new host with only DB + config/config.php keeps encrypted passwords working
+            if ($db_key === '') {
+                try {
+                    saveSetting('app_key', $stored, $stored, 'system');
+                } catch (Throwable $e) { /* ignore */ }
+            }
+            return $key = hash('sha256', $stored, true);
+        }
+    }
+    // New hosting migration: restore secret key from imported database if present
+    if (is_string($db_key) && strlen($db_key) >= 32) {
+        @file_put_contents($file, "<?php\n// Auto-generated secret key. Keep private, do not delete (saved passwords need it).\nreturn '" . addslashes($db_key) . "';\n", LOCK_EX);
+        return $key = hash('sha256', $db_key, true);
     }
     $new = bin2hex(random_bytes(32));
-    if (@file_put_contents($file, "<?php\n// Auto-generated secret key. Keep private, do not delete (saved passwords need it).\nreturn '" . $new . "';\n", LOCK_EX) !== false) {
-        return $key = hash('sha256', $new, true);
-    }
-    // Folder not writable: fall back to a key stored in the database
-    $db_key = opt('app_key');
-    if ($db_key === '') {
-        $db_key = $new;
-        saveSetting('app_key', $db_key, $db_key, 'system');
-    }
-    return $key = hash('sha256', $db_key, true);
+    @file_put_contents($file, "<?php\n// Auto-generated secret key. Keep private, do not delete (saved passwords need it).\nreturn '" . $new . "';\n", LOCK_EX);
+    try {
+        saveSetting('app_key', $new, $new, 'system');
+    } catch (Throwable $e) { /* ignore */ }
+    return $key = hash('sha256', $new, true);
 }
 
 function encryptSecret($plain) {
@@ -844,7 +853,8 @@ function getContactPageSchema() {
  * Deterministic 32-character hexadecimal key for IndexNow protocol
  */
 function indexNowKey() {
-    return substr(hash('sha256', 'mrfixksa.com:indexnow:v1'), 0, 32);
+    $domain = defined('SITE_DOMAIN') && SITE_DOMAIN !== '' ? strtolower(SITE_DOMAIN) : 'mrfixksa.com';
+    return substr(hash('sha256', $domain . ':indexnow:v1'), 0, 32);
 }
 
 /**
