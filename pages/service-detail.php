@@ -40,9 +40,25 @@ $service_image = $service_images[$service['icon']] ?? null;
 $other_services = array_filter($all_services, function($s) use ($service) {
     return $s['id'] !== $service['id'];
 });
+
+// Genuine last-modified timestamp (synced with sitemap.xml — never faked)
+$lastmod_ts = max(
+    !empty($service['updated_at']) ? (int)strtotime($service['updated_at']) : 0,
+    (int)@filemtime(__FILE__),
+    (int)@filemtime(SITE_ROOT . '/config/seo-v6-content.php')
+) ?: time();
+$lastmod_iso = date('Y-m-d', $lastmod_ts);
+$service_page_url = url(localized($service, 'slug'));
 ?>
 
-<!-- Structured data: this service + its FAQ -->
+<!-- Structured data: WebPage + Service + FAQ -->
+<?php echo getWebPageSchema([
+    'url'            => $service_page_url,
+    'name'           => $service_name . ' ' . sprintf(__('service_h1_suffix'), $cities_text),
+    'description'    => strip_tags(localized($service, 'short_desc')),
+    'main_entity_id' => $service_page_url . '#service',
+    'date_modified'  => $lastmod_iso,
+]); ?>
 <?php echo getServiceSchema($service); ?>
 <?php if (!empty($faqs)): ?>
     <?php echo getFAQSchema($faqs); ?>
@@ -60,6 +76,17 @@ $other_services = array_filter($all_services, function($s) use ($service) {
         </nav>
         <h1><?php echo e($service_name); ?> <span class="h1-cities"><?php echo e(sprintf(__('service_h1_suffix'), $cities_text)); ?></span></h1>
         <p><?php echo localized($service, 'short_desc'); ?></p>
+        <div class="eeat-meta-bar">
+            <span class="eeat-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                <span><?php echo e(__('eeat_reviewed_by')); ?></span>
+            </span>
+            <span class="eeat-meta-sep" aria-hidden="true">•</span>
+            <span class="eeat-meta-item">
+                <span><?php echo e(__('eeat_verified_on')); ?></span>
+                <time datetime="<?php echo e($lastmod_iso); ?>"><?php echo e($lastmod_iso); ?></time>
+            </span>
+        </div>
     </div>
 </section>
 

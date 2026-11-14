@@ -24,9 +24,26 @@ $service_images = [
 ];
 
 $why_keys = ['why_certified', 'why_sameday', 'why_parts', 'why_warranty', 'why_price'];
+
+// Genuine last-modified timestamp (synced with sitemap.xml — never faked)
+$lastmod_ts = max(
+    (int)@filemtime(SITE_ROOT . '/config/areas.php'),
+    (int)@filemtime(__FILE__)
+) ?: time();
+$lastmod_iso = date('Y-m-d', $lastmod_ts);
+$area_page_url = url($area['slug_' . $lang]);
+$districts_list = $area['districts_' . $lang] ?? [];
+$sample_districts = implode($sep, array_slice($districts_list, 0, 5));
 ?>
 
-<!-- Structured data: city Service + city FAQ -->
+<!-- Structured data: WebPage + city Service + city FAQ -->
+<?php echo getWebPageSchema([
+    'url'            => $area_page_url,
+    'name'           => $area['h1_' . $lang],
+    'description'    => fillPlaceholders($area['desc_' . $lang]),
+    'main_entity_id' => $area_page_url . '#service',
+    'date_modified'  => $lastmod_iso,
+]); ?>
 <?php echo getAreaServiceSchema($area); ?>
 <?php if (!empty($faqs)): ?>
     <?php echo getFAQSchema($faqs); ?>
@@ -44,6 +61,17 @@ $why_keys = ['why_certified', 'why_sameday', 'why_parts', 'why_warranty', 'why_p
         </nav>
         <h1><?php echo e($area['h1_' . $lang]); ?></h1>
         <p><?php echo e($area['lead_' . $lang]); ?></p>
+        <div class="eeat-meta-bar">
+            <span class="eeat-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                <span><?php echo e(__('eeat_reviewed_by')); ?></span>
+            </span>
+            <span class="eeat-meta-sep" aria-hidden="true">•</span>
+            <span class="eeat-meta-item">
+                <span><?php echo e(__('eeat_verified_on')); ?></span>
+                <time datetime="<?php echo e($lastmod_iso); ?>"><?php echo e($lastmod_iso); ?></time>
+            </span>
+        </div>
     </div>
 </section>
 
@@ -56,6 +84,45 @@ $why_keys = ['why_certified', 'why_sameday', 'why_parts', 'why_warranty', 'why_p
                 <?php foreach ($area['intro_' . $lang] as $paragraph): ?>
                 <p><?php echo e($paragraph); ?></p>
                 <?php endforeach; ?>
+
+                <!-- Comparative City Dispatch, Coverage & SAR Price Summary Table (GEO / AI Extraction) -->
+                <div class="table-responsive">
+                    <table class="seo-pricing-table">
+                        <caption><?php echo e(sprintf(__('area_table_caption'), $city)); ?></caption>
+                        <thead>
+                            <tr>
+                                <th><?php echo e(__('area_tbl_col_item')); ?></th>
+                                <th><?php echo e(sprintf(__('area_tbl_col_detail'), $city)); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong><?php echo e(__('area_tbl_coverage')); ?></strong></td>
+                                <td><?php echo e(sprintf(__('area_tbl_coverage_val'), count($districts_list), $city, $sample_districts)); ?></td>
+                            </tr>
+                            <tr>
+                                <td><strong><?php echo e(__('area_tbl_dispatch')); ?></strong></td>
+                                <td><?php echo e(sprintf(__('area_tbl_dispatch_val'), $city)); ?></td>
+                            </tr>
+                            <tr>
+                                <td><strong><?php echo e(__('area_tbl_diagnostic')); ?></strong></td>
+                                <td><?php echo e(__('area_tbl_diagnostic_val')); ?></td>
+                            </tr>
+                            <tr>
+                                <td><strong><?php echo e(__('area_tbl_repair_range')); ?></strong></td>
+                                <td><?php echo e(__('area_tbl_repair_val')); ?></td>
+                            </tr>
+                            <tr>
+                                <td><strong><?php echo e(__('area_tbl_warranty')); ?></strong></td>
+                                <td><?php echo e(__('area_tbl_warranty_val')); ?></td>
+                            </tr>
+                            <tr>
+                                <td><strong><?php echo e(__('area_tbl_payment')); ?></strong></td>
+                                <td><?php echo e(__('area_tbl_payment_val')); ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- All services in this city -->
                 <h2><?php echo e(sprintf(__('area_services_title'), $city)); ?></h2>

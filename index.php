@@ -46,7 +46,7 @@ if ($route === 'robots.txt') {
     echo "Content-Signal: search=yes, ai-input=yes, ai-train=yes\n";
     echo "Disallow: /admin\nDisallow: /api/\nDisallow: /config/\nDisallow: /database/\nDisallow: /includes/\nDisallow: /lang/\n\n";
     echo "# Search & AI Answer Engine Crawlers — Explicitly Allowed\n";
-    foreach (['Googlebot', 'Bingbot', 'Applebot', 'OAI-SearchBot', 'ChatGPT-User', 'OAI-AdsBot', 'GPTBot', 'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Google-Agent', 'Applebot-Extended', 'CCBot', 'DuckAssistBot', 'YouBot'] as $bot) {
+    foreach (['Googlebot', 'Bingbot', 'Applebot', 'OAI-SearchBot', 'ChatGPT-User', 'OAI-AdsBot', 'GPTBot', 'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Google-CloudVertexBot', 'Google-GeminiNotebook', 'Google-Agent', 'Applebot-Extended', 'CCBot', 'Bytespider', 'cohere-ai', 'DuckAssistBot', 'YouBot'] as $bot) {
         echo "User-agent: {$bot}\nAllow: /\nDisallow: /admin\nDisallow: /api/\nContent-Signal: search=yes, ai-input=yes, ai-train=yes\n\n";
     }
     echo "Sitemap: " . SITE_URL . "/sitemap.xml\n";

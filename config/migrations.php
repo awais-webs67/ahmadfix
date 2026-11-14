@@ -11,7 +11,7 @@ if (!defined('FIXORA_APP')) {
     die('Direct access not allowed.');
 }
 
-define('SCHEMA_VERSION', 8);
+define('SCHEMA_VERSION', 9);
 
 /**
  * Old service URLs → new city-neutral URLs (every service is offered in every city).
@@ -740,6 +740,29 @@ function runMigrationSteps(PDO $pdo, $tries = 1) {
         'sync_app_key_v8' => function (PDO $pdo) {
             if (function_exists('appSecretKey')) {
                 appSecretKey();
+            }
+            if (!headers_sent()) {
+                header('X-LiteSpeed-Purge: *');
+            }
+        },
+
+        // ---------------- Version 9 ----------------
+        // 16. GEO v9 upgrade: sync query-aligned Question H2 headings into services.full_desc_en & full_desc_ar
+        //     while preserving any custom titles/meta edited in Admin, and purge LiteSpeed edge cache.
+        'geo_v9_question_headings_sync' => function (PDO $pdo) {
+            $payload_file = SITE_ROOT . '/config/seo-v6-content.php';
+            if (is_file($payload_file)) {
+                $payload = require $payload_file;
+                $upd = $pdo->prepare("UPDATE services SET full_desc_en = :fd_en, full_desc_ar = :fd_ar WHERE slug_en = :slug");
+                foreach ($payload['services'] ?? [] as $slug_en => $svc) {
+                    if (!empty($svc['full_desc_en']) && !empty($svc['full_desc_ar'])) {
+                        $upd->execute([
+                            ':fd_en' => $svc['full_desc_en'],
+                            ':fd_ar' => $svc['full_desc_ar'],
+                            ':slug'  => $slug_en,
+                        ]);
+                    }
+                }
             }
             if (!headers_sent()) {
                 header('X-LiteSpeed-Purge: *');

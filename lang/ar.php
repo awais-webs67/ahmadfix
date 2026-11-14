@@ -246,4 +246,23 @@ return [
     'cf_svc_other' => 'أخرى',
     'cf_privacy' => 'نستخدم بياناتك فقط لترتيب موعد الإصلاح.',
     'book_online' => 'احجز أونلاين',
+
+    // E-E-A-T & City Dispatch Summary (GEO v9)
+    'eeat_reviewed_by' => 'مراجعة فنية بواسطة فريق مهندسي وفنيي ' . SITE_NAME_AR . ' المعتمدين',
+    'eeat_verified_on' => 'تم التحقق من الأسعار والدليل الفني:',
+    'area_table_caption' => 'ملخص الاستجابة الفورية والتغطية والأسعار في %s (ريال سعودي)',
+    'area_tbl_col_item' => 'معيار الخدمة',
+    'area_tbl_col_detail' => 'التفاصيل المعتمدة في %s',
+    'area_tbl_coverage' => 'نطاق تغطية الأحياء',
+    'area_tbl_coverage_val' => 'أكثر من %d حيّاً في %s (بما فيها %s)',
+    'area_tbl_dispatch' => 'سرعة وصول الفني في نفس اليوم',
+    'area_tbl_dispatch_val' => 'خلال 60 – 90 دقيقة بورشة متنقلة مجهزة في %s',
+    'area_tbl_diagnostic' => 'رسوم الكشف والفحص المنزلي',
+    'area_tbl_diagnostic_val' => '50 ريال سعودي (مجاناً وتُخصم بالكامل عند الموافقة على الإصلاح)',
+    'area_tbl_repair_range' => 'متوسط تكلفة الصيانة والإصلاح',
+    'area_tbl_repair_val' => '100 – 450 ريال سعودي (تسعير ثابت ومسبق قبل بدء العمل)',
+    'area_tbl_warranty' => 'الضمان وقطع الغيار',
+    'area_tbl_warranty_val' => 'ضمان مكتوب من 30 إلى 90 يوماً على قطع الغيار الأصلية والعمل',
+    'area_tbl_payment' => 'طرق الدفع وأوقات العمل',
+    'area_tbl_payment_val' => 'نقداً، مدى، STC Pay، Apple Pay • السبت–الخميس 8ص–10م، الجمعة 2م–10م',
 ];

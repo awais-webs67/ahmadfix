@@ -44,7 +44,11 @@ $service_images = [
 ];
 foreach (getServices() as $svc) {
     $updated = !empty($svc['updated_at']) ? strtotime($svc['updated_at']) : time();
-    $updated = max($updated, filemtime(SITE_ROOT . '/pages/service-detail.php'));
+    $updated = max(
+        $updated,
+        (int)@filemtime(SITE_ROOT . '/pages/service-detail.php'),
+        (int)@filemtime(SITE_ROOT . '/config/seo-v6-content.php')
+    );
     $entries[] = [
         'paths'   => ['en' => $svc['slug_en'], 'ar' => $svc['slug_ar']],
         'lastmod' => date('Y-m-d', $updated),

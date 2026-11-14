@@ -78,7 +78,7 @@ function fixoraMysqlDsn() {
 
 define('SITE_ROOT', dirname(__DIR__));
 // Bump this when CSS/JS change so visitors get the new files (cache busting)
-define('ASSETS_VERSION', '2.7.0');
+define('ASSETS_VERSION', '2.8.0');
 
 // ============================================
 // Who is asking? (host, https, local or live)

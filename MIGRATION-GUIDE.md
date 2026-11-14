@@ -50,3 +50,4 @@ Moving to a new hosting provider takes **only 3 steps** — no code edits, no lo
   Apache and LiteSpeed hosts (Hostinger, cPanel, Namecheap, SiteGround) automatically load `.htaccess`. If you ever move to a bare Nginx VPS, copy the rules from `nginx.conf.example`.
 - **Fresh Brand-New Installation (Without Old Database):**  
   Import `database/setup.sql` into any empty MySQL database, copy `config/config.example.php` → `config/config.php`, and open the site — automatic migrations (`Schema v8`) will immediately upgrade all SEO content on first load.
+

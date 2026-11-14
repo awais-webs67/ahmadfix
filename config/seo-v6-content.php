@@ -44,7 +44,7 @@ return [
             'full_desc_en'  => '<h2>Certified Air Conditioner Repair &amp; Maintenance in Dammam, Al Khobar &amp; Dhahran</h2>
 <p>When summer temperatures in Saudi Arabia’s Eastern Province climb above 45°C (113°F) with heavy Arabian Gulf humidity, an air conditioning failure is a household emergency. <strong>Mr Fix KSA</strong> provides same-day, on-site AC repair and preventive maintenance across <a href="/en/appliance-repair-dammam">Dammam</a>, <a href="/en/appliance-repair-khobar">Al Khobar</a>, and <a href="/en/appliance-repair-dhahran">Dhahran</a>. Our certified HVAC technicians arrive within 60 to 90 minutes in fully stocked mobile workshops, perform a complete electronic and pressure diagnosis starting at <strong>50 SAR</strong> (waived when you approve the repair), and back every completed job with a written <strong>30-to-90-day warranty</strong> on parts and labor.</p>
 
-<h2>Complete HVAC &amp; AC Services We Provide</h2>
+<h2>What HVAC &amp; AC Repair Services Do We Provide in Dammam &amp; Khobar?</h2>
 <ul>
     <li><strong>Split &amp; Ductless Mini-Split AC Repair:</strong> Complete electrical and mechanical repair for wall-mounted inverter and rotary split units in bedrooms, majlis areas, apartments, and villas.</li>
     <li><strong>Central, Ducted &amp; Cassette AC Maintenance:</strong> Troubleshooting rooftop package units, concealed ducted systems, air handlers, motorized dampers, and smart zone thermostats.</li>
@@ -54,7 +54,7 @@ return [
     <li><strong>Compressor, Capacitor &amp; Inverter PCB Replacement:</strong> Installing genuine high-ambient tropical compressors, dual-run capacitors, contactor relays, fan motors, and electronic control boards.</li>
 </ul>
 
-<h2>Common AC Faults We Fix in the Eastern Province Climate</h2>
+<h2>Why Is My AC Not Cooling or Leaking Water in the Eastern Province Climate?</h2>
 <p>Dust storms in Dammam and Dhahran combined with salty coastal humidity in Al Khobar create unique wear patterns on air conditioners. Call our technicians immediately if you notice any of these symptoms:</p>
 <ul>
     <li><strong>AC Blowing Warm or Weak Air:</strong> Usually caused by a refrigerant leak, failed compressor run capacitor, dirty condenser coils overheating in 45°C+ weather, or an inverter board fault code (such as E1, E4, E5, CH05, or H6).</li>
@@ -73,7 +73,7 @@ return [
     <li><strong>Post-Repair Load Verification:</strong> After installing genuine OEM spare parts, we run the AC for 20 minutes under full cooling load and issue your written warranty invoice.</li>
 </ol>
 
-<h2>Transparent AC Repair &amp; Maintenance Price Guide (SAR)</h2>
+<h2>How Much Does AC Repair &amp; Freon Refill Cost in Dammam &amp; Al Khobar (SAR)?</h2>
 <p>We believe in complete price transparency. You always approve the exact cost before any repair work starts:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -119,12 +119,12 @@ return [
     </table>
 </div>
 
-<h2>All Major AC Brands &amp; Neighborhoods Covered</h2>
+<h2>Which AC Brands &amp; Neighborhoods Do We Cover Across Dammam, Khobar &amp; Dhahran?</h2>
 <p>Our technicians carry original spare parts for <strong>Gree, Carrier, LG, Samsung, Daikin, Midea, Haier, Zamil, Classic, York, Mitsubishi Electric, Fujitsu, Hisense, General Supreme, Panasonic, and Sharp</strong>. Need help with another kitchen or laundry appliance during our visit? We also provide certified <a href="/en/refrigerator-repair">refrigerator repair</a>, <a href="/en/washing-machine-repair">washing machine repair</a>, and <a href="/en/oven-repair">gas &amp; electric oven repair</a> across all districts of Dammam, Al Khobar, and Dhahran.</p>',
             'full_desc_ar'  => '<h2>صيانة وإصلاح المكيفات في الدمام والخبر والظهران بأيدي فنيين معتمدين</h2>
 <p>عندما تتجاوز درجات الحرارة في المنطقة الشرقية 45 درجة مئوية صيفاً مع الرطوبة الساحلية العالية، فإن توقف المكيف عن التبريد يمثل حالة طارئة لا تحتمل التأجيل. يقدم <strong>مستر فيكس</strong> خدمة صيانة وإصلاح المكيفات الفورية في نفس اليوم في جميع أحياء <a href="/ar/صيانة-اجهزة-منزلية-الدمام">الدمام</a> و<a href="/ar/صيانة-اجهزة-منزلية-الخبر">الخبر</a> و<a href="/ar/صيانة-اجهزة-منزلية-الظهران">الظهران</a>. يصل إليك فني تكييف معتمد خلال 60 إلى 90 دقيقة بسيارة مجهزة بأحدث أجهزة الفحص وقطع الغيار الأصلية، مع فحص تشخيصي يبدأ من <strong>50 ريال سعودي</strong> (يُخصم بالكامل عند الموافقة على الإصلاح) وضمان مكتوب لمدة <strong>30 إلى 90 يوماً</strong> على القطع والعمل.</p>
 
-<h2>خدمات صيانة المكيفات الشاملة التي نقدمها</h2>
+<h2>ما هي خدمات صيانة وإصلاح المكيفات التي نقدمها في الدمام والخبر؟</h2>
 <ul>
     <li><strong>صيانة وإصلاح المكيفات السبليت والإنفرتر:</strong> إصلاح جميع الأعطال الميكانيكية والكهربائية للمكيفات الجدارية في غرف النوم والمجالس والشقق والفلل.</li>
     <li><strong>صيانة المكيفات المركزية والدكت والكاسيت:</strong> فحص وإصلاح الوحدات المدمجة (Package Units)، ومكيفات الدكت المخفي، ومراوح الدفع، والثرموستات الذكية للمنازل والمكاتب.</li>
@@ -134,7 +134,7 @@ return [
     <li><strong>تغيير الكمبروسر والمكثفات واللوحات الإلكترونية (PCB):</strong> تركيب كمبروسرات أصلية مخصصة للأجواء الحارة (Tropical T3)، وتغيير الكابستور والكونتاكتور وحساسات الحرارة.</li>
 </ul>
 
-<h2>أعطال المكيفات الشائعة التي نصلحها في أجواء المنطقة الشرقية</h2>
+<h2>لماذا المكيف لا يبرد أو يهرب ماء في أجواء المنطقة الشرقية؟</h2>
 <p>تؤدي العواصف الترابية في الدمام والظهران والرطوبة الملحية في الخبر إلى أعطال متكررة في أجهزة التكييف. اتصل بنا فوراً عند ملاحظة أي من العلامات التالية:</p>
 <ul>
     <li><strong>المكيف يخرج هواءً حاراً أو تبريده ضعيف:</strong> غالباً بسبب نقص أو تسريب غاز الفريون، أو تلف مكثف الإقلاع (الكابستور)، أو اتساخ رديتر الوحدة الخارجية وارتفاع حرارة الكمبروسر، أو ظهور أكواد خطأ مثل E1 وE4 وE5 وCH05.</li>
@@ -153,7 +153,7 @@ return [
     <li><strong>اختبار التشغيل تحت الحمل وتقديم الضمان:</strong> بعد تركيب القطع الأصلية نشغل المكيف لمدة 20 دقيقة للتأكد من مثالية التبريد ونسلمك فاتورة الضمان المكتوب.</li>
 </ol>
 
-<h2>جدول أسعار صيانة وإصلاح المكيفات التقريبي (بالريال السعودي)</h2>
+<h2>كم تكلفة صيانة المكيفات وشحن الفريون بالدمام والخبر (بالريال السعودي)؟</h2>
 <p>نلتزم بالشفافية التامة في التسعير، حيث يتم إبلاغك بالتكلفة الدقيقة قبل البدء بأي إصلاح:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -199,7 +199,7 @@ return [
     </table>
 </div>
 
-<h2>نخدم جميع ماركات المكيفات في كافة أحياء الدمام والخبر والظهران</h2>
+<h2>ما هي ماركات المكيفات والأحياء التي نخدمها في الدمام والخبر والظهران؟</h2>
 <p>نوفر قطع غيار أصلية لماركات <strong>جري (Gree)، كاريير (Carrier)، إل جي (LG)، سامسونج (Samsung)، دايكن (Daikin)، ميديا (Midea)، هاير (Haier)، الزامل (Zamil)، كلاسيك، يورك (York)، ميتسوبيشي، جنرال سوبريم، باناسونيك وشارب</strong>. كما يمكنك طلب خدماتنا الأخرى أثناء الزيارة بما في ذلك <a href="/ar/صيانة-ثلاجات">صيانة الثلاجات</a> و<a href="/ar/صيانة-غسالات">صيانة الغسالات</a> و<a href="/ar/صيانة-افران">صيانة الأفران</a> في جميع أحياء المنطقة الشرقية.</p>',
             'faq_en' => json_encode([
                 ['q' => 'How much does AC repair cost in Dammam, Al Khobar, and Dhahran?', 'a' => 'Our on-site AC diagnostic visit is 50 SAR, which is waived when you approve the repair. High-pressure split AC cleaning costs 100–150 SAR, capacitor or sensor replacement ranges from 120–220 SAR, and R410A/R22 Freon leak repair and recharge typically costs 180–320 SAR.'],
@@ -227,7 +227,7 @@ return [
             'full_desc_en'  => '<h2>Same-Day Refrigerator &amp; Freezer Repair in Dammam, Al Khobar &amp; Dhahran</h2>
 <p>A refrigerator that stops cooling in Saudi Arabia’s heat can spoil hundreds of riyals of groceries within hours. <strong>Mr Fix KSA</strong> provides urgent, same-day refrigerator and freezer repair across <a href="/en/appliance-repair-dammam">Dammam</a>, <a href="/en/appliance-repair-khobar">Al Khobar</a>, and <a href="/en/appliance-repair-dhahran">Dhahran</a>. Our certified refrigeration technicians come directly to your kitchen within 60 to 90 minutes, diagnose the exact fault for <strong>50 SAR</strong> (credited toward your repair), and complete over 90% of repairs on the spot using genuine OEM spare parts backed by a written <strong>30-to-90-day warranty</strong>.</p>
 
-<h2>Complete Refrigerator &amp; Freezer Services We Offer</h2>
+<h2>What Refrigerator &amp; Freezer Repair Services Do We Offer?</h2>
 <ul>
     <li><strong>Cooling &amp; Temperature Restoration:</strong> Resolving situations where the freezer is cold but the fresh-food compartment is warm, or where both compartments fail to cool.</li>
     <li><strong>Inverter &amp; Standard Compressor Replacement:</strong> Installing original Embraco, Secop, LG Linear, and Samsung Digital Inverter compressors with full filter-drier replacement and vacuum charging.</li>
@@ -237,7 +237,7 @@ return [
     <li><strong>Door Gaskets, Ice Makers &amp; Water Dispensers:</strong> Replacing torn magnetic door seals, inlet water valves, circulation fans, and automatic ice-maker assemblies.</li>
 </ul>
 
-<h2>Common Refrigerator Problems We Solve Daily</h2>
+<h2>Why Is My Refrigerator Not Cooling or Leaking Water?</h2>
 <p>High kitchen ambient temperatures and voltage fluctuations in the Eastern Province place heavy stress on domestic refrigerators and deep freezers. Contact us immediately if you notice:</p>
 <ul>
     <li><strong>Freezer Works But Lower Fridge Is Warm:</strong> Typically caused by a failed evaporator fan motor, a stuck motorized damper control, or a defective defrost heater blocking the air return duct with ice.</li>
@@ -256,7 +256,7 @@ return [
     <li><strong>Vacuum, Charge &amp; Thermal Verification:</strong> After repair, we verify pull-down temperature stability and hand you a written 30-to-90-day warranty certificate.</li>
 </ol>
 
-<h2>Transparent Refrigerator Repair Price Guide (SAR)</h2>
+<h2>How Much Does Refrigerator &amp; Compressor Repair Cost in Dammam &amp; Khobar (SAR)?</h2>
 <p>All prices are quoted upfront after inspection so there are never hidden fees:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -302,12 +302,12 @@ return [
     </table>
 </div>
 
-<h2>Brands &amp; Appliance Types We Service</h2>
+<h2>Which Refrigerator Brands &amp; Models Do We Service in the Eastern Province?</h2>
 <p>We repair French-door, side-by-side (American style), top-freezer, bottom-freezer, built-in, and chest freezers for <strong>Samsung, LG, Hitachi, Toshiba, Sharp, Panasonic, Whirlpool, General Electric (GE), Bosch, Siemens, Daewoo, Haier, Midea, Beko, and Kelvinator</strong>. You can also book our technicians for <a href="/en/ac-repair">AC repair</a>, <a href="/en/washing-machine-repair">washing machine repair</a>, and <a href="/en/oven-repair">oven repair</a> anywhere in Dammam, Al Khobar, and Dhahran.</p>',
             'full_desc_ar'  => '<h2>صيانة وإصلاح الثلاجات والفريزرات في الدمام والخبر والظهران بنفس اليوم</h2>
 <p>توقف الثلاجة عن التبريد في أجواء المملكة الحارة قد يؤدي إلى تلف الأطعمة والمواد الغذائية خلال ساعات قليلة. يوفر <strong>مستر فيكس</strong> خدمة صيانة وإصلاح الثلاجات والفريزرات الفورية في نفس اليوم داخل منزلك في جميع أحياء <a href="/ar/صيانة-اجهزة-منزلية-الدمام">الدمام</a> و<a href="/ar/صيانة-اجهزة-منزلية-الخبر">الخبر</a> و<a href="/ar/صيانة-اجهزة-منزلية-الظهران">الظهران</a>. يصل إليك فني ثلاجات معتمد خلال 60 إلى 90 دقيقة لإجراء فحص شامل بتكلفة <strong>50 ريال سعودي</strong> (تُخصم عند الإصلاح)، وننجز أكثر من 90% من الإصلاحات في نفس الزيارة باستخدام قطع غيار أصلية مع <strong>ضمان مكتوب لمدة 30 إلى 90 يوماً</strong>.</p>
 
-<h2>خدمات صيانة الثلاجات والفريزرات التي نقدمها</h2>
+<h2>ما هي خدمات صيانة الثلاجات والفريزرات التي نقدمها بالدمام والخبر؟</h2>
 <ul>
     <li><strong>إصلاح ضعف أو توقف التبريد نهائياً:</strong> معالجة مشكلة الفريزر يبرد والكابينة السفلية لا تبرد، أو توقف التبريد في الثلاجة بالكامل.</li>
     <li><strong>تغيير الكمبروسر العادي والإنفرتر (الضاغط):</strong> تركيب كمبروسرات أصلية لماركات إل جي وسامسونج وهيتاشي وتوشيبا مع تغيير فلتر الدراير وشحن الفريون بالمقاس الصحيح.</li>
@@ -317,7 +317,7 @@ return [
     <li><strong>تغيير جلدة الباب وصيانة صانع الثلج وبراد الماء:</strong> استبدال كاوتش الباب التالف لمنع تهريب البرودة، وإصلاح صمامات المياه ومراوح التبريد الداخلية والخارجية.</li>
 </ul>
 
-<h2>أعطال الثلاجات الشائعة التي نعالجها يومياً</h2>
+<h2>لماذا الثلاجة لا تبرد من الأسفل أو تجمع ثلجاً وتسرب ماء؟</h2>
 <p>تتأثر الثلاجات المنزلية بارتفاع حرارة المطابخ صيفاً وتذبذب التيار الكهربائي. تواصل معنا فوراً إذا لاحظت أياً من المشاكل التالية:</p>
 <ul>
     <li><strong>الفريزر يجمد ولكن الثلاجة من الأسفل حارة:</strong> يحدث غالباً بسبب تعطل مروحة المبخر الداخلية، أو تراكم الثلج على الكويل نتيجة تلف سخان النوفروست، أو انسداد مجرى الهواء بين الفريزر والكابينة.</li>
@@ -336,7 +336,7 @@ return [
     <li><strong>اختبار التبريد وتسليم شهادة الضمان:</strong> بعد إتمام الصيانة نتحقق من نزول درجات الحرارة للمعدل الطبيعي ونسلمك فاتورة ضمان مكتوب لمدة 30 إلى 90 يوماً.</li>
 </ol>
 
-<h2>جدول أسعار صيانة وإصلاح الثلاجات التقريبي (بالريال السعودي)</h2>
+<h2>كم تكلفة صيانة الثلاجات وشحن الفريون بالدمام والخبر (بالريال السعودي)؟</h2>
 <p>نقدم أسعاراً واضحة ومعتمدة مسبقاً قبل البدء في العمل:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -382,7 +382,7 @@ return [
     </table>
 </div>
 
-<h2>نصلح جميع ماركات وموديلات الثلاجات والفريزرات</h2>
+<h2>ما هي ماركات وموديلات الثلاجات والفريزرات التي نصلحها؟</h2>
 <p>نخدم الثلاجات العادية، النوفروست، الإنفرتر، الدولابي (Side-by-Side)، والفريزرات العمودية والأفقية لماركات <strong>سامسونج (Samsung)، إل جي (LG)، هيتاشي (Hitachi)، توشيبا (Toshiba)، شارب (Sharp)، باناسونيك، ويرلبول (Whirlpool)، جنرال إلكتريك (GE)، بوش (Bosch)، سيمنس، دايو، هاير، ميديا وبيكو</strong>. كما نوفر خدمات <a href="/ar/صيانة-مكيفات">صيانة المكيفات</a> و<a href="/ar/صيانة-غسالات">صيانة الغسالات</a> و<a href="/ar/صيانة-افران">صيانة الأفران</a> في الدمام والخبر والظهران.</p>',
             'faq_en' => json_encode([
                 ['q' => 'Why is my freezer cold but the refrigerator section warm?', 'a' => 'In 80% of cases, this happens because the evaporator fan motor has stopped working, the motorized air damper is stuck closed, or a failed defrost heater allowed ice to block the air vents between the freezer and fridge compartments.'],
@@ -410,7 +410,7 @@ return [
             'full_desc_en'  => '<h2>Professional Washing Machine &amp; Dryer Repair in Dammam, Al Khobar &amp; Dhahran</h2>
 <p>A broken washing machine quickly disrupts your entire household routine. <strong>Mr Fix KSA</strong> provides fast, same-day washing machine and dryer repair inside your home across <a href="/en/appliance-repair-dammam">Dammam</a>, <a href="/en/appliance-repair-khobar">Al Khobar</a>, and <a href="/en/appliance-repair-dhahran">Dhahran</a>. Whether you own a front-load inverter washer, a top-load automatic machine, or a combined washer-dryer, our certified technicians diagnose the fault for <strong>50 SAR</strong> (waived upon repair), install genuine manufacturer spare parts on the first visit, and provide a written <strong>30-to-90-day warranty</strong>.</p>
 
-<h2>Complete Washing Machine Services We Provide</h2>
+<h2>What Washing Machine &amp; Dryer Repair Services Do We Provide?</h2>
 <ul>
     <li><strong>Front-Load Automatic Washer Repair:</strong> Fixing door interlock switches, torn rubber boot gaskets, drain pumps, shock absorbers, drum spiders, and inverter direct-drive motors.</li>
     <li><strong>Top-Load Automatic &amp; Twin-Tub Repair:</strong> Replacing clutch assemblies, gearboxes, water level pressure sensors, lid locks, agitator dogs, and drive belts.</li>
@@ -420,7 +420,7 @@ return [
     <li><strong>Drum Bearing, Oil Seal &amp; Suspension Overhaul:</strong> Eliminating jet-engine spin noises and violent cabinet shaking by replacing worn ball bearings, shaft seals, and suspension dampers.</li>
 </ul>
 
-<h2>Common Washing Machine Faults We Fix in Eastern Province Homes</h2>
+<h2>Why Is My Washing Machine Not Draining, Spinning, or Opening?</h2>
 <p>Hard water mineral deposits and daily family laundry loads in Dammam, Al Khobar, and Dhahran frequently cause these washing machine breakdowns:</p>
 <ul>
     <li><strong>Washer Will Not Drain Water (OE / 5E / E18 Error):</strong> Caused by a burned-out drain pump motor, a jammed impeller, or a clogged filter housing.</li>
@@ -439,7 +439,7 @@ return [
     <li><strong>Spin &amp; Leak Verification Under Load:</strong> After installing genuine parts, we run a fill, agitate, drain, and high-speed spin test and issue your written warranty.</li>
 </ol>
 
-<h2>Transparent Washing Machine Repair Price Guide (SAR)</h2>
+<h2>How Much Does Washing Machine Repair Cost in Dammam &amp; Al Khobar (SAR)?</h2>
 <p>Clear, honest pricing approved by you before any repair begins:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -485,12 +485,12 @@ return [
     </table>
 </div>
 
-<h2>All Major Washer &amp; Dryer Brands Serviced</h2>
+<h2>Which Washing Machine &amp; Dryer Brands Do We Service at Home?</h2>
 <p>We stock genuine spare parts for <strong>LG (Direct Drive), Samsung (EcoBubble), Bosch, Siemens, Whirlpool, General Electric (GE), Maytag, Ariston, Indesit, Beko, Daewoo, Toshiba, Hitachi, Panasonic, Haier, and Midea</strong>. Need another appliance checked while our technician is at your home? Explore our <a href="/en/ac-repair">AC repair</a>, <a href="/en/refrigerator-repair">refrigerator repair</a>, and <a href="/en/oven-repair">oven repair</a> services across Dammam, Al Khobar, and Dhahran.</p>',
             'full_desc_ar'  => '<h2>صيانة وإصلاح الغسالات الأوتوماتيك والمجففات في الدمام والخبر والظهران</h2>
 <p>تعطل الغسالة في المنزل يربك جدول الأسرة اليومي بالكامل. يقدم <strong>مستر فيكس</strong> خدمة صيانة وإصلاح الغسالات الأوتوماتيك (الأمامية والعلوية) والنشافات في نفس اليوم داخل منزلك في جميع أحياء <a href="/ar/صيانة-اجهزة-منزلية-الدمام">الدمام</a> و<a href="/ar/صيانة-اجهزة-منزلية-الخبر">الخبر</a> و<a href="/ar/صيانة-اجهزة-منزلية-الظهران">الظهران</a>. يصل إليك فني غسالات معتمد خلال 60 إلى 90 دقيقة لإجراء فحص شامل بتكلفة <strong>50 ريال سعودي</strong> (تُخصم عند الإصلاح)، مع تركيب قطع غيار أصلية في نفس الزيارة وتقديم <strong>ضمان مكتوب لمدة 30 إلى 90 يوماً</strong>.</p>
 
-<h2>خدمات صيانة الغسالات والنشافات التي نقدمها</h2>
+<h2>ما هي خدمات صيانة الغسالات الأوتوماتيك والنشافات التي نقدمها؟</h2>
 <ul>
     <li><strong>صيانة الغسالات الأوتوماتيك ذات التحميل الأمامي (Front-Load):</strong> إصلاح قفل الباب الإلكتروني، وتغيير كاوتش الباب، وطرمبة الصرف، والمساعدين، وموتور الدفع المباشر (Direct Drive).</li>
     <li><strong>صيانة الغسالات ذات التحميل العلوي (Top-Load) والنصف أوتوماتيك:</strong> تغيير الجيربوكس (التروس)، وحساس مستوى الماء، وقفل الغطاء، والسيور، والمروحة الداخلية.</li>
@@ -500,7 +500,7 @@ return [
     <li><strong>تغيير رومان بلي الحلة ومانع التسرب والمساعدين:</strong> القضاء النهائي على الأصوات العالية والاهتزاز العنيف أثناء مرحلة العصر.</li>
 </ul>
 
-<h2>أعطال الغسالات الشائعة التي نصلحها في المنطقة الشرقية</h2>
+<h2>لماذا الغسالة لا تصرف الماء أو لا تعصر أو لا يفتح بابها؟</h2>
 <p>تؤدي ملوحة المياه والاستخدام اليومي المكثف إلى أعطال شائعة في الغسالات المنزلية. اتصل بنا فوراً إذا واجهت أياً من هذه المشاكل:</p>
 <ul>
     <li><strong>الغسالة لا تصرف الماء وتتوقف قبل العصر (كود OE / 5E / E18):</strong> يحدث بسبب احتراق طرمبة الصرف أو انحشار جسم غريب داخل المروحة أو انسداد الفلتر السفلي.</li>
@@ -519,7 +519,7 @@ return [
     <li><strong>اختبار دورة الغسيل والعصر وتسليم الضمان:</strong> بعد تركيب القطع الأصلية نجري اختبار تشغيل كامل للتأكد من هدوء العصر وعدم وجود أي تسريب، ونسلمك شهادة الضمان المكتوب.</li>
 </ol>
 
-<h2>جدول أسعار صيانة وإصلاح الغسالات التقريبي (بالريال السعودي)</h2>
+<h2>كم تكلفة صيانة الغسالات الأوتوماتيك بالدمام والخبر (بالريال السعودي)؟</h2>
 <p>أسعار شفافة وثابتة توافق عليها قبل بدء العمل:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -565,7 +565,7 @@ return [
     </table>
 </div>
 
-<h2>نصلح جميع ماركات الغسالات الأوتوماتيك والمجففات</h2>
+<h2>ما هي ماركات الغسالات الأوتوماتيك والمجففات التي نصلحها في المنزل؟</h2>
 <p>تتوفر لدينا قطع غيار أصلية لماركات <strong>إل جي (LG)، سامسونج (Samsung)، بوش (Bosch)، سيمنس (Siemens)، ويرلبول (Whirlpool)، جنرال إلكتريك (GE)، ميتاج (Maytag)، أريستون (Ariston)، إندست، بيكو، دايو، توشيبا، هيتاشي، باناسونيك، هاير وميديا</strong>. كما يسعدنا خدمتك في <a href="/ar/صيانة-مكيفات">صيانة المكيفات</a> و<a href="/ar/صيانة-ثلاجات">صيانة الثلاجات</a> و<a href="/ar/صيانة-افران">صيانة الأفران</a> في كافة أحياء الدمام والخبر والظهران.</p>',
             'faq_en' => json_encode([
                 ['q' => 'How much does washing machine repair cost in Dammam, Al Khobar, and Dhahran?', 'a' => 'Our on-site inspection fee is 50 SAR (waived when you approve the repair). Door lock or inlet valve fixes cost 110–190 SAR, drain pump replacement is 140–240 SAR, and shock absorber or PCB repairs range from 150–380 SAR.'],
@@ -593,7 +593,7 @@ return [
             'full_desc_en'  => '<h2>Certified Gas &amp; Electric Oven &amp; Range Repair in Dammam, Al Khobar &amp; Dhahran</h2>
 <p>Faulty gas burners, weak oven heating, or malfunctioning safety valves require certified technical expertise to keep your kitchen safe. <strong>Mr Fix KSA</strong> provides same-day, in-home repair for freestanding gas ranges, built-in electric wall ovens, ceramic/induction cooktops, and commercial-style cookers across <a href="/en/appliance-repair-dammam">Dammam</a>, <a href="/en/appliance-repair-khobar">Al Khobar</a>, and <a href="/en/appliance-repair-dhahran">Dhahran</a>. Our technicians arrive within 60 to 90 minutes, perform a full gas-safety and electrical diagnosis for <strong>50 SAR</strong> (waived upon repair), and back every repair with a written <strong>30-to-90-day warranty</strong>.</p>
 
-<h2>Complete Oven, Stove &amp; Cooker Services We Provide</h2>
+<h2>What Gas &amp; Electric Oven &amp; Cooker Services Do We Provide?</h2>
 <ul>
     <li><strong>Gas Oven &amp; Range Burner Repair:</strong> Cleaning and calibrating clogged gas injectors/jets, fixing yellow or uneven flames, and restoring bake and broil tube burners.</li>
     <li><strong>Spark Ignition &amp; Thermocouple Safety Valve Repair:</strong> Replacing faulty spark modules, ceramic igniter electrodes, glow-bar igniters, and flame-supervision thermocouples when the burner goes out after releasing the knob.</li>
@@ -603,7 +603,7 @@ return [
     <li><strong>Oven Door Hinges, Springs &amp; Heat Gasket Replacement:</strong> Fixing heavy oven doors that won’t close tightly, allowing heat to escape and damaging control knobs.</li>
 </ul>
 
-<h2>Common Oven &amp; Stove Faults We Fix Daily</h2>
+<h2>Why Won’t My Gas Burner Stay Lit or Electric Oven Heat Properly?</h2>
 <p>Whether you cook on a 5-burner Italian gas range or a built-in European electric wall oven, call our technicians if you experience any of these problems:</p>
 <ul>
     <li><strong>Gas Burner Clicks But Will Not Light, or Goes Out When Released:</strong> Almost always caused by a worn thermocouple safety sensor, a misaligned spark electrode, or grease-blocked burner ports.</li>
@@ -622,7 +622,7 @@ return [
     <li><strong>Flame Pattern &amp; Thermal Calibration Test:</strong> We verify clean blue combustion flames, test safety flame-failure cutoffs, check oven temperature accuracy, and issue your written warranty.</li>
 </ol>
 
-<h2>Transparent Oven &amp; Stove Repair Price Guide (SAR)</h2>
+<h2>How Much Does Gas &amp; Electric Oven Repair Cost in Dammam &amp; Khobar (SAR)?</h2>
 <p>Upfront pricing with no hidden charges across Dammam, Al Khobar, and Dhahran:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -668,12 +668,12 @@ return [
     </table>
 </div>
 
-<h2>All Italian, European, Korean &amp; American Oven Brands Covered</h2>
+<h2>Which Italian, European &amp; International Oven Brands Do We Repair?</h2>
 <p>We service freestanding cookers, built-in ovens, and hobs for <strong>Glem Gas, La Germania, Ariston, Indesit, Elba, Tecnogas, Bompani, Bosch, Siemens, Teka, Whirlpool, General Electric (GE), Frigidaire, Mabe, Samsung, LG, Beko, and Haier</strong>. Need another home appliance serviced? Check our <a href="/en/ac-repair">AC repair</a>, <a href="/en/refrigerator-repair">refrigerator repair</a>, and <a href="/en/washing-machine-repair">washing machine repair</a> pages.</p>',
             'full_desc_ar'  => '<h2>صيانة وإصلاح أفران الغاز والكهرباء والبوتاجاز في الدمام والخبر والظهران</h2>
 <p>تتطلب أعطال أفران الغاز والكهرباء خبرة فنية معتمدة لضمان أعلى معايير السلامة والأمان داخل مطبخك. يقدم <strong>مستر فيكس</strong> خدمة صيانة وإصلاح الأفران المنزلية (أفران الغاز، الأفران الكهربائية، الأفران البلت إن المدمجة، والأسطح السيراميك) في نفس اليوم في جميع أحياء <a href="/ar/صيانة-اجهزة-منزلية-الدمام">الدمام</a> و<a href="/ar/صيانة-اجهزة-منزلية-الخبر">الخبر</a> و<a href="/ar/صيانة-اجهزة-منزلية-الظهران">الظهران</a>. يصل إليك فني أفران مختص خلال 60 إلى 90 دقيقة لإجراء فحص أمان وتشخيص شامل بتكلفة <strong>50 ريال سعودي</strong> (تُخصم عند الإصلاح)، مع استخدام قطع غيار إيطالية وأصلية مشمولة <strong>بضمان مكتوب لمدة 30 إلى 90 يوماً</strong>.</p>
 
-<h2>خدمات صيانة الأفران والبوتاجاز الشاملة التي نقدمها</h2>
+<h2>ما هي خدمات صيانة أفران الغاز والكهرباء والبوتاجاز التي نقدمها؟</h2>
 <ul>
     <li><strong>صيانة وتنظيف وتسليك عيون وشعلات أفران الغاز:</strong> تسليك فواني الغاز المسدودة، ومعايرة الهواء والغاز للقضاء على اللهب الأصفر والدخان الأسود الذي يلوث الأواني.</li>
     <li><strong>إصلاح الإشعال الذاتي وحساس الأمان (Thermocouple):</strong> تغيير شمعات الشرار، ومحول الإشعال الذاتي، وحساسات الأمان عندما تنطفئ شعلة الفرن بمجرد رفع اليد عن المفتاح.</li>
@@ -683,7 +683,7 @@ return [
     <li><strong>تغيير مفصلات أبواب الأفران والجلد الحراري والزجاج:</strong> إصلاح أبواب الأفران التي لا تغلق بإحكام أو تهرب الحرارة وتؤدي إلى سخونة المفاتيح.</li>
 </ul>
 
-<h2>أعطال الأفران الشائعة التي نصلحها يومياً</h2>
+<h2>لماذا تنطفئ شعلة فرن الغاز أو لا يسخن الفرن الكهربائي؟</h2>
 <p>سواء كنت تمتلك فرن غاز إيطالي كبير أو فرن كهربائي بلت إن مدمج، تواصل معنا فوراً عند ملاحظة أي من الأعطال التالية:</p>
 <ul>
     <li><strong>شعلة الفرن تنطفئ فور ترك المفتاح:</strong> السبب المباشر هو تلف حساس الأمان (الثيرموكبل) أو ابتعاده عن الشعلة، أو ضعف في صمام الأمان المغناطيسي.</li>
@@ -702,7 +702,7 @@ return [
     <li><strong>اختبار اللهب الأزرق ومعايرة الحرارة وتسليم الضمان:</strong> نتأكد من انتظام الشعلة الزرقاء وعمل صمام الأمان بكفاءة تامة، ونسلمك فاتورة ضمان مكتوب لمدة 30 إلى 90 يوماً.</li>
 </ol>
 
-<h2>جدول أسعار صيانة وإصلاح الأفران التقريبي (بالريال السعودي)</h2>
+<h2>كم تكلفة صيانة أفران الغاز والكهرباء بالدمام والخبر (بالريال السعودي)؟</h2>
 <p>أسعار واضحة ومعتمدة قبل البدء بأي إصلاح:</p>
 <div class="table-responsive">
     <table class="seo-pricing-table">
@@ -748,7 +748,7 @@ return [
     </table>
 </div>
 
-<h2>نصلح جميع ماركات الأفران الإيطالية والأوروبية والأمريكية</h2>
+<h2>ما هي ماركات الأفران الإيطالية والأوروبية والأمريكية التي نصلحها؟</h2>
 <p>نوفر قطع غيار أصلية وإيطالية لماركات <strong>جليم غاز (Glem Gas)، لاجيرمانيا (La Germania)، أريستون (Ariston)، إندست، إلبا (Elba)، تكنوغاز، بومباني، بوش (Bosch)، سيمنس، تيكا (Teka)، ويرلبول، جنرال إلكتريك (GE)، فريجيدير، مابي، سامسونج، إل جي، بيكو وهاير</strong>. كما يمكنك طلب خدمات <a href="/ar/صيانة-مكيفات">صيانة المكيفات</a> و<a href="/ar/صيانة-ثلاجات">صيانة الثلاجات</a> و<a href="/ar/صيانة-غسالات">صيانة الغسالات</a> في الدمام والخبر والظهران.</p>',
             'faq_en' => json_encode([
                 ['q' => 'Why does my gas oven burner go out as soon as I release the knob?', 'a' => 'This is caused by a faulty flame-failure thermocouple sensor or electromagnetic safety valve. Our technician replaces the thermocouple on-site in 30 minutes so the burner stays lit safely.'],

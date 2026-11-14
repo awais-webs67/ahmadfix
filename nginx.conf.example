@@ -41,3 +41,4 @@ location ~* ^/assets/.*\.(css|js|jpg|jpeg|png|gif|svg|webp|avif|ico|woff|woff2|t
 location / {
     try_files $uri $uri/ /index.php?route=$uri&$args;
 }
+

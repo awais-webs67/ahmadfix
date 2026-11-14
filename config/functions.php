@@ -850,6 +850,38 @@ function getContactPageSchema() {
 }
 
 /**
+ * WebPage schema with genuine dateModified & certified technical review attribution (GEO / E-E-A-T)
+ */
+function getWebPageSchema(array $opts) {
+    global $lang;
+    $is_ar = ($lang === 'ar');
+    $page_url = $opts['url'] ?? url('');
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebPage',
+        '@id' => $page_url . '#webpage',
+        'url' => $page_url,
+        'name' => $opts['name'] ?? ($is_ar ? SITE_NAME_AR : SITE_NAME),
+        'inLanguage' => $is_ar ? 'ar-SA' : 'en-SA',
+        'isPartOf' => ['@id' => SITE_URL . '/#website'],
+        'publisher' => ['@id' => SITE_URL . '/#business'],
+        'reviewedBy' => ['@id' => SITE_URL . '/#business'],
+        'specialty' => $is_ar ? 'صيانة الأجهزة المنزلية والتكييف' : 'Home Appliance & HVAC Repair',
+    ];
+    if (!empty($opts['description'])) {
+        $schema['description'] = $opts['description'];
+    }
+    if (!empty($opts['main_entity_id'])) {
+        $schema['mainEntity'] = ['@id' => $opts['main_entity_id']];
+        $schema['about'] = ['@id' => $opts['main_entity_id']];
+    }
+    if (!empty($opts['date_modified'])) {
+        $schema['dateModified'] = $opts['date_modified'];
+    }
+    return jsonLd($schema);
+}
+
+/**
  * Deterministic 32-character hexadecimal key for IndexNow protocol
  */
 function indexNowKey() {

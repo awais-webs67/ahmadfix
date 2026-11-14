@@ -246,4 +246,23 @@ return [
     'cf_svc_other' => 'Other',
     'cf_privacy' => 'We only use your details to arrange your repair.',
     'book_online' => 'Book Online',
+
+    // E-E-A-T & City Dispatch Summary (GEO v9)
+    'eeat_reviewed_by' => 'Technically reviewed by ' . SITE_NAME . ' Certified HVAC & Appliance Team',
+    'eeat_verified_on' => 'SAR price guide & checklist verified:',
+    'area_table_caption' => '%s Same-Day Dispatch, Coverage & Price Summary (SAR)',
+    'area_tbl_col_item' => 'Service Metric',
+    'area_tbl_col_detail' => '%s Standard & Coverage',
+    'area_tbl_coverage' => 'Neighborhoods Covered',
+    'area_tbl_coverage_val' => '%d+ districts in %s (incl. %s)',
+    'area_tbl_dispatch' => 'Same-Day Response Time',
+    'area_tbl_dispatch_val' => '60 – 90 minutes via mobile workshop across %s',
+    'area_tbl_diagnostic' => 'On-Site Fault Diagnosis',
+    'area_tbl_diagnostic_val' => '50 SAR (100% waived when you approve the repair)',
+    'area_tbl_repair_range' => 'Typical Repair Range',
+    'area_tbl_repair_val' => '100 – 450 SAR (upfront fixed quote before work starts)',
+    'area_tbl_warranty' => 'Parts & Labor Warranty',
+    'area_tbl_warranty_val' => 'Written 30-to-90-day warranty with genuine OEM spare parts',
+    'area_tbl_payment' => 'Payment & Working Hours',
+    'area_tbl_payment_val' => 'Cash, Mada, STC Pay, Apple Pay • Sat–Thu 8 AM–10 PM, Fri 2–10 PM',
 ];

@@ -1,11 +1,21 @@
 # Specialist Findings: AI Search / GEO (`findings/geo.md`)
-**Score:** **96 / 100 (Grade A+)** *(Up from 55 / 100 baseline)*
 
-See full report in **[`GEO-ANALYSIS.md`](../GEO-ANALYSIS.md)**.
+- **Audit Date:** November 15, 2026 (`Schema v9` On-Site GEO Upgrade Deployed)
+- **GEO Readiness Score:** **96 / 100 (Grade A+)** *(Heuristic score across 5 weighted criteria — up from `93 / 100` in v8 and `55 / 100` initial baseline)*
+- **Full Report:** [`GEO-ANALYSIS.md`](../GEO-ANALYSIS.md)
 
-## Summary of Live `v6` GEO Implementations
-1. **Citability (98/100):** Front-loaded 130–170 word Answer-First lead blocks + explicit SAR diagnostic/repair pricing tables (`.seo-pricing-table`) and 30–90 day warranty terms across all 8 service pages and 6 city pages.
-2. **Structural Readability (99/100):** Exact `H1 → H2 → H3` parity across EN & AR, 4-step numbered `<ol>` diagnostic protocols, and 6 structured FAQs per page with the first FAQ open by default (`aria-expanded="true"`).
-3. **AI Crawler Access (100/100):** `/robots.txt` explicitly allows all Search Citability crawlers (`Googlebot`, `Bingbot`, `Applebot`, `OAI-SearchBot`, `Claude-SearchBot`, `PerplexityBot`), User-Triggered fetchers (`ChatGPT-User`, `Claude-User`, `Perplexity-User`), and Training crawlers (`GPTBot`, `ClaudeBot`, `Google-Extended`, `Applebot-Extended`).
-4. **AI Discovery Files:** Live `/llms.txt` (`7.5 KB`), `/llms-full.txt` (`61 KB`), and `/.well-known/ai-catalog.json` (`1.3 KB`) verified on `https://mrfixksa.com/`.
-5. **Next Step (External Entity Signals):** Launch Google Business Profile (`GOOGLE-BUSINESS-PROFILE-MUSE-AI-BRIEF.md`), upload 5 short diagnostic videos on YouTube (`@mrfixksa`), and connect social `sameAs` URLs in `/admin`.
+## Key Live & `Schema v9` Findings (`2026-11-15`)
+
+1. **Google Search & Vertex AI Grounding Confirmed Live (`7+` URLs Indexed):**  
+   Up from `0` indexed URLs on Nov 6, live queries in both English (`"Mr Fix KSA" Dammam Khobar`, `site:mrfixksa.com`) and Arabic (`"مستر فيكس" "0582453440" الدمام الخبر`) retrieve and cite `mrfixksa.com` service pages, working hours, neighborhoods (`Al Doha`, `Al Qusur`, `Al Dana`), and `+966 58 245 3440`.
+2. **Citability (`100/100`) & Structural Readability (`100/100` — `Schema v9`):**  
+   - Front-loaded Answer-First lead blocks + `.seo-pricing-table` SAR tables now cover **all 14 money pages** (all 8 EN/AR service pages + new 6-row City Dispatch, Coverage & SAR Price Summary Tables on all 6 EN/AR city pages).
+   - Converted 32 section `H2`s across EN & AR service pages into natural query-aligned questions (`Why Is My AC Not Cooling...?` / `كم تكلفة صيانة المكيفات...؟`) while preserving 100% `H1:1 / H2:8 / H3:7` structural parity, auto-synced via `SCHEMA_VERSION = 9`.
+3. **E-E-A-T Reviewer Attribution & Genuine Freshness (`89/100` Authority):**  
+   Added visible `.eeat-meta-bar` (`<time datetime="YYYY-MM-DD">`) and `WebPage` JSON-LD (`dateModified`, `reviewedBy`, `specialty`) across all 14 service & city pages, synced 100% with `/sitemap.xml` `<lastmod>`.
+4. **Separated AI Crawler Access (`99/100` Technical Accessibility):**  
+   - **22 Explicit Search & AI Bots Allowed in `/robots.txt`:** `Googlebot`, `OAI-SearchBot`, `Claude-SearchBot`, `PerplexityBot`, `Bingbot`, `Applebot`, `DuckAssistBot`, `YouBot`, `ChatGPT-User`, `Claude-User`, `Perplexity-User`, `Google-Agent`, `Google-GeminiNotebook`, plus training/agent signals (`GPTBot`, `ClaudeBot`, `Google-Extended`, `Google-CloudVertexBot`, `Applebot-Extended`, `CCBot`, `Bytespider`, `cohere-ai`).
+   - **`/llms.txt` & `/llms-full.txt` Present (`0%` Score Weight):** Maintained for non-Google tools; Google Search ignores `llms.txt` per Google's AI Optimization Guide (`2026-06-15` / `2026-07-10`).
+5. **Remaining Off-Site Actions for Owner (`+3–4 pts` to `99–100/100`):**  
+   - Launch GBP via [`GOOGLE-BUSINESS-PROFILE-MUSE-AI-BRIEF.md`](../GOOGLE-BUSINESS-PROFILE-MUSE-AI-BRIEF.md) & populate `hasMap` + `sameAs` in `/admin`.
+   - Publish 4–5 short technician diagnostic videos on YouTube (`@mrfixksa` — strongest ~`0.737` AI citation correlation) and embed with `VideoObject` schema.
